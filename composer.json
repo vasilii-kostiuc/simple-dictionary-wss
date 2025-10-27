@@ -20,7 +20,7 @@
         "laravel/reverb": "^1.5",
         "laravel/tinker": "^2.10.1",
         "predis/predis": "2.0",
-        "vasilii-kostiuc/laravel-messaging-library": "^1.0"
+        "vasilii-kostiuc/laravel-messaging-library": "^1.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
