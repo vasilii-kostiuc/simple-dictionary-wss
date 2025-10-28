@@ -9,7 +9,3 @@ done
 
 # Применяем миграции, если нужно
 php artisan migrate --force || true
-
-# Запускаем Reverb
-echo "Starting Laravel Reverb..."
-php artisan reverb:start --host=0.0.0.0 --port=8080
