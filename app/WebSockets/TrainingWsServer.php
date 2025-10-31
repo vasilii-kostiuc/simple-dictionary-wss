@@ -2,6 +2,7 @@
 
 namespace App\WebSockets;
 
+use App\WebSockets\Handlers\MessageHandlerFactory;
 use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
@@ -10,13 +11,14 @@ use Ratchet\WebSocket\MessageComponentInterface;
 
 class TrainingWsServer implements MessageComponentInterface
 {
-
     protected array $clients = [];
 
     protected array $subscriptions = [];
+    private MessageHandlerFactory $messageHandlerFactory;
 
-    public function __construct()
+    public function __construct(MessageHandlerFactory $messageHandlerFactory)
     {
+        $this->messageHandlerFactory = $messageHandlerFactory;
         Log::info(__METHOD__);
     }
 
@@ -28,13 +30,6 @@ class TrainingWsServer implements MessageComponentInterface
         // Получаем токен из query
         Log::info('New connection ' . $conn->resourceId);
         $query = [];
-        parse_str(parse_url($conn->httpRequest->getUri(), PHP_URL_QUERY), $query);
-        $token = $query['token'] ?? "";
-
-        if (!$this->validateToken($token)) {
-            $conn->close();
-            return;
-        }
 
         $this->clients[$conn->resourceId] = $conn;
     }
@@ -59,11 +54,13 @@ class TrainingWsServer implements MessageComponentInterface
     public function onMessage(ConnectionInterface $conn, MessageInterface $msg)
     {
         Log::info(__METHOD__ . ' ' . $msg);
+Log::info(get_class($msg));
 
+        $msgJson = json_decode($msg->getPayload());
+
+        $handler = $this->messageHandlerFactory->create($msgJson->type ?? '');
+
+        $handler->handle($conn, $msg);
     }
 
-    protected function validateToken(string $token): bool
-    {
-        return true;
-    }
 }

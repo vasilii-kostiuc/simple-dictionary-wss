@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'api' =>[
+        'base_uri' => env('API_BASE_URI', 'http://app:8876/api/v1'),
+    ]
+
 ];
