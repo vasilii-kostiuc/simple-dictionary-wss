@@ -3,11 +3,12 @@
 namespace App\WebSockets;
 
 use App\WebSockets\Handlers\MessageHandlerFactory;
+use App\WebSockets\Storage\ClientsStorageInterface;
 use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
-
+use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
 
 class TrainingWsServer implements MessageComponentInterface
 {
@@ -16,10 +17,19 @@ class TrainingWsServer implements MessageComponentInterface
     protected array $subscriptions = [];
     private MessageHandlerFactory $messageHandlerFactory;
 
-    public function __construct(MessageHandlerFactory $messageHandlerFactory)
+    public function __construct(MessageHandlerFactory $messageHandlerFactory, MessageBrokerFactory $messageBrokerFactory, ClientsStorageInterface $clientsStorage)
     {
-        $this->messageHandlerFactory = $messageHandlerFactory;
         Log::info(__METHOD__);
+
+        $this->storage = $clientsStorage;
+
+        $this->messageHandlerFactory = $messageHandlerFactory;
+
+        $messageBroker = $messageBrokerFactory->create();
+
+        $messageBroker->subscribe('training', function ($message) {
+
+        });
     }
 
     /**
