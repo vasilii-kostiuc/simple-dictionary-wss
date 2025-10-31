@@ -54,7 +54,7 @@ class TrainingWsServer implements MessageComponentInterface
     public function onMessage(ConnectionInterface $conn, MessageInterface $msg)
     {
         Log::info(__METHOD__ . ' ' . $msg);
-Log::info(get_class($msg));
+        Log::info(get_class($msg));
 
         $msgJson = json_decode($msg->getPayload());
 
