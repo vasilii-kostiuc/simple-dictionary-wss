@@ -9,3 +9,5 @@ done
 
 # Применяем миграции, если нужно
 php artisan migrate --force || true
+
+php artisan websocket:serve

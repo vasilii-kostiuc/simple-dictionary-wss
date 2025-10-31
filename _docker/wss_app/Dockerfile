@@ -19,4 +19,4 @@ WORKDIR /var/www/html
 # Устанавливаем зависимости Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-CMD ["php-fpm"]
+ENTRYPOINT ["entrypoint.sh"]
