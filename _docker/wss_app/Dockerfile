@@ -19,4 +19,6 @@ WORKDIR /var/www/html
 # Устанавливаем зависимости Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-ENTRYPOINT ["entrypoint.sh"]
+RUN chmod +x ./_docker/wss_app/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
