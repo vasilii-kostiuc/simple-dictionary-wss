@@ -11,16 +11,24 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
      */
     protected array $clients = [];
 
+    protected array $connectionToUserId = [];
+
     public function add(int|string $userId, ConnectionInterface $connection): void
     {
+        $connectionHash = $this->getConnectionHash($connection);
+
         if (!isset($this->clients[$userId])) {
             $this->clients[$userId] = [];
+            $this->connectionToUserId[$connectionHash] = $userId;
         }
-        // Чтобы избежать дублей connection:
-        $connection_spl_hash = spl_object_hash($connection);
-        $this->clients[$userId][$connection_spl_hash] = $connection;
+
+        $this->clients[$userId][$connectionHash] = $connection;
     }
 
+    protected function getConnectionHash(ConnectionInterface $connection): string
+    {
+        return spl_object_hash($connection);
+    }
 
     public function get(int|string $userId): array
     {
@@ -29,10 +37,11 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
 
     public function remove(int|string $userId, ConnectionInterface $connection): void
     {
-        $connection_spl_hash = spl_object_hash($connection);
-        if (isset($this->clients[$userId][$connection_spl_hash])) {
-            unset($this->clients[$userId][$connection_spl_hash]);
-            // Чистим, если последнее соединение удалено
+        $connectionHash = $this->getConnectionHash($connection);
+        if (isset($this->clients[$userId][$connectionHash])) {
+            unset($this->clients[$userId][$connectionHash]);
+            unset($this->connectionToUserId[$connectionHash]);
+
             if (empty($this->clients[$userId])) {
                 unset($this->clients[$userId]);
             }
@@ -50,4 +59,12 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
     {
         return $this->clients;
     }
+
+    public function getUserIdByConnection(ConnectionInterface $conn): int|string|null
+    {
+        $connectionHash = $this->getConnectionHash($conn);
+        return $this->connectionToUserId[$connectionHash] ?? null;
+    }
+
+
 }

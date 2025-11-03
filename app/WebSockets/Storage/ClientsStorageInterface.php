@@ -15,4 +15,6 @@ interface ClientsStorageInterface
     public function has(int|string $userId): bool;
 
     public function all(): array;
+
+    public function getUserIdByConnection(ConnectionInterface $conn): int|string|null;
 }
