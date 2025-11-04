@@ -2,6 +2,7 @@
 
 namespace App\WebSockets\Handlers;
 
+use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\AuthorizedClientsStorage;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use GuzzleHttp\ClientInterface;
@@ -20,7 +21,7 @@ class AuthMessageHandler implements MessageHandlerInterface
         $this->clientsStorage = $clientsStorage;
     }
 
-    public function handle(ConnectionInterface $from, MessageInterface $msg)
+    public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
         info(__METHOD__);
         info($msg);
@@ -29,16 +30,10 @@ class AuthMessageHandler implements MessageHandlerInterface
         $token = $msgJson->token ?? "";
         if (!$this->validateToken($token) && $userId = $this->getUserIdFromToken($token)) {
             $this->clientsStorage->add($userId, $from);
-            $from->send(json_encode([
-                'type' => 'auth',
-                'data' => ['success' => false, 'message' => 'Auth error']
-            ]));
+            $from->send(new WebSocketMessage('auth', ['success' => false, 'message' => 'auth error']));
             $from->close();
         } else {
-            $from->send(json_encode([
-                'type' => 'auth',
-                'data' => ['success' => true, 'message' => 'Auth success']
-            ]));
+            $from->send(new WebSocketMessage('auth', ['success' => false, 'message' => 'auth error']));
         }
     }
 

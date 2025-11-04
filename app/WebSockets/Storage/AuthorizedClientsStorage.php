@@ -11,6 +11,9 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
      */
     protected array $clients = [];
 
+    /**
+     * @var array connection_hash => user_id
+     */
     protected array $connectionToUserId = [];
 
     public function add(int|string $userId, ConnectionInterface $connection): void
@@ -45,10 +48,10 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
             if (empty($this->clients[$userId])) {
                 unset($this->clients[$userId]);
             }
-        }
     }
 
 
+}
     public function has(int|string $userId): bool
     {
         return !empty($this->clients[$userId]);
@@ -65,6 +68,5 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
         $connectionHash = $this->getConnectionHash($conn);
         return $this->connectionToUserId[$connectionHash] ?? null;
     }
-
 
 }
