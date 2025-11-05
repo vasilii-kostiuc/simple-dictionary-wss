@@ -27,9 +27,9 @@ class TrainingWsServer implements MessageComponentInterface
 
         $messageBroker = $messageBrokerFactory->create();
 
-        $messageBroker->subscribe('training', function ($message) {
-
-        });
+//        $messageBroker->subscribe('training', function ($message) {
+//
+//        });
     }
 
     /**

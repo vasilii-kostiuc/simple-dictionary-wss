@@ -2,20 +2,21 @@
 
 namespace App\WebSockets\Handlers;
 
+use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
-use App\WebSockets\Storage\AuthorizedClientsStorage;
 use App\WebSockets\Storage\ClientsStorageInterface;
-use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class AuthMessageHandler implements MessageHandlerInterface
 {
-    protected ClientInterface $client;
+    protected SimpleDictionaryApiClientInterface $client;
     private ClientsStorageInterface $clientsStorage;
 
-    public function __construct(ClientInterface $client, ClientsStorageInterface $clientsStorage)
+    public function __construct(SimpleDictionaryApiClientInterface $client, ClientsStorageInterface $clientsStorage)
     {
         $this->client = $client;
         $this->clientsStorage = $clientsStorage;
@@ -28,50 +29,24 @@ class AuthMessageHandler implements MessageHandlerInterface
 
         $msgJson = json_decode($msg->getPayload());
         $token = $msgJson->token ?? "";
-        if (!$this->validateToken($token) && $userId = $this->getUserIdFromToken($token)) {
+        if ($this->validateToken($token) && $userId = $this->getUserIdFromToken($token)) {
             $this->clientsStorage->add($userId, $from);
-            $from->send(new WebSocketMessage('auth', ['success' => false, 'message' => 'auth error']));
+            $from->send(new WebSocketMessage('auth_success', ['success' => true, 'message' => 'auth successed']));
             $from->close();
         } else {
-            $from->send(new WebSocketMessage('auth', ['success' => false, 'message' => 'auth error']));
+            $from->send(new ErrorMessage('auth_error', $msg->getPayload()));
         }
     }
 
     private function validateToken(string $token): bool
     {
-        try {
-            $validateResponse = $this->client->get('auth/token/validate', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
-                ]
-            ]);
-        } catch (GuzzleException $e) {
-            return false;
-        }
-
-        if ($validateResponse->getStatusCode() === 200) {
-            return true;
-        }
-
-        return false;
+        return $this->client->validateToken($token);
     }
 
     private function getUserIdFromToken(string $token): ?int
     {
-        try {
-            $userResponse = $this->client->get('profile', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
-                ]
-            ]);
-        } catch (GuzzleException $e) {
-            return null;
-        }
+        $profile = $this->client->getProfile($token);
 
-        if ($userResponse->getStatusCode() === 200) {
-            return $userResponse->getBody()['data']['id'];
-        }
-
-        return null;
+        return $profile['id'] ?? null;
     }
 }
