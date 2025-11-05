@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers;
 
 use App\WebSockets\Handlers\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
+use App\WebSockets\Messages\SubscribeSuccessMessage;
 use App\WebSockets\Storage\AuthorizedClientsStorage;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use App\WebSockets\Storage\SubscriptionsStorageInterface;
@@ -59,5 +60,6 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         }
 
         $this->subscriptionsStorage->subscribe($from, $channel);
+        $from->send(new SubscribeSuccessMessage($channel));
     }
 }

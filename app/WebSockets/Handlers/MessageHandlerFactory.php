@@ -2,19 +2,20 @@
 
 namespace App\WebSockets\Handlers;
 
+use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use App\WebSockets\Storage\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
 
 class MessageHandlerFactory
 {
-    private Client $client;
+    private SimpleDictionaryApiClientInterface $apiClient;
     private ClientsStorageInterface $clientsStorage;
     private SubscriptionsStorageInterface $subscriptionsStorage;
 
-    public function __construct(Client $client, ClientsStorageInterface $clientsStorage, SubscriptionsStorageInterface $subscriptionsStorage)
+    public function __construct(SimpleDictionaryApiClientInterface $apiClient, ClientsStorageInterface $clientsStorage, SubscriptionsStorageInterface $subscriptionsStorage)
     {
-        $this->client = $client;
+        $this->apiClient = $apiClient;
         $this->clientsStorage = $clientsStorage;
         $this->subscriptionsStorage = $subscriptionsStorage;
     }
@@ -22,7 +23,7 @@ class MessageHandlerFactory
     public function create(string $type): MessageHandlerInterface
     {
         return match ($type) {
-            'auth' => new AuthMessageHandler($this->client, $this->clientsStorage),
+            'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
             'subscribe' => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
             default => new UnknownMessageHandler()
         };
