@@ -40,7 +40,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         info(__METHOD__);
         info($msg);
         $msgPayload = json_decode($msg->getPayload());
-        $channel = $msgJson->channel ?? "";
+        $channel = $msgPayload->channel ?? "";
 
         $userId = $this->clientsStorage->getUserIdByConnection($from);
 

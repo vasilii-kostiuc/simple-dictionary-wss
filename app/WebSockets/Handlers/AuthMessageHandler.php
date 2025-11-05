@@ -30,7 +30,6 @@ class AuthMessageHandler implements MessageHandlerInterface
         if ($this->validateToken($token) && $userId = $this->getUserIdFromToken($token)) {
             $this->clientsStorage->add($userId, $from);
             $from->send(new WebSocketMessage('auth_success', ['success' => true, 'message' => 'auth successed']));
-            $from->close();
         } else {
             $from->send(new ErrorMessage('auth_error', $msg->getPayload()));
         }
