@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\WebSockets\Api\Fake\FakeSimpleDictionaryApiClient;
-use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
+use App\ApiClients\Fake\FakeSimpleDictionaryApiClient;
+use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Storage\AuthorizedClientsStorage;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use App\WebSockets\Storage\SubscriptionsStorage;
@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
             if ($app->environment('testing')) {
                 return new FakeSimpleDictionaryApiClient();
             }
-            return new \App\WebSockets\Api\GuzzleSimpleDictionaryApiClient(
+            return new \App\ApiClients\GuzzleSimpleDictionaryApiClient(
                 $app->make(\GuzzleHttp\Client::class)
             );
 

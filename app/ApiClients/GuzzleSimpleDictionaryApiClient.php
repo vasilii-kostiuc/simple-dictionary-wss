@@ -1,8 +1,7 @@
 <?php
 
-namespace App\WebSockets\Api;
+namespace App\ApiClients;
 
-use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 
 class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface

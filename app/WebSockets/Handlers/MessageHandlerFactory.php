@@ -2,10 +2,9 @@
 
 namespace App\WebSockets\Handlers;
 
-use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
+use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use App\WebSockets\Storage\SubscriptionsStorageInterface;
-use GuzzleHttp\Client;
 
 class MessageHandlerFactory
 {

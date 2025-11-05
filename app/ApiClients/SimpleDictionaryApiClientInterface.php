@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\Api;
+namespace App\ApiClients;
 
 interface SimpleDictionaryApiClientInterface
 {

@@ -2,12 +2,10 @@
 
 namespace App\WebSockets\Handlers;
 
-use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
+use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\ClientsStorageInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\WebSockets\Api\Fake;
+namespace App\ApiClients\Fake;
 
-use App\WebSockets\Api\SimpleDictionaryApiClientInterface;
+use App\ApiClients\SimpleDictionaryApiClientInterface;
 
 class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
 {
