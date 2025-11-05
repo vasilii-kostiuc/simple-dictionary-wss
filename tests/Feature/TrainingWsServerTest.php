@@ -5,11 +5,12 @@ use Tests\TestCase;
 
 class TrainingWsServerTest extends TestCase
 {
+    const WEBSOCKET_SERVER_URL = "ws://0.0.0.0:8080/";
     private $pid;
 
     private $started = false;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -35,26 +36,23 @@ class TrainingWsServerTest extends TestCase
         Log::info('test log');
 
 
-        $client = new WebSocket\Client("ws://0.0.0.0:8080/");
+        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
         $client
             // Add standard middlewares
             ->addMiddleware(new WebSocket\Middleware\CloseHandler())
             ->addMiddleware(new WebSocket\Middleware\PingResponder());
 
-// Send a message
         $client->text("Hello WebSocket.org!");
 
-// Read response (this is blocking)
         $message = $client->receive();
         $content = $message->getContent();
         $this->assertNotEmpty($content);
-        info('message: ' . $content . '');
         $client->close();
     }
 
     public function test_auth_message()
     {
-        $client = new WebSocket\Client("ws://0.0.0.0:8080/");
+        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
         $client
             // Add standard middlewares
             ->addMiddleware(new WebSocket\Middleware\CloseHandler())
@@ -68,6 +66,28 @@ class TrainingWsServerTest extends TestCase
         $this->assertEquals($messageType, 'auth_success');
         info('message: ' . $message->getContent() . '');
         $client->close();
+    }
+
+    public function test_subscribe_message()
+    {
+        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
+        $client
+            // Add standard middlewares
+            ->addMiddleware(new WebSocket\Middleware\CloseHandler())
+            ->addMiddleware(new WebSocket\Middleware\PingResponder());
+
+        $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
+
+        $message = $client->receive();
+        $messageType = json_decode($message->getPayload())->type??null;
+        $this->assertEquals('auth_success', $messageType);
+
+        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'trainings.121']));
+
+        $message = $client->receive();
+info('message: ' . $message->getContent() . '');;
+        $messageType = json_decode($message->getPayload())->type??null;
+        $this->assertEquals('subscribe_success', $messageType);
     }
 
     /**
