@@ -1,14 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
 class TrainingWsServerTest extends TestCase
 {
-    const WEBSOCKET_SERVER_URL = "ws://0.0.0.0:8080/";
+    const string WEBSOCKET_SERVER_URL = "ws://0.0.0.0:8080/";
     private $pid;
 
     private $started = false;
+
+    public function initializeWebSocketClient(): \WebSocket\Client
+    {
+        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
+        $client
+            ->addMiddleware(new WebSocket\Middleware\CloseHandler())
+            ->addMiddleware(new WebSocket\Middleware\PingResponder());
+        return $client;
+    }
 
     protected function setUp(): void
     {
@@ -35,16 +45,11 @@ class TrainingWsServerTest extends TestCase
     {
         Log::info('test log');
 
-
-        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
-        $client
-            // Add standard middlewares
-            ->addMiddleware(new WebSocket\Middleware\CloseHandler())
-            ->addMiddleware(new WebSocket\Middleware\PingResponder());
+        $client = $this->initializeWebSocketClient();
 
         $client->text("Hello WebSocket.org!");
-
         $message = $client->receive();
+
         $content = $message->getContent();
         $this->assertNotEmpty($content);
         $client->close();
@@ -52,11 +57,9 @@ class TrainingWsServerTest extends TestCase
 
     public function test_auth_message()
     {
-        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
-        $client
-            // Add standard middlewares
-            ->addMiddleware(new WebSocket\Middleware\CloseHandler())
-            ->addMiddleware(new WebSocket\Middleware\PingResponder());
+        Redis::subscribe(['training'], function () {});
+
+        $client = $this->initializeWebSocketClient();
 
         $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
 
@@ -70,11 +73,7 @@ class TrainingWsServerTest extends TestCase
 
     public function test_subscribe_message()
     {
-        $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
-        $client
-            // Add standard middlewares
-            ->addMiddleware(new WebSocket\Middleware\CloseHandler())
-            ->addMiddleware(new WebSocket\Middleware\PingResponder());
+        $client = $this->initializeWebSocketClient();
 
         $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
 
@@ -85,14 +84,11 @@ class TrainingWsServerTest extends TestCase
         $client->text(json_encode(['type' => 'subscribe', 'channel' => 'trainings.121']));
 
         $message = $client->receive();
-info('message: ' . $message->getContent() . '');;
+        info('message: ' . $message->getContent() . '');;
         $messageType = json_decode($message->getPayload())->type??null;
         $this->assertEquals('subscribe_success', $messageType);
     }
 
-    /**
-     * @return array
-     */
     protected function startWebSocketServer(): array
     {
         $cmd = "APP_ENV=testing php artisan websocket:serve > /dev/null 2>&1 & echo $!";
@@ -105,6 +101,4 @@ info('message: ' . $message->getContent() . '');;
         $this->started = true;
         return $output;
     }
-
-
 }

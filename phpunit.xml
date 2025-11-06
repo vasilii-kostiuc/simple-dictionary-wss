@@ -29,5 +29,8 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="REDIS_CLIENT" value="predis" />
+        <env name="REDIS_HOST" value="wss_redis" />
+        <env name="REDIS_PORT" value="6379" />
     </php>
 </phpunit>

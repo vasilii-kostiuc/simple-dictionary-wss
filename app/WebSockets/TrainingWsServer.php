@@ -5,6 +5,7 @@ namespace App\WebSockets;
 use App\WebSockets\Handlers\MessageHandlerFactory;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
@@ -26,9 +27,15 @@ class TrainingWsServer implements MessageComponentInterface
         $this->messageHandlerFactory = $messageHandlerFactory;
 
         $messageBroker = $messageBrokerFactory->create();
-
+        try {
+        Redis::subscribe(['training'], function () {});
+        }catch (\Exception $e){
+            info($e->getMessage());
+        }
+        info(__METHOD__);
+        info($messageBroker::class);
 //        $messageBroker->subscribe('training', function ($message) {
-//
+//            info("Broker Message : " . json_decode($message));
 //        });
     }
 

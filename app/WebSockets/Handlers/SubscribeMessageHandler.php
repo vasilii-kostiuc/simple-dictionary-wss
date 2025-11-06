@@ -13,21 +13,12 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class SubscribeMessageHandler implements MessageHandlerInterface
 {
-
     protected SubscriptionsStorageInterface $subscriptionsStorage;
     protected ClientsStorageInterface $clientsStorage;
 
     protected array $allowedChannels = [
         'trainings'
     ];
-
-    protected function isAllowedChannel(string $channel): bool
-    {
-        $parts = explode('.', $channel, 2);
-        $channelType = $parts[0] ?? '';
-
-        return in_array($channelType, $this->allowedChannels, true);
-    }
 
     public function __construct(SubscriptionsStorageInterface $subscriptionsStorage, ClientsStorageInterface $clientsStorage)
     {
@@ -61,5 +52,13 @@ class SubscribeMessageHandler implements MessageHandlerInterface
 
         $this->subscriptionsStorage->subscribe($from, $channel);
         $from->send(new SubscribeSuccessMessage($channel));
+    }
+
+    protected function isAllowedChannel(string $channel): bool
+    {
+        $parts = explode('.', $channel, 2);
+        $channelType = $parts[0] ?? '';
+
+        return in_array($channelType, $this->allowedChannels, true);
     }
 }
