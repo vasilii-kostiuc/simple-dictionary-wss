@@ -57,7 +57,7 @@ class TrainingWsServerTest extends TestCase
 
     public function test_auth_message()
     {
-        Redis::subscribe(['training'], function () {});
+        //Redis::subscribe(['training'], function () {});
 
         $client = $this->initializeWebSocketClient();
 

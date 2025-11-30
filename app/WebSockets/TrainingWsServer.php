@@ -27,11 +27,11 @@ class TrainingWsServer implements MessageComponentInterface
         $this->messageHandlerFactory = $messageHandlerFactory;
 
         $messageBroker = $messageBrokerFactory->create();
-        try {
-        Redis::subscribe(['training'], function () {});
-        }catch (\Exception $e){
-            info($e->getMessage());
-        }
+//        try {
+//        Redis::subscribe(['training'], function () {});
+//        }catch (\Exception $e){
+//            info($e->getMessage());
+//        }
         info(__METHOD__);
         info($messageBroker::class);
 //        $messageBroker->subscribe('training', function ($message) {

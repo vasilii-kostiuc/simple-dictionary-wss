@@ -47,7 +47,7 @@ class WebsocketServerRunCommand extends Command
 
         $trainingWsServer = new TrainingWsServer($this->messageHandlerFactory, $this->messageBrokerFactory, $this->clientsStorage);
 
-        $wsServer = new \Ratchet\Server\IoServer(
+        new \Ratchet\Server\IoServer(
             new \Ratchet\Http\HttpServer(new \Ratchet\WebSocket\WsServer($trainingWsServer)),
             new SocketServer('0.0.0.0:8080', [], $loop),
             $loop
