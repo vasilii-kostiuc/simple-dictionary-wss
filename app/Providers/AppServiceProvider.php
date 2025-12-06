@@ -21,7 +21,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Client::class, function () {
             return new Client([
-                'base_uri' => config('services.api.base_uri', 'http://api:8876/api/v1'),]);
+                'base_uri' => config('services.api.base_uri', 'http://api:8876/api/v1'),
+            ]);
         });
 
         $this->app->singleton(ClientsStorageInterface::class, function () {
@@ -40,7 +41,6 @@ class AppServiceProvider extends ServiceProvider
             return new \App\ApiClients\GuzzleSimpleDictionaryApiClient(
                 $app->make(\GuzzleHttp\Client::class)
             );
-
         });
     }
 

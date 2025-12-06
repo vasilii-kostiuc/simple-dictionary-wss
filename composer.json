@@ -10,12 +10,15 @@
     "license": "MIT",
     "repositories": [
         {
-            "type": "vcs",
-            "url": "https://github.com/vasilii-kostiuc/laravel-messaging-library.git"
+            "type": "path",
+            "url": "./packages/vasilii-kostiuc/laravel-messaging-library",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "cboden/ratchet": "v0.4.x-dev",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
