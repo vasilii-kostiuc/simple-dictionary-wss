@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\WebSockets\ApiMessageHandlers\ApiMessageHandlerFactory;
 use App\WebSockets\Handlers\MessageHandlerFactory;
 use App\WebSockets\Storage\ClientsStorageInterface;
 use App\WebSockets\TrainingWsServer;
@@ -15,11 +16,13 @@ class WebsocketServerRunCommand extends Command
     private MessageHandlerFactory $messageHandlerFactory;
     private MessageBrokerFactory $messageBrokerFactory;
     private ClientsStorageInterface $clientsStorage;
+    private ApiMessageHandlerFactory $apiMessageHandlerFactory;
 
-    public function __construct(MessageHandlerFactory $messageHandlerFactory, MessageBrokerFactory $messageBrokerFactory, ClientsStorageInterface $clientsStorage)
+    public function __construct(MessageHandlerFactory $messageHandlerFactory, MessageBrokerFactory $messageBrokerFactory, ApiMessageHandlerFactory $apiMessageHandlerFactory, ClientsStorageInterface $clientsStorage)
     {
         parent::__construct();
         $this->messageHandlerFactory = $messageHandlerFactory;
+        $this->apiMessageHandlerFactory = $apiMessageHandlerFactory;
         $this->messageBrokerFactory = $messageBrokerFactory;
         $this->clientsStorage = $clientsStorage;
     }
@@ -45,7 +48,7 @@ class WebsocketServerRunCommand extends Command
     {
         $loop = Loop::get();
 
-        $trainingWsServer = new TrainingWsServer($this->messageHandlerFactory, $this->messageBrokerFactory, $this->clientsStorage);
+        $trainingWsServer = new TrainingWsServer($this->messageHandlerFactory,$this->apiMessageHandlerFactory, $this->messageBrokerFactory, $this->clientsStorage);
 
         new \Ratchet\Server\IoServer(
             new \Ratchet\Http\HttpServer(new \Ratchet\WebSocket\WsServer($trainingWsServer)),
