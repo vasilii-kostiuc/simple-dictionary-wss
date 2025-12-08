@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\Storage;
+namespace App\WebSockets\Storage\Clients;
 
 use Ratchet\ConnectionInterface;
 
@@ -48,10 +48,10 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
             if (empty($this->clients[$userId])) {
                 unset($this->clients[$userId]);
             }
+        }
+
+
     }
-
-
-}
     public function has(int|string $userId): bool
     {
         return !empty($this->clients[$userId]);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\Storage;
+namespace App\WebSockets\Storage\Clients;
 
 use Ratchet\ConnectionInterface;
 

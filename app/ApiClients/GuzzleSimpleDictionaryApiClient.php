@@ -37,7 +37,22 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
-                $body = json_decode((string)$response->getBody(), true);
+                $body = json_decode((string) $response->getBody(), true);
+                return $body['data'];
+            }
+            return [];
+        } catch (GuzzleException $e) {
+            return [];
+        }
+    }
+
+
+    public function expire(string|int $trainingId): array
+    {
+        try {
+            $response = $this->client->post("trainings/{$trainingId}/expire", ['json' => ['completed_by' => 'timer']]);
+            if ($response->getStatusCode() === 200) {
+                $body = json_decode((string) $response->getBody(), true);
                 return $body['data'];
             }
             return [];
