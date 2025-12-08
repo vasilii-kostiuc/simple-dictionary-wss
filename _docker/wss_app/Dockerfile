@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd intl zip
 
 # Устанавливаем расширение MongoDB
-RUN pecl install mongodb \
+RUN pecl install mongodb-2.1.0 \
     && docker-php-ext-enable mongodb
 
 # Устанавливаем Composer

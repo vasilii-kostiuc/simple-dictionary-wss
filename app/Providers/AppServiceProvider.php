@@ -4,10 +4,10 @@ namespace App\Providers;
 
 use App\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Storage\AuthorizedClientsStorage;
-use App\WebSockets\Storage\ClientsStorageInterface;
-use App\WebSockets\Storage\SubscriptionsStorage;
-use App\WebSockets\Storage\SubscriptionsStorageInterface;
+use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
+use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -31,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(SubscriptionsStorageInterface::class, function () {
             return new SubscriptionsStorage();
+        });
+
+        $this->app->singleton(\App\WebSockets\Storage\Timers\TrainingTimerStorageInterface::class, function () {
+            return new \App\WebSockets\Storage\Timers\MongoTrainingTimerStorage();
         });
 
         $this->app->singleton(SimpleDictionaryApiClientInterface::class, function (Application $app) {

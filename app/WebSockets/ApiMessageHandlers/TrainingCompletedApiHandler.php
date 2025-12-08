@@ -3,7 +3,7 @@
 namespace App\WebSockets\ApiMessageHandlers;
 
 use App\WebSockets\Messages\TrainingCompletedMessage;
-use App\WebSockets\Storage\SubscriptionsStorageInterface;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
 
 class TrainingCompletedApiHandler implements ApiMessageHandlerInterface

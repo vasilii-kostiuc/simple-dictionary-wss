@@ -3,8 +3,8 @@
 namespace App\WebSockets\Handlers;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Storage\ClientsStorageInterface;
-use App\WebSockets\Storage\SubscriptionsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 
 class MessageHandlerFactory
 {

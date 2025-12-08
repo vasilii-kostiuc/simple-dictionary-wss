@@ -5,9 +5,9 @@ namespace App\WebSockets\Handlers;
 use App\WebSockets\Handlers\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\SubscribeSuccessMessage;
-use App\WebSockets\Storage\AuthorizedClientsStorage;
-use App\WebSockets\Storage\ClientsStorageInterface;
-use App\WebSockets\Storage\SubscriptionsStorageInterface;
+use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
+use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
