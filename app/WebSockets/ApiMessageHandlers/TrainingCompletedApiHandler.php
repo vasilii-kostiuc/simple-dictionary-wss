@@ -22,11 +22,13 @@ class TrainingCompletedApiHandler implements ApiMessageHandlerInterface
             'data' => $data
         ]);
 
-        $count = $this->subscriptionsStorage->countByChannel("trainings.121");
+        $trainingId = $data['training_id'] ?? null;
+
+        $count = $this->subscriptionsStorage->countByChannel("trainings.$trainingId");
         Log::info("Current number of subscriptions is $count");
 
-        $connections = $this->subscriptionsStorage->getConnectionsByChannel('trainings.' . $data['training_id']);
-        $message = new TrainingCompletedMessage($data['training_id'], $data['completed_at']);
+        $connections = $this->subscriptionsStorage->getConnectionsByChannel('trainings.' . $trainingId);
+        $message = new TrainingCompletedMessage($trainingId, $data['completed_at']);
 
         foreach ($connections as $connectionId => $conn) {
             Log::info('Sending training completed message to connection', ['connection_id' => $connectionId]);

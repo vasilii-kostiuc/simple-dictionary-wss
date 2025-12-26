@@ -63,7 +63,7 @@ class TrainingWsServer implements MessageComponentInterface
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
 
-            $handler = $this->apiMessageHandlerFactory->create($type, $this->loop, $this->timerStorage);
+            $handler = $this->apiMessageHandlerFactory->create($type);
             $handler->handle('training', $data);
         });
     }
