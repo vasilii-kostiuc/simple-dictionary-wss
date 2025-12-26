@@ -25,7 +25,6 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         } catch (GuzzleException $e) {
             return false;
         }
-
     }
 
     public function getProfile(string $token): array
@@ -37,7 +36,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
-                $body = json_decode((string) $response->getBody(), true);
+                $body = json_decode((string)$response->getBody(), true);
                 return $body['data'];
             }
             return [];
@@ -47,12 +46,17 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
     }
 
 
-    public function expire(string|int $trainingId): array
+    public function expire(string|int $trainingId, ?string $token): array
     {
         try {
-            $response = $this->client->post("trainings/{$trainingId}/expire", ['json' => ['completed_by' => 'timer']]);
+            $response = $this->client->post("trainings/{$trainingId}/expire", [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token,
+                ],
+                'json' => ['completed_by' => 'timer']
+            ]);
             if ($response->getStatusCode() === 200) {
-                $body = json_decode((string) $response->getBody(), true);
+                $body = json_decode((string)$response->getBody(), true);
                 return $body['data'];
             }
             return [];

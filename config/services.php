@@ -37,6 +37,7 @@ return [
 
     'api' =>[
         'base_uri' => env('API_BASE_URI', 'http://app:8876/api/v1'),
+        'wss_token' => env('API_WSS_SERVER_TOKEN'),
     ]
 
 ];
