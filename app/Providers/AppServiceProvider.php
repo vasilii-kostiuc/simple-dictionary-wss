@@ -46,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
             $defaultConfig['headers']['Authorization'] = 'Bearer '. config('services.api.wss_token');
 
             return new \App\ApiClients\GuzzleSimpleDictionaryApiClient(
-                $app->make(\GuzzleHttp\Client::class, $defaultConfig)
+                $app->make(\GuzzleHttp\Client::class, $defaultConfig), config('services.api.wss_token')
             );
         });
     }

@@ -7,19 +7,22 @@ use GuzzleHttp\Exception\GuzzleException;
 class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
 {
     private \GuzzleHttp\Client $client;
+    private string $token;
 
-    public function __construct(\GuzzleHttp\Client $client)
+    public function __construct(\GuzzleHttp\Client $client, string $token = '')
     {
         $this->client = $client;
+        $this->token = $token;
     }
 
     public function validateToken(string $token): bool
     {
         try {
-            $response = $this->client->get('auth/token/validate', [
+            $response = $this->client->post('auth/token/validate', [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
-                ]
+                    'Authorization' => 'Bearer ' . $this->token,
+                ],
+                'json' => ['user_token' => $token]
             ]);
             return $response->getStatusCode() === 200;
         } catch (GuzzleException $e) {
@@ -32,7 +35,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         try {
             $response = $this->client->get('profile', [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
+                    'Authorization' => 'Bearer ' . $this->token,
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
@@ -46,12 +49,12 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
     }
 
 
-    public function expire(string|int $trainingId, ?string $token): array
+    public function expire(string|int $trainingId): array
     {
         try {
             $response = $this->client->post("trainings/{$trainingId}/expire", [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
+                    'Authorization' => 'Bearer ' . $this->token,
                 ],
                 'json' => ['completed_by' => 'timer']
             ]);

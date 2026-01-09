@@ -8,5 +8,5 @@ interface SimpleDictionaryApiClientInterface
 
     public function getProfile(string $token): array;
 
-    public function expire(string|int $trainingId, ?string $token): array;
+    public function expire(string|int $trainingId): array;
 }
