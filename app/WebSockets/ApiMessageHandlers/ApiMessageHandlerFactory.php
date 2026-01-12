@@ -29,7 +29,7 @@ class ApiMessageHandlerFactory
         string $type
     ): ApiMessageHandlerInterface {
         return match ($type) {
-            'training_start' => new TrainingStartHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
+            'training_started' => new TrainingStartHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
             'training_completed' => new TrainingCompletedApiHandler($this->subscriptionsStorage),
             default => new UnknownApiMessageHandler()
         };

@@ -24,8 +24,13 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
                 ],
                 'json' => ['user_token' => $token]
             ]);
+            info('-------validate token response---');
+            info($response->getStatusCode());
+            info($response->getBody());
+            info('-------validate token response end---');
             return $response->getStatusCode() === 200;
         } catch (GuzzleException $e) {
+            info($e->getMessage());
             return false;
         }
     }
