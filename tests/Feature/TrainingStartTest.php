@@ -18,7 +18,7 @@ class TrainingStartTest extends WebSocketTestCase
         try {
             $response = Http::post($apiUrl, [
                 'channel' => 'training',
-                'type' => 'training_start',
+                'type' => 'training_started',
                 'training_id' => '121',
                 'started_at' => now()->toIso8601String(),
                 'completion_type' => \App\WebSockets\Enums\TrainingCompletionType::Time->value,
@@ -34,8 +34,6 @@ class TrainingStartTest extends WebSocketTestCase
         sleep(3);
 
         try {
-
-
             sleep(3);
 
             $message = $client->receive();
