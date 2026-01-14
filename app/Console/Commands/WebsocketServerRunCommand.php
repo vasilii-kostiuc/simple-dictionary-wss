@@ -72,6 +72,7 @@ class WebsocketServerRunCommand extends Command
             $this->clientsStorage,
             $this->timerStorage,
             $this->simpleDictionaryApiClient,
+            $this->subscriptionsStorage,
             $loop
         );
 
