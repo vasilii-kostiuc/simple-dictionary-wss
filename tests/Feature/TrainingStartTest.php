@@ -9,7 +9,7 @@ class TrainingStartTest extends WebSocketTestCase
     {
         $client = $this->createWebSocketClient();
         $this->authenticateClient($client);
-        $this->subscribeClient($client, 'trainings.121');
+        $this->subscribeClient($client, 'training.121');
 
         Log::info('Publishing message via external API endpoint');
 

@@ -17,7 +17,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
     protected ClientsStorageInterface $clientsStorage;
 
     protected array $allowedChannels = [
-        'trainings'
+        'training'
     ];
 
     public function __construct(SubscriptionsStorageInterface $subscriptionsStorage, ClientsStorageInterface $clientsStorage)

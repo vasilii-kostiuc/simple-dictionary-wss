@@ -82,7 +82,7 @@ class TrainingWsServerTest extends TestCase
         $messageType = json_decode($message->getPayload())->type ?? null;
         $this->assertEquals('auth_success', $messageType);
 
-        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'trainings.121']));
+        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'training.121']));
 
         $message = $client->receive();
         info('message: ' . $message->getContent() . '');;
@@ -98,7 +98,7 @@ class TrainingWsServerTest extends TestCase
         $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
         $client->receive();
 
-        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'trainings.121']));
+        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'training.121']));
         $client->receive();
 
         Log::info('Publishing message via external API endpoint');

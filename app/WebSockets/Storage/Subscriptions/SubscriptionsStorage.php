@@ -30,6 +30,14 @@ class SubscriptionsStorage implements SubscriptionsStorageInterface
         }
     }
 
+    public function unsubscribeAll(ConnectionInterface $conn): void
+    {
+        $channels = $this->getChannelsByConnection($conn);
+        foreach ($channels as $channel) {
+            $this->unsubscribe($conn, $channel);
+        }
+    }
+
     public function getConnectionsByChannel(string $channel): array
     {
         return $this->channelSubscribers[$channel] ?? [];

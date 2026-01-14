@@ -22,10 +22,10 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
 
         if (!isset($this->clients[$userId])) {
             $this->clients[$userId] = [];
-            $this->connectionToUserId[$connectionHash] = $userId;
         }
 
         $this->clients[$userId][$connectionHash] = $connection;
+        $this->connectionToUserId[$connectionHash] = $userId;
     }
 
     protected function getConnectionHash(ConnectionInterface $connection): string
@@ -49,8 +49,6 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
                 unset($this->clients[$userId]);
             }
         }
-
-
     }
     public function has(int|string $userId): bool
     {

@@ -5,6 +5,7 @@ namespace App\WebSockets;
 use App\WebSockets\ApiMessageHandlers\ApiMessageHandlerFactory;
 use App\WebSockets\Handlers\MessageHandlerFactory;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
@@ -28,6 +29,7 @@ class TrainingWsServer implements MessageComponentInterface
     private MessageBrokerInterface $messageBroker;
     private TrainingTimerStorageInterface $timerStorage;
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
+    private SubscriptionsStorageInterface $subscriptionsStorage;
 
     public function __construct(
         MessageHandlerFactory $messageHandlerFactory,
@@ -36,6 +38,7 @@ class TrainingWsServer implements MessageComponentInterface
         ClientsStorageInterface $clientsStorage,
         TrainingTimerStorageInterface $timerStorage,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
+        SubscriptionsStorageInterface $subscriptionsStorage,
         $loop
     ) {
         Log::info(__METHOD__);
@@ -51,6 +54,7 @@ class TrainingWsServer implements MessageComponentInterface
         $this->messageBroker = $this->messageBrokerFactory->create();
         $this->subscribeToApiMessages($this->messageBroker);
         $this->startExpiredTimersChecker();
+        $this->subscriptionsStorage = $subscriptionsStorage;
     }
 
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void
@@ -84,6 +88,12 @@ class TrainingWsServer implements MessageComponentInterface
      */
     function onClose(ConnectionInterface $conn)
     {
+        Log::info(__METHOD__ . ' ' . $conn->resourceId);
+
+        $this->storage->remove($this->storage->getUserIdByConnection($conn), $conn);
+        $this->subscriptionsStorage->unsubscribeAll($conn);
+
+        info(json_encode($this->subscriptionsStorage->getChannelsByConnection($conn)));
         Log::info(__METHOD__ . ' ' . $conn->resourceId);
     }
 

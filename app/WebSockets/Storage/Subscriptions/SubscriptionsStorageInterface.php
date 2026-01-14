@@ -10,6 +10,8 @@ interface SubscriptionsStorageInterface
 
     public function unsubscribe(ConnectionInterface $conn, string $channel);
 
+    public function unsubscribeAll(ConnectionInterface $conn): void;
+
     public function getConnectionsByChannel(string $channel): array;
 
     public function getChannelsByConnection(ConnectionInterface $conn): array;
