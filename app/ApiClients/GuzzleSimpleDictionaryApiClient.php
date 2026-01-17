@@ -17,60 +17,43 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     public function validateToken(string $token): bool
     {
-        try {
-            $response = $this->client->post('auth/token/validate', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->token,
-                ],
-                'json' => ['user_token' => $token]
-            ]);
-            info('-------validate token response---');
-            info($response->getStatusCode());
-            info($response->getBody());
-            info('-------validate token response end---');
-            return $response->getStatusCode() === 200;
-        } catch (GuzzleException $e) {
-            info($e->getMessage());
-            return false;
-        }
+        $response = $this->call('POST', 'auth/token/validate', [
+            'json' => ['user_token' => $token]
+        ]);
+
+        return !empty($response);
     }
 
     public function getProfile(string $token): array
     {
-        try {
-            $response = $this->client->get('profile', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->token,
-                ]
-            ]);
-            if ($response->getStatusCode() === 200) {
-                $body = json_decode((string)$response->getBody(), true);
-                return $body['data'];
-            }
-            return [];
-        } catch (GuzzleException $e) {
-            return [];
-        }
+        return $this->call('GET', 'profile');
     }
-
 
     public function expire(string|int $trainingId): array
     {
-        try {
-            $response = $this->client->post("trainings/{$trainingId}/expire", [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->token,
-                ],
-                'json' => ['completed_by' => 'timer']
-            ]);
-            if ($response->getStatusCode() === 200) {
-                $body = json_decode((string)$response->getBody(), true);
-                return $body['data'];
-            }
-            return [];
-        } catch (GuzzleException $e) {
-            return [];
-        }
+        return $this->call('POST', "trainings/{$trainingId}/expire", [
+            'json' => ['completed_by' => 'timer']
+        ]);
     }
 
+    protected function call(string $method, string $uri, array $options = []): array
+    {
+        try {
+            $options['headers'] = array_merge(
+                $options['headers'] ?? [],
+                ['Authorization' => 'Bearer ' . $this->token]
+            );
+
+            $response = $this->client->request($method, $uri, $options);
+
+            if ($response->getStatusCode() === 200) {
+                $body = json_decode((string)$response->getBody(), true);
+                return $body['data'] ?? $body ?? [];
+            }
+        } catch (GuzzleException $e) {
+            info("API Error ({$uri}): " . $e->getMessage());
+        }
+
+        return [];
+    }
 }
