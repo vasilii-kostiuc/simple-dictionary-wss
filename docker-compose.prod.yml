@@ -1,0 +1,52 @@
+services:
+  wss_app:
+    image: ghcr.io/vasilii-kostiuc/simple-dictionary-wss:latest
+    container_name: wss_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: ["php", "artisan", "websocket:serve"]
+    volumes:
+      - wss_code:/var/www/html
+      - storage_data:/var/www/html/storage
+      - cache_data:/var/www/html/bootstrap/cache
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=wss_db
+      - API_BASE_URI=${API_BASE_URI}
+      - API_WSS_SERVER_TOKEN=${API_WSS_SERVER_TOKEN}
+      - MESSAGING_BROKER=redis
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    networks:
+      - simple_dictionary_network
+
+  mongo:
+    image: mongo:8.0.15
+    container_name: wss_mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - simple_dictionary_network
+
+volumes:
+  wss_code:
+  storage_data:
+  cache_data:
+  mongo_data:
+
+networks:
+  simple_dictionary_network:
+    external: true
+    name: laravel-api_simple_dictionary_network
