@@ -16,13 +16,16 @@ RUN pecl install mongodb-2.1.0 redis-6.1.0 \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application code
-COPY . /var/www/html
-
 WORKDIR /var/www/html
+
+# Copy composer files first to leverage Docker cache
+COPY composer.json composer.lock ./
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Copy application code
+COPY . /var/www/html
 
 # Make entrypoint executable
 RUN chmod +x ./_docker/wss_app/entrypoint.sh
