@@ -22,9 +22,11 @@ class SubscriptionsStorage implements SubscriptionsStorageInterface
         $connId = $conn->resourceId;
         unset($this->channelSubscribers[$channel][$connId]);
         unset($this->connectionChannels[$connId][$channel]);
+
         if (empty($this->channelSubscribers[$channel])) {
             unset($this->channelSubscribers[$channel]);
         }
+
         if (empty($this->connectionChannels[$connId])) {
             unset($this->connectionChannels[$connId]);
         }
