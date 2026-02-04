@@ -21,11 +21,14 @@ WORKDIR /var/www/html
 # Copy composer files first to leverage Docker cache
 COPY composer.json composer.lock ./
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies without running scripts
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copy application code
 COPY . /var/www/html
+
+# Run composer scripts after all files are copied
+RUN composer run-script post-autoload-dump
 
 # Make entrypoint executable
 RUN chmod +x ./_docker/wss_app/entrypoint.sh
