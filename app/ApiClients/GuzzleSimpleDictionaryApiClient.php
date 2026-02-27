@@ -26,7 +26,12 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     public function getProfile(string $token): array
     {
-        return $this->call('GET', 'profile');
+        $response = $this->call('POST', 'auth/token/validate', [
+            'json' => ['user_token' => $token]
+        ]);
+
+        info("Profile response: " . json_encode($response));
+        return ['id' => $response['user_id'] ];
     }
 
     public function expire(string|int $trainingId): array
@@ -38,6 +43,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     protected function call(string $method, string $uri, array $options = []): array
     {
+        info("API Call: {$method} {$uri} with options: " . json_encode($options));
         try {
             $options['headers'] = array_merge(
                 $options['headers'] ?? [],

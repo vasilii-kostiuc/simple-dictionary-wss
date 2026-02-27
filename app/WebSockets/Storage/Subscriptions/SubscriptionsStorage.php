@@ -11,10 +11,10 @@ class SubscriptionsStorage implements SubscriptionsStorageInterface
 
     public function subscribe(ConnectionInterface $conn, string $channel)
     {
-
         $connId = $conn->resourceId;
         $this->channelSubscribers[$channel][$connId] = $conn;
         $this->connectionChannels[$connId][$channel] = true;
+        info(json_encode($this->channelSubscribers));
     }
 
     public function unsubscribe(ConnectionInterface $conn, string $channel)
