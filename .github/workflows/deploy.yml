@@ -68,6 +68,15 @@ jobs:
           script: |
             cd /var/www/wss
 
+            # Create/update .env file with secrets
+            cat > .env << EOF
+            APP_KEY=${{ secrets.APP_KEY }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            API_BASE_URI=${{ secrets.API_BASE_URI }}
+            API_WSS_SERVER_TOKEN=${{ secrets.API_WSS_SERVER_TOKEN }}
+            WSS_SERVICE_SECRET=${{ secrets.WSS_SERVICE_SECRET }}
+            EOF
+
             # Login to GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 

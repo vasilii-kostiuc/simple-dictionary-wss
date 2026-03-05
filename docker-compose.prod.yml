@@ -9,6 +9,7 @@ services:
       - wss_code:/var/www/html
       - storage_data:/var/www/html/storage
       - cache_data:/var/www/html/bootstrap/cache
+      - ./.env:/var/www/wss/.env:ro
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
@@ -17,12 +18,12 @@ services:
       - DB_DATABASE=/var/www/html/database/database.sqlite
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - MONGODB_HOST=mongo
       - MONGODB_PORT=27017
       - MONGODB_DATABASE=wss_db
       - API_BASE_URI=${API_BASE_URI}
-      - API_WSS_SERVER_TOKEN=${API_WSS_SERVER_TOKEN}
+      - WSS_SERVICE_SECRET=${WSS_SERVICE_SECRET}
       - MESSAGING_BROKER=redis
     ports:
       - "8080:8080"
