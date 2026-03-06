@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\ApiMessageHandlers;
 
-use App\WebSockets\Messages\TrainingCompletedMessage;
+use App\WebSockets\Messages\Training\TrainingCompletedMessage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
 

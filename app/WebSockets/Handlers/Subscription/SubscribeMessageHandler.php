@@ -1,11 +1,11 @@
 <?php
 
-namespace App\WebSockets\Handlers;
+namespace App\WebSockets\Handlers\Subscription;
 
 use App\WebSockets\Handlers\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
-use App\WebSockets\Messages\SubscribeSuccessMessage;
-use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
+use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
+use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Ratchet\ConnectionInterface;
@@ -17,7 +17,8 @@ class SubscribeMessageHandler implements MessageHandlerInterface
     protected ClientsStorageInterface $clientsStorage;
 
     protected array $allowedChannels = [
-        'training'
+        'training',
+        'matchmaking.queue'
     ];
 
     public function __construct(SubscriptionsStorageInterface $subscriptionsStorage, ClientsStorageInterface $clientsStorage)
@@ -51,7 +52,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         }
 
         $this->subscriptionsStorage->subscribe($from, $channel);
-        $from->send(new SubscribeSuccessMessage($channel));
+        $from->send(new UnsubscribeSuccessMessage($channel));
     }
 
     protected function isAllowedChannel(string $channel): bool

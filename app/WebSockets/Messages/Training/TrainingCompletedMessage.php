@@ -1,6 +1,8 @@
 <?php
 
-namespace App\WebSockets\Messages;
+namespace App\WebSockets\Messages\Training;
+
+use App\WebSockets\Messages\WebSocketMessage;
 
 class TrainingCompletedMessage extends WebSocketMessage
 {
