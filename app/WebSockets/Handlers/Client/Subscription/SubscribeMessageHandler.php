@@ -1,10 +1,9 @@
 <?php
 
-namespace App\WebSockets\Handlers\Subscription;
+namespace App\WebSockets\Handlers\Client\Subscription;
 
-use App\WebSockets\Handlers\MessageHandlerInterface;
+use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
-use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
 use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;

@@ -1,11 +1,10 @@
 <?php
 
-namespace App\WebSockets\Handlers;
+namespace App\WebSockets\Handlers\Client;
 
 use App\WebSockets\Messages\ErrorMessage;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
-
 
 class UnknownMessageHandler implements MessageHandlerInterface
 {

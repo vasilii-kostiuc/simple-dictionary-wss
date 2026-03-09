@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\ApiMessageHandlers;
+namespace App\WebSockets\Handlers\Api;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Enums\TrainingCompletionType;

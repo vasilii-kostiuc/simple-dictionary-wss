@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\ApiMessageHandlers;
+namespace App\WebSockets\Handlers\Api;
 
 interface ApiMessageHandlerInterface
 {

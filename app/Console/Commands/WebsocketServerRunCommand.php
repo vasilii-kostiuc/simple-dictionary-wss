@@ -3,9 +3,10 @@
 namespace App\Console\Commands;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\ApiMessageHandlers\ApiMessageHandlerFactory;
-use App\WebSockets\Handlers\MessageHandlerFactory;
+use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
+use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use App\WebSockets\TrainingWsServer;
 use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
@@ -22,8 +23,8 @@ class WebsocketServerRunCommand extends Command
     private ApiMessageHandlerFactory $apiMessageHandlerFactory;
     private TrainingTimerStorageInterface $timerStorage;
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
-
     private SubscriptionsStorageInterface $subscriptionsStorage;
+    private MatchMakingQueueInterface $matchMakingQueue;
 
     public function __construct(
         MessageHandlerFactory $messageHandlerFactory,
@@ -32,6 +33,7 @@ class WebsocketServerRunCommand extends Command
         SubscriptionsStorageInterface $subscriptionsStorage,
         TrainingTimerStorageInterface $timerStorage,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
+        MatchMakingQueueInterface $matchMakingQueue,
     ) {
         parent::__construct();
         $this->messageHandlerFactory = $messageHandlerFactory;
@@ -40,8 +42,8 @@ class WebsocketServerRunCommand extends Command
         $this->subscriptionsStorage = $subscriptionsStorage;
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
-        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->timerStorage, );
-
+        $this->matchMakingQueue = $matchMakingQueue;
+        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->timerStorage);
     }
 
     /**

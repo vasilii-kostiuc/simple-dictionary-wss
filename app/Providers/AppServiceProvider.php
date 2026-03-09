@@ -6,6 +6,8 @@ use App\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
+use App\WebSockets\Storage\MatchMaking\RedisMatchMakingQueue;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
@@ -33,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
             return new SubscriptionsStorage();
         });
 
+        $this->app->singleton(MatchMakingQueueInterface::class, function () {
+            return new RedisMatchMakingQueue();
+        });
+
         $this->app->singleton(\App\WebSockets\Storage\Timers\TrainingTimerStorageInterface::class, function () {
             return new \App\WebSockets\Storage\Timers\MongoTrainingTimerStorage();
         });
@@ -56,6 +62,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->app['events']->listen(
+            \App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent::class,
+            \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingJoinedListener::class
+        );
     }
 }

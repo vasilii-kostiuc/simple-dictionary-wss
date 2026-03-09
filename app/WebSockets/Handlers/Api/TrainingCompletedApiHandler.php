@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\ApiMessageHandlers;
+namespace App\WebSockets\Handlers\Api;
 
 use App\WebSockets\Messages\Training\TrainingCompletedMessage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;

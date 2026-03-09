@@ -2,8 +2,9 @@
 
 namespace App\WebSockets;
 
-use App\WebSockets\ApiMessageHandlers\ApiMessageHandlerFactory;
-use App\WebSockets\Handlers\MessageHandlerFactory;
+use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
+use App\WebSockets\Handlers\Client\MessageHandlerFactory;
+use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +25,7 @@ class TrainingWsServer implements MessageComponentInterface
     protected ClientsStorageInterface $storage;
     protected MessageHandlerFactory $messageHandlerFactory;
     protected ApiMessageHandlerFactory $apiMessageHandlerFactory;
+    protected InternalMessageHandlerFactory $internalMessageHandlerFactory;
     private MessageBrokerFactory $messageBrokerFactory;
     private $loop;
     private MessageBrokerInterface $messageBroker;
@@ -34,6 +36,7 @@ class TrainingWsServer implements MessageComponentInterface
     public function __construct(
         MessageHandlerFactory $messageHandlerFactory,
         ApiMessageHandlerFactory $apiMessageHandlerFactory,
+        InternalMessageHandlerFactory $internalMessageHandlerFactory,
         MessageBrokerFactory $messageBrokerFactory,
         ClientsStorageInterface $clientsStorage,
         TrainingTimerStorageInterface $timerStorage,
@@ -46,6 +49,7 @@ class TrainingWsServer implements MessageComponentInterface
         $this->storage = $clientsStorage;
         $this->messageHandlerFactory = $messageHandlerFactory;
         $this->apiMessageHandlerFactory = $apiMessageHandlerFactory;
+        $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
         $this->loop = $loop;
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
@@ -53,10 +57,29 @@ class TrainingWsServer implements MessageComponentInterface
         $this->messageBrokerFactory = $messageBrokerFactory;
         $this->messageBroker = $this->messageBrokerFactory->create();
         $this->subscribeToApiMessages($this->messageBroker);
+
+        $this->subscribeInternalMatchMakingMessages($this->messageBroker);
+
         $this->startExpiredTimersChecker();
         $this->subscriptionsStorage = $subscriptionsStorage;
     }
 
+
+    private function subscribeInternalMatchMakingMessages(MessageBrokerInterface $messageBroker): void
+    {
+        Log::info(__METHOD__);
+        $messageBroker->subscribe('matchmaking', function ($message) {
+
+            Log::info("Internal matchmaking message received: " . $message);
+
+            $data = json_decode($message, true);
+            $type = $data['type'] ?? '';
+
+            $handler = $this->internalMessageHandlerFactory->create($type);
+            $handler->handle('matchmaking', $data);
+        });
+    }
+    
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void
     {
         Log::info(__METHOD__);
@@ -70,6 +93,7 @@ class TrainingWsServer implements MessageComponentInterface
             $handler = $this->apiMessageHandlerFactory->create($type);
             $handler->handle('training', $data);
         });
+
     }
 
     /**

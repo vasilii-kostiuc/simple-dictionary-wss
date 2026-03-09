@@ -1,6 +1,6 @@
 <?php
 
-namespace App\WebSockets\Handlers;
+namespace App\WebSockets\Handlers\Client;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Messages\ErrorMessage;
