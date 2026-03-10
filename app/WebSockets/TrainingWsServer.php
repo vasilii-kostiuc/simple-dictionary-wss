@@ -68,7 +68,9 @@ class TrainingWsServer implements MessageComponentInterface
     private function subscribeInternalMatchMakingMessages(MessageBrokerInterface $messageBroker): void
     {
         Log::info(__METHOD__);
-        $messageBroker->subscribe('matchmaking', function ($message) {
+
+
+        $subscribeCallback =function ($message) {
 
             Log::info("Internal matchmaking message received: " . $message);
 
@@ -77,7 +79,11 @@ class TrainingWsServer implements MessageComponentInterface
 
             $handler = $this->internalMessageHandlerFactory->create($type);
             $handler->handle('matchmaking', $data);
-        });
+        };
+
+        $messageBroker->subscribe('wss.matchmaking.joined', $subscribeCallback);
+        $messageBroker->subscribe('wss.matchmaking.left', $subscribeCallback);
+        $messageBroker->subscribe('wss.matchmaking.matched', $subscribeCallback);
     }
     
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void

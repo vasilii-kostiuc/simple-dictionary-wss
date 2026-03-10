@@ -17,8 +17,8 @@ class SubscribeMessageHandler implements MessageHandlerInterface
     protected ClientsStorageInterface $clientsStorage;
 
     protected array $allowedChannels = [
-        'training',
-        'matchmaking.queue'
+        'training.*',
+        'matchmaking.queue',
     ];
 
     public function __construct(SubscriptionsStorageInterface $subscriptionsStorage, ClientsStorageInterface $clientsStorage)
@@ -57,9 +57,17 @@ class SubscribeMessageHandler implements MessageHandlerInterface
 
     protected function isAllowedChannel(string $channel): bool
     {
-        $parts = explode('.', $channel, 2);
-        $channelType = $parts[0] ?? '';
+        foreach ($this->allowedChannels as $pattern) {
+            if (str_ends_with($pattern, '.*')) {
+                $prefix = substr($pattern, 0, -2);
+                if ($channel === $prefix || str_starts_with($channel, $prefix . '.')) {
+                    return true;
+                }
+            } elseif ($channel === $pattern) {
+                return true;
+            }
+        }
 
-        return in_array($channelType, $this->allowedChannels, true);
+        return false;
     }
 }
