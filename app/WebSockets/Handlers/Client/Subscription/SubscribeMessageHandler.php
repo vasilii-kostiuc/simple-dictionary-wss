@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers\Client\Subscription;
 
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
+use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
 use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
@@ -51,7 +52,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         }
 
         $this->subscriptionsStorage->subscribe($from, $channel);
-        $from->send(new UnsubscribeSuccessMessage($channel));
+        $from->send(new SubscribeSuccessMessage($channel));
     }
 
     protected function isAllowedChannel(string $channel): bool

@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 use React\EventLoop\Loop;
 use React\Socket\SocketServer;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
+use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 
 class WebsocketServerRunCommand extends Command
 {
@@ -25,6 +26,7 @@ class WebsocketServerRunCommand extends Command
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
     private SubscriptionsStorageInterface $subscriptionsStorage;
     private MatchMakingQueueInterface $matchMakingQueue;
+    private InternalMessageHandlerFactory $internalMessageHandlerFactory;
 
     public function __construct(
         MessageHandlerFactory $messageHandlerFactory,
@@ -34,6 +36,7 @@ class WebsocketServerRunCommand extends Command
         TrainingTimerStorageInterface $timerStorage,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
         MatchMakingQueueInterface $matchMakingQueue,
+        InternalMessageHandlerFactory $internalMessageHandlerFactory
     ) {
         parent::__construct();
         $this->messageHandlerFactory = $messageHandlerFactory;
@@ -44,6 +47,7 @@ class WebsocketServerRunCommand extends Command
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
         $this->matchMakingQueue = $matchMakingQueue;
         $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->timerStorage);
+        $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
     }
 
     /**
@@ -70,6 +74,7 @@ class WebsocketServerRunCommand extends Command
         $trainingWsServer = new TrainingWsServer(
             $this->messageHandlerFactory,
             $this->apiMessageHandlerFactory,
+            $this->internalMessageHandlerFactory,
             $this->messageBrokerFactory,
             $this->clientsStorage,
             $this->timerStorage,
