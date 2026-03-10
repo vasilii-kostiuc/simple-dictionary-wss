@@ -43,6 +43,12 @@ class AppServiceProvider extends ServiceProvider
             return new \App\WebSockets\Storage\Timers\MongoTrainingTimerStorage();
         });
 
+        $this->app->singleton(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface::class, function () {
+           return \App::make(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory::class)->create();
+        });
+
+            
+
         $this->app->singleton(SimpleDictionaryApiClientInterface::class, function (Application $app) {
             info('Environment: ' . $app->environment() . '');
             if ($app->environment('testing')) {
@@ -65,6 +71,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app['events']->listen(
             \App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent::class,
             \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingJoinedListener::class
+        );
+
+        $this->app['events']->listen(
+            \App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent::class,
+            \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingLeaveListener::class
         );
     }
 }

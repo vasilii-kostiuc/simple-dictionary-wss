@@ -29,22 +29,51 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         Redis::expire($queueKey, self::QUEUE_TTL);
     }
 
-    public function remove(string $userId, array $matchParams): void
+    public function remove(string $userId): void
     {
-        $queueKey = $this->getQueueKey($matchParams);
         $userDataKey = $this->getUserDataKey($userId);
-        
-        // Удаляем пользователя из очереди
-        Redis::zrem($queueKey, $userId);
+
+        // Получаем matchParams из сохранённых данных пользователя
+        $userData = json_decode(Redis::get($userDataKey), true);
+
+        if ($userData !== null) {
+            $queueKey = $this->getQueueKey($userData['matchParams']);
+            Redis::zrem($queueKey, $userId);
+        }
+
         Redis::del($userDataKey);
     }
 
     public function all(array $matchParams): array
     {
         $queueKey = $this->getQueueKey($matchParams);
-        
+
         // Получаем всех пользователей из sorted set (по порядку времени добавления)
         return Redis::zrange($queueKey, 0, -1);
+    }
+
+    public function allQueues(): array
+    {
+        $keys = Redis::keys(self::QUEUE_PREFIX . '*');
+
+        if (empty($keys)) {
+            return [];
+        }
+
+        $result = [];
+
+        foreach ($keys as $queueKey) {
+            $userIds = Redis::zrange($queueKey, 0, -1);
+
+            foreach ($userIds as $userId) {
+                $userData = json_decode(Redis::get($this->getUserDataKey($userId)), true);
+                if ($userData !== null) {
+                    $result[] = $userData;
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function findMatch(string $userId, array $matchParams): ?string

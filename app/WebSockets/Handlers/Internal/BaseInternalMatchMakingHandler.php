@@ -16,7 +16,7 @@ abstract class BaseInternalMatchMakingHandler implements MessageHandlerInterface
 
     protected function broadcastQueueUpdated(array $matchParams): void
     {
-        $queue = $this->matchMakingQueue->all($matchParams);
+        $queue = $this->matchMakingQueue->allQueues();
         $message = (new MatchMakingQueueUpdatedMessage($queue))->toJson();
 
         foreach ($this->subscriptionsStorage->getConnectionsByChannel('matchmaking.queue') as $conn) {

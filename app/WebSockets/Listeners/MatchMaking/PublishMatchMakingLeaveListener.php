@@ -2,29 +2,28 @@
 
 namespace App\WebSockets\Listeners\MatchMaking;
 
-use App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent;
+use App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent;
 use Illuminate\Support\Facades\Redis;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
 
-class PublishMatchMakingJoinedListener
+class PublishMatchMakingLeaveListener
 {
     private MessageBrokerInterface $messageBroker;
 
     public function __construct(MessageBrokerInterface $messageBroker)
     {
         $this->messageBroker = $messageBroker;
-
     }
-    public function handle(MatchMakingJoinedEvent $event): void
+
+
+    public function handle(MatchMakingLeaveEvent $event): void
     {
-        $this->messageBroker->publish('wss.matchmaking.join', json_encode([
+        $this->messageBroker->publish('wss.matchmaking.leave', json_encode([
             'user_id' => $event->userId,
-            'match_params' => $event->matchParams,
         ]));
 
-        // Redis::publish('wss.matchmaking.join', json_encode([
+        // Redis::publish('wss.matchmaking.leave', json_encode([
         //     'user_id' => $event->userId,
-        //     'match_params' => $event->matchParams,
         // ]));
     }
 }

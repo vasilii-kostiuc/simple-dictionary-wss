@@ -7,9 +7,11 @@ interface MatchMakingQueueInterface
 
     public function add(string $userId, array $matchParams): void;
 
-    public function remove(string $userId, array $matchParams): void;
+    public function remove(string $userId): void;
 
     public function all(array $matchParams): array;
+
+    public function allQueues(): array;
 
     public function findMatch(string $userId, array $matchParams): ?string;
 

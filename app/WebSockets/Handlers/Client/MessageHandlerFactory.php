@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers\Client;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingJoinHandler;
+use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingLeaveHandler;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
@@ -36,6 +37,7 @@ class MessageHandlerFactory
             'subscribe' => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
             'unsubscribe' => new UnsubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
             'matchmaking.join' => new MatchMakingJoinHandler($this->clientsStorage, $this->matchMakingQueue),
+            'matchmaking.leave' => new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue),
             default => new UnknownMessageHandler()
         };
     }

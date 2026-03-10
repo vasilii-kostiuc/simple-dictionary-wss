@@ -2,17 +2,16 @@
 
 namespace App\WebSockets\Handlers\Client\MatchMaking;
 
-use App\WebSockets\Enums\MatchType;
-use App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent;
+use App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent;
+use App\WebSockets\Messages\MatchMaking\MatchMakingLeaveSuccessMessage;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
-use App\WebSockets\Messages\MatchMaking\MatchMakingJoinSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
-class MatchMakingJoinHandler implements MessageHandlerInterface
+class MatchMakingLeaveHandler implements MessageHandlerInterface
 {
     private ClientsStorageInterface $clientsStorage;
     private MatchMakingQueueInterface $matchMakingQueue;
@@ -34,17 +33,13 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
             $from->send(new ErrorMessage('not_authorized', $data??[]));
             return;
         }
+    
+        $this->matchMakingQueue->remove($userId);
 
-        $matchType = MatchType::from($data['match_type'] ?? MatchType::Steps->value) ?? MatchType::Steps;
-        $matchParams = ['match_type' => $matchType->value];
-        $matchParams = array_merge($matchParams, $data['match_params'] ?? []);
-
-        $this->matchMakingQueue->add($userId, $matchParams);
-
-        event(new MatchMakingJoinedEvent($userId, $matchParams));
+        event(new MatchMakingLeaveEvent($userId));
 
         $from->send(
-            (new MatchMakingJoinSuccessMessage($matchType, $matchParams))->toJson()
+            (new MatchMakingLeaveSuccessMessage())->toJson()
         );
     }
 }
