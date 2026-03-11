@@ -56,7 +56,7 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         $this->authenticateClient($client);
 
- $client->text(json_encode([
+        $client->text(json_encode([
             'type' => 'matchmaking.join',
         ]));
 

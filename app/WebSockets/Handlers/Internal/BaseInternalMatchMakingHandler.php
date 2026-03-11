@@ -7,20 +7,19 @@ use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 
-abstract class BaseInternalMatchMakingHandler implements MessageHandlerInterface
+abstract class BaseInternalMatchMakingHandler implements InternalMessageHandlerInterface
 {
     public function __construct(
         protected MatchMakingQueueInterface $matchMakingQueue,
         protected SubscriptionsStorageInterface $subscriptionsStorage
     ) {}
 
-    protected function broadcastQueueUpdated(array $matchParams): void
+    protected function broadcastQueueUpdated(): void
     {
         $queue = $this->matchMakingQueue->allQueues();
-        $message = (new MatchMakingQueueUpdatedMessage($queue))->toJson();
 
         foreach ($this->subscriptionsStorage->getConnectionsByChannel('matchmaking.queue') as $conn) {
-            $conn->send($message);
+            $conn->send(new MatchMakingQueueUpdatedMessage($queue));
         }
     }
 }

@@ -18,7 +18,8 @@ class PublishMatchMakingLeaveListener
 
     public function handle(MatchMakingLeaveEvent $event): void
     {
-        $this->messageBroker->publish('wss.matchmaking.leave', json_encode([
+        $this->messageBroker->publish('wss.matchmaking.leaved', json_encode([
+            'type' => 'wss.matchmaking.leaved',
             'user_id' => $event->userId,
         ]));
 

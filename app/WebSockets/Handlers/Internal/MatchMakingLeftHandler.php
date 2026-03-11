@@ -7,11 +7,11 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class MatchMakingLeftHandler extends BaseInternalMatchMakingHandler
 {
-    public function handle(ConnectionInterface $from, MessageInterface $msg): void
-    {
-        $data = json_decode($msg->getPayload(), true);
-        $matchParams = $data['match_params'] ?? [];
 
-        $this->broadcastQueueUpdated($matchParams);
+    public function handle(string $channel, mixed $data): void
+    {  
+        info(message: __METHOD__ . ' Received message on channel: ' . $channel . ' with payload: ' . json_encode($data));
+
+        $this->broadcastQueueUpdated();
     }
 }
