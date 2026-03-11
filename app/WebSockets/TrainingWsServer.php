@@ -5,6 +5,7 @@ namespace App\WebSockets;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
+use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
@@ -144,9 +145,15 @@ class TrainingWsServer implements MessageComponentInterface
         Log::info(__METHOD__ . ' ' . $msg);
         Log::info(get_class($msg));
 
-        $msgJson = json_decode($msg->getPayload());
+        $payload = json_decode($msg->getPayload(), false);
 
-        $handler = $this->messageHandlerFactory->create($msgJson->type ?? '');
+        if($payload === null) {
+            Log::warning('Invalid JSON received: ' . $msg->getPayload());
+            $conn->send(new ErrorMessage('invalid_json', $msg->getPayload()));
+            return;
+        }
+
+        $handler = $this->messageHandlerFactory->create($payload->type ?? '', $payload);
 
         $handler->handle($conn, $msg);
     }

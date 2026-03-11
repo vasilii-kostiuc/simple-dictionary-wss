@@ -2,19 +2,18 @@
 
 namespace App\WebSockets\Messages\MatchMaking;
 
-class MatchMakingQueueUpdatedMessage
+use App\WebSockets\Messages\WebSocketMessage;
+
+class MatchMakingQueueUpdatedMessage extends WebSocketMessage
 {
     public function __construct(protected array $queue = [])
     {
+        parent::__construct(
+            'matchmaking.queue.updated',
+            [
+                'queue' => $this->queue,
+            ]
+        );
     }
 
-    public function toJson(): string
-    {
-        return json_encode([
-            'type' => 'matchmaking.queue.updated',
-            'data' => [
-                'queue' => $this->queue,
-            ],
-        ]);
-    }
 }

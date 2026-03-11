@@ -22,6 +22,7 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         $client->text(json_encode([
             'type' => 'matchmaking.leave',
         ]));
+
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 

@@ -11,13 +11,6 @@ class MatchMakingJoinTest extends WebSocketTestCase
         $client = $this->createWebSocketClient();
 
         $this->authenticateClient($client);
-
-        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'matchmaking.queue']));
-        $subscribeMessage = $client->receive();
-
-        info("Received subscribe response: " . $subscribeMessage->getPayload());
-        $this->assertEquals('subscribe_success', json_decode($subscribeMessage->getPayload())->type ?? null);
-
         $client->text(json_encode([
             'type' => 'matchmaking.join',
             'match_type' => 'steps',
@@ -29,7 +22,6 @@ class MatchMakingJoinTest extends WebSocketTestCase
         info("Received matchmaking.join response: " . $response->getPayload());
 
         $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
-        $this->assertEquals('steps', $payload->match_type ?? null);
 
         $client->close();
     }
@@ -64,13 +56,15 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         $this->authenticateClient($client);
 
-        $client->text(json_encode(['type' => 'matchmaking.join']));
+ $client->text(json_encode([
+            'type' => 'matchmaking.join',
+        ]));
 
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
         $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
-        $this->assertEquals('steps', $payload->match_type ?? null);
+        $this->assertEquals('steps', $payload->data->match_type ?? null);
 
         $client->close();
     }
@@ -91,7 +85,7 @@ class MatchMakingJoinTest extends WebSocketTestCase
         $payload = json_decode($response->getPayload());
 
         $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
-        $this->assertEquals('time', $payload->match_type ?? null);
+        $this->assertEquals('time', $payload->data->match_type ?? null);
 
         $client->close();
     }

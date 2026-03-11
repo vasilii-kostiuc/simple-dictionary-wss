@@ -35,16 +35,22 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
             return;
         }
 
-        $matchType = MatchType::from($data['match_type'] ?? MatchType::Steps->value) ?? MatchType::Steps;
+        $matchType = MatchType::tryFrom($data['match_type'] ?? MatchType::Steps->value);
+        
+        if ($matchType === null) {
+            $from->send(new ErrorMessage('invalid_match_type', $data ?? []));
+            return;
+        }
+
         $matchParams = ['match_type' => $matchType->value];
         $matchParams = array_merge($matchParams, $data['match_params'] ?? []);
 
         $this->matchMakingQueue->add($userId, $matchParams);
 
-        event(new MatchMakingJoinedEvent($userId, $matchParams));
-
         $from->send(
-            (new MatchMakingJoinSuccessMessage($matchType, $matchParams))->toJson()
+            new MatchMakingJoinSuccessMessage($matchType, $matchParams)
         );
+
+        event(new MatchMakingJoinedEvent($userId, $matchParams));
     }
 }

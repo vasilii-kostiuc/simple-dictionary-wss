@@ -52,6 +52,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         }
 
         $this->subscriptionsStorage->subscribe($from, $channel);
+        
         $from->send(new SubscribeSuccessMessage($channel));
     }
 

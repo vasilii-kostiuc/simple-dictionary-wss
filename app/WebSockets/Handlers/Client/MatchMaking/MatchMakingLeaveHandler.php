@@ -36,10 +36,10 @@ class MatchMakingLeaveHandler implements MessageHandlerInterface
     
         $this->matchMakingQueue->remove($userId);
 
-        event(new MatchMakingLeaveEvent($userId));
-
         $from->send(
-            (new MatchMakingLeaveSuccessMessage())->toJson()
+            new MatchMakingLeaveSuccessMessage()
         );
+        
+        event(new MatchMakingLeaveEvent($userId));
     }
 }

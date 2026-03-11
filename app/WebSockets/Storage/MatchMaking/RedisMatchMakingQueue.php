@@ -12,6 +12,8 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
 
     public function add(string $userId, array $matchParams): void
     {
+        $this->remove($userId);
+
         $queueKey = $this->getQueueKey($matchParams);
         $userDataKey = $this->getUserDataKey($userId);
         

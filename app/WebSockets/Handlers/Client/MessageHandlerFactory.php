@@ -5,6 +5,7 @@ namespace App\WebSockets\Handlers\Client;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingJoinHandler;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingLeaveHandler;
+use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingSubscribeHandler;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
@@ -30,11 +31,18 @@ class MessageHandlerFactory
         $this->matchMakingQueue = $matchMakingQueue;
     }
 
-    public function create(string $type): MessageHandlerInterface
+    public function create(string $type , object $payload): MessageHandlerInterface
     {
+        if($type==='subscribe') {
+            $channel = $payload->channel?? '';
+        }
+
         return match ($type) {
             'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
-            'subscribe' => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+            'subscribe' => match($channel){
+                'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue),
+                default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+            },
             'unsubscribe' => new UnsubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
             'matchmaking.join' => new MatchMakingJoinHandler($this->clientsStorage, $this->matchMakingQueue),
             'matchmaking.leave' => new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue),

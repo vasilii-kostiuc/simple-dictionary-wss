@@ -2,12 +2,13 @@
 
 namespace App\WebSockets\Messages\MatchMaking;
 
-class MatchMakingLeaveSuccessMessage
+use App\WebSockets\Messages\WebSocketMessage;
+
+class MatchMakingLeaveSuccessMessage extends WebSocketMessage
 {
-    public function toJson(): string
+
+    public function __construct()
     {
-        return json_encode([
-            'type' => 'matchmaking_leave_success',
-        ]);
+        parent::__construct('matchmaking_leave_success', []);
     }
 }
