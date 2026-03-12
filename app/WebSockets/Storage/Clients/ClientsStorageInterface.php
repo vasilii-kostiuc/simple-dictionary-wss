@@ -2,19 +2,18 @@
 
 namespace App\WebSockets\Storage\Clients;
 
+use App\WebSockets\DTO\UserData;
 use Ratchet\ConnectionInterface;
 
 interface ClientsStorageInterface
 {
-    public function add(int|string $userId, ConnectionInterface $connection): void;
+    public function add(ConnectionInterface $conn, UserData $userData): void;
 
-    public function get(int|string $userId): array;
+    public function getUserIdByConnection(ConnectionInterface $conn): ?int;
 
-    public function remove(int|string $userId, ConnectionInterface $connection): void;
+    public function getUserData(ConnectionInterface $conn): ?UserData;
 
-    public function has(int|string $userId): bool;
+    public function getConnectionByUserId(int $userId): ?ConnectionInterface;
 
-    public function all(): array;
-
-    public function getUserIdByConnection(ConnectionInterface $conn): int|string|null;
+    public function remove(int $userId, ConnectionInterface $conn): void;
 }

@@ -14,29 +14,23 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class MatchMakingJoinHandler implements MessageHandlerInterface
 {
-    private ClientsStorageInterface $clientsStorage;
-    private MatchMakingQueueInterface $matchMakingQueue;
-
     public function __construct(
-        ClientsStorageInterface $clientsStorage,
-        MatchMakingQueueInterface $matchMakingQueue,
-    ) {
-        $this->clientsStorage = $clientsStorage;
-        $this->matchMakingQueue = $matchMakingQueue;
-    }
+        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly MatchMakingQueueInterface $matchMakingQueue,
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
         $data = json_decode($msg->getPayload(), true);
-        $userId = $this->clientsStorage->getUserIdByConnection($from);
+        $userData = $this->clientsStorage->getUserData($from);
 
-        if($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $data??[]));
+        if ($userData === null) {
+            $from->send(new ErrorMessage('not_authorized', $data ?? []));
             return;
         }
 
         $matchType = MatchType::tryFrom($data['match_type'] ?? MatchType::Steps->value);
-        
+
         if ($matchType === null) {
             $from->send(new ErrorMessage('invalid_match_type', $data ?? []));
             return;
@@ -45,12 +39,10 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
         $matchParams = ['match_type' => $matchType->value];
         $matchParams = array_merge($matchParams, $data['match_params'] ?? []);
 
-        $this->matchMakingQueue->add($userId, $matchParams);
+        $this->matchMakingQueue->add($userData, $matchParams);
 
-        $from->send(
-            new MatchMakingJoinSuccessMessage($matchType, $matchParams)
-        );
+        $from->send(new MatchMakingJoinSuccessMessage($matchType, $matchParams));
 
-        event(new MatchMakingJoinedEvent($userId, $matchParams));
+        event(new MatchMakingJoinedEvent($userData->id, $matchParams));
     }
 }

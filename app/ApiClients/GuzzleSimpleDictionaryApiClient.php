@@ -2,6 +2,7 @@
 
 namespace App\ApiClients;
 
+use App\WebSockets\DTO\UserData;
 use GuzzleHttp\Exception\GuzzleException;
 
 class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
@@ -15,23 +16,24 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         $this->token = $token;
     }
 
-    public function validateToken(string $token): bool
+    public function getUserByToken(string $token): ?UserData
     {
         $response = $this->call('POST', 'auth/token/validate', [
             'json' => ['user_token' => $token]
         ]);
 
-        return !empty($response);
-    }
-
-    public function getProfile(string $token): array
-    {
-        $response = $this->call('POST', 'auth/token/validate', [
-            'json' => ['user_token' => $token]
-        ]);
+        if (empty($response)) {
+            return null;
+        }
 
         info("Profile response: " . json_encode($response));
-        return ['id' => $response['user_id'] ];
+
+        return new UserData(
+            id: $response['user_id'],
+            name: $response['name'] ?? '',
+            email: $response['email'] ?? '',
+            avatar: $response['avatar'] ?? null,
+        );
     }
 
     public function expire(string|int $trainingId): array

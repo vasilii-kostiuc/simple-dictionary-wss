@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\WebSockets\DTO\UserData;
 use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
 use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
@@ -16,288 +17,147 @@ class AuthorizedClientsStorageTest extends TestCase
         $this->storage = new AuthorizedClientsStorage();
     }
 
-    private function createMockConnection(): ConnectionInterface
+    private function createMockConnection(int $resourceId = 1): ConnectionInterface
     {
-        return $this->createMock(ConnectionInterface::class);
+        $conn = $this->createMock(ConnectionInterface::class);
+        $conn->resourceId = $resourceId;
+        return $conn;
     }
 
-    public function test_add_client_creates_new_user_entry(): void
+    private function makeUserData(int $id = 123): UserData
     {
-        $userId = 123;
-        $connection = $this->createMockConnection();
-
-        $this->storage->add($userId, $connection);
-
-        $this->assertTrue($this->storage->has($userId));
-        $this->assertCount(1, $this->storage->get($userId));
+        return new UserData(
+            id: $id,
+            name: 'User ' . $id,
+            email: 'user' . $id . '@example.com',
+            avatar: null,
+        );
     }
 
-    public function test_add_multiple_connections_for_same_user(): void
+    public function test_add_client_stores_user_data(): void
     {
-        $userId = 123;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
+        $conn = $this->createMockConnection(1);
+        $userData = $this->makeUserData(123);
 
-        $this->storage->add($userId, $connection1);
-        $this->storage->add($userId, $connection2);
+        $this->storage->add($conn, $userData);
 
-        $this->assertTrue($this->storage->has($userId));
-        $this->assertCount(2, $this->storage->get($userId));
+        $this->assertEquals(123, $this->storage->getUserIdByConnection($conn));
+        $this->assertSame($userData, $this->storage->getUserData($conn));
     }
 
-    public function test_add_same_connection_twice_does_not_duplicate(): void
+    public function test_add_overwrites_existing_connection(): void
     {
-        $userId = 123;
-        $connection = $this->createMockConnection();
+        $conn = $this->createMockConnection(1);
+        $userData1 = $this->makeUserData(123);
+        $userData2 = $this->makeUserData(456);
 
-        $this->storage->add($userId, $connection);
-        $this->storage->add($userId, $connection);
+        $this->storage->add($conn, $userData1);
+        $this->storage->add($conn, $userData2);
 
-        $this->assertCount(1, $this->storage->get($userId));
+        $this->assertEquals(456, $this->storage->getUserIdByConnection($conn));
     }
 
-    public function test_add_connections_for_different_users(): void
+    public function test_add_different_connections_for_different_users(): void
     {
-        $userId1 = 123;
-        $userId2 = 456;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
+        $conn1 = $this->createMockConnection(1);
+        $conn2 = $this->createMockConnection(2);
+        $userData1 = $this->makeUserData(123);
+        $userData2 = $this->makeUserData(456);
 
-        $this->storage->add($userId1, $connection1);
-        $this->storage->add($userId2, $connection2);
+        $this->storage->add($conn1, $userData1);
+        $this->storage->add($conn2, $userData2);
 
-        $this->assertTrue($this->storage->has($userId1));
-        $this->assertTrue($this->storage->has($userId2));
-        $this->assertCount(1, $this->storage->get($userId1));
-        $this->assertCount(1, $this->storage->get($userId2));
+        $this->assertEquals(123, $this->storage->getUserIdByConnection($conn1));
+        $this->assertEquals(456, $this->storage->getUserIdByConnection($conn2));
     }
 
-    public function test_get_returns_empty_array_for_nonexistent_user(): void
+    public function test_get_user_id_by_connection_returns_null_for_unknown(): void
     {
-        $result = $this->storage->get(999);
+        $conn = $this->createMockConnection(99);
 
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        $this->assertNull($this->storage->getUserIdByConnection($conn));
     }
 
-    public function test_get_returns_connections_for_user(): void
+    public function test_get_user_data_returns_null_for_unknown(): void
     {
-        $userId = 123;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
+        $conn = $this->createMockConnection(99);
 
-        $this->storage->add($userId, $connection1);
-        $this->storage->add($userId, $connection2);
-
-        $connections = $this->storage->get($userId);
-
-        $this->assertCount(2, $connections);
-        $this->assertContains($connection1, $connections);
-        $this->assertContains($connection2, $connections);
+        $this->assertNull($this->storage->getUserData($conn));
     }
 
-    public function test_remove_connection_from_user(): void
+    public function test_get_connection_by_user_id_returns_connection(): void
     {
-        $userId = 123;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
+        $conn = $this->createMockConnection(1);
+        $userData = $this->makeUserData(123);
 
-        $this->storage->add($userId, $connection1);
-        $this->storage->add($userId, $connection2);
+        $this->storage->add($conn, $userData);
 
-        $this->storage->remove($userId, $connection1);
-
-        $this->assertTrue($this->storage->has($userId));
-        $this->assertCount(1, $this->storage->get($userId));
-        $this->assertContains($connection2, $this->storage->get($userId));
-        $this->assertNotContains($connection1, $this->storage->get($userId));
+        $this->assertSame($conn, $this->storage->getConnectionByUserId(123));
     }
 
-    public function test_remove_last_connection_removes_user_entry(): void
+    public function test_get_connection_by_user_id_returns_null_for_unknown(): void
     {
-        $userId = 123;
-        $connection = $this->createMockConnection();
+        $this->assertNull($this->storage->getConnectionByUserId(999));
+    }
 
-        $this->storage->add($userId, $connection);
-        $this->storage->remove($userId, $connection);
+    public function test_remove_deletes_connection(): void
+    {
+        $conn = $this->createMockConnection(1);
+        $userData = $this->makeUserData(123);
 
-        $this->assertFalse($this->storage->has($userId));
-        $this->assertEmpty($this->storage->get($userId));
+        $this->storage->add($conn, $userData);
+        $this->storage->remove(123, $conn);
+
+        $this->assertNull($this->storage->getUserIdByConnection($conn));
+        $this->assertNull($this->storage->getUserData($conn));
     }
 
     public function test_remove_nonexistent_connection_does_nothing(): void
     {
-        $userId = 123;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
+        $conn = $this->createMockConnection(99);
 
-        $this->storage->add($userId, $connection1);
-        $this->storage->remove($userId, $connection2);
+        $this->storage->remove(999, $conn);
 
-        $this->assertTrue($this->storage->has($userId));
-        $this->assertCount(1, $this->storage->get($userId));
+        $this->assertNull($this->storage->getUserIdByConnection($conn));
     }
 
-    public function test_remove_from_nonexistent_user_does_nothing(): void
+    public function test_get_user_data_returns_correct_user_data(): void
     {
-        $connection = $this->createMockConnection();
+        $conn = $this->createMockConnection(1);
+        $userData = new UserData(id: 42, name: 'Test', email: 'test@test.com', avatar: 'http://example.com/img.jpg');
 
-        $this->storage->remove(999, $connection);
+        $this->storage->add($conn, $userData);
 
-        $this->assertFalse($this->storage->has(999));
+        $result = $this->storage->getUserData($conn);
+        $this->assertEquals(42, $result->id);
+        $this->assertEquals('Test', $result->name);
+        $this->assertEquals('test@test.com', $result->email);
+        $this->assertEquals('http://example.com/img.jpg', $result->avatar);
     }
 
-    public function test_has_returns_false_for_nonexistent_user(): void
+    public function test_complex_scenario(): void
     {
-        $this->assertFalse($this->storage->has(999));
-    }
+        $conn1 = $this->createMockConnection(1);
+        $conn2 = $this->createMockConnection(2);
+        $conn3 = $this->createMockConnection(3);
+        $userData1 = $this->makeUserData(100);
+        $userData2 = $this->makeUserData(200);
+        $userData3 = $this->makeUserData(300);
 
-    public function test_has_returns_true_for_existing_user(): void
-    {
-        $userId = 123;
-        $connection = $this->createMockConnection();
+        $this->storage->add($conn1, $userData1);
+        $this->storage->add($conn2, $userData2);
+        $this->storage->add($conn3, $userData3);
 
-        $this->storage->add($userId, $connection);
+        $this->assertEquals(100, $this->storage->getUserIdByConnection($conn1));
+        $this->assertEquals(200, $this->storage->getUserIdByConnection($conn2));
+        $this->assertEquals(300, $this->storage->getUserIdByConnection($conn3));
 
-        $this->assertTrue($this->storage->has($userId));
-    }
+        $this->storage->remove(200, $conn2);
 
-    public function test_has_returns_false_after_removing_last_connection(): void
-    {
-        $userId = 123;
-        $connection = $this->createMockConnection();
+        $this->assertNull($this->storage->getUserIdByConnection($conn2));
+        $this->assertNull($this->storage->getConnectionByUserId(200));
 
-        $this->storage->add($userId, $connection);
-        $this->storage->remove($userId, $connection);
-
-        $this->assertFalse($this->storage->has($userId));
-    }
-
-    public function test_all_returns_empty_array_initially(): void
-    {
-        $result = $this->storage->all();
-
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
-    }
-
-    public function test_all_returns_all_users_and_connections(): void
-    {
-        $userId1 = 123;
-        $userId2 = 456;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
-        $connection3 = $this->createMockConnection();
-
-        $this->storage->add($userId1, $connection1);
-        $this->storage->add($userId1, $connection2);
-        $this->storage->add($userId2, $connection3);
-
-        $all = $this->storage->all();
-
-        $this->assertCount(2, $all);
-        $this->assertArrayHasKey($userId1, $all);
-        $this->assertArrayHasKey($userId2, $all);
-        $this->assertCount(2, $all[$userId1]);
-        $this->assertCount(1, $all[$userId2]);
-    }
-
-    public function test_get_user_id_by_connection_returns_null_for_unknown_connection(): void
-    {
-        $connection = $this->createMockConnection();
-
-        $result = $this->storage->getUserIdByConnection($connection);
-
-        $this->assertNull($result);
-    }
-
-    public function test_get_user_id_by_connection_returns_correct_user_id(): void
-    {
-        $userId = 123;
-        $connection = $this->createMockConnection();
-
-        $this->storage->add($userId, $connection);
-
-        $result = $this->storage->getUserIdByConnection($connection);
-
-        $this->assertEquals($userId, $result);
-    }
-
-    public function test_get_user_id_by_connection_with_multiple_connections(): void
-    {
-        $userId1 = 123;
-        $userId2 = 456;
-        $connection1 = $this->createMockConnection();
-        $connection2 = $this->createMockConnection();
-
-        $this->storage->add($userId1, $connection1);
-        $this->storage->add($userId2, $connection2);
-
-        $this->assertEquals($userId1, $this->storage->getUserIdByConnection($connection1));
-        $this->assertEquals($userId2, $this->storage->getUserIdByConnection($connection2));
-    }
-
-    public function test_get_user_id_by_connection_after_removal_returns_null(): void
-    {
-        $userId = 123;
-        $connection = $this->createMockConnection();
-
-        $this->storage->add($userId, $connection);
-        $this->storage->remove($userId, $connection);
-
-        $result = $this->storage->getUserIdByConnection($connection);
-
-        $this->assertNull($result);
-    }
-
-    public function test_works_with_string_user_ids(): void
-    {
-        $userId = 'user_abc_123';
-        $connection = $this->createMockConnection();
-
-        $this->storage->add($userId, $connection);
-
-        $this->assertTrue($this->storage->has($userId));
-        $this->assertEquals($userId, $this->storage->getUserIdByConnection($connection));
-        $this->assertCount(1, $this->storage->get($userId));
-    }
-
-    public function test_complex_scenario_multiple_users_and_operations(): void
-    {
-        $user1 = 100;
-        $user2 = 200;
-        $user3 = 300;
-
-        $conn1User1 = $this->createMockConnection();
-        $conn2User1 = $this->createMockConnection();
-        $conn1User2 = $this->createMockConnection();
-        $conn1User3 = $this->createMockConnection();
-
-        // Add connections
-        $this->storage->add($user1, $conn1User1);
-        $this->storage->add($user1, $conn2User1);
-        $this->storage->add($user2, $conn1User2);
-        $this->storage->add($user3, $conn1User3);
-
-        // Verify state
-        $this->assertCount(3, $this->storage->all());
-        $this->assertCount(2, $this->storage->get($user1));
-        $this->assertCount(1, $this->storage->get($user2));
-        $this->assertCount(1, $this->storage->get($user3));
-
-        // Remove one connection from user1
-        $this->storage->remove($user1, $conn1User1);
-        $this->assertCount(1, $this->storage->get($user1));
-        $this->assertTrue($this->storage->has($user1));
-
-        // Remove all connections from user2
-        $this->storage->remove($user2, $conn1User2);
-        $this->assertFalse($this->storage->has($user2));
-
-        // Verify final state
-        $this->assertCount(2, $this->storage->all());
-        $this->assertEquals($user1, $this->storage->getUserIdByConnection($conn2User1));
-        $this->assertEquals($user3, $this->storage->getUserIdByConnection($conn1User3));
-        $this->assertNull($this->storage->getUserIdByConnection($conn1User2));
+        $this->assertEquals(100, $this->storage->getUserIdByConnection($conn1));
+        $this->assertEquals(300, $this->storage->getUserIdByConnection($conn3));
     }
 }

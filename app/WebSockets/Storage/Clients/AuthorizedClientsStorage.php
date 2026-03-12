@@ -2,69 +2,44 @@
 
 namespace App\WebSockets\Storage\Clients;
 
+use App\WebSockets\DTO\UserData;
 use Ratchet\ConnectionInterface;
 
 class AuthorizedClientsStorage implements ClientsStorageInterface
 {
-    /**
-     * @var array user_id => array of connections
-     */
-    protected array $clients = [];
+    private array $clients = [];
 
-    /**
-     * @var array connection_hash => user_id
-     */
-    protected array $connectionToUserId = [];
-
-    public function add(int|string $userId, ConnectionInterface $connection): void
+    public function add(ConnectionInterface $conn, UserData $userData): void
     {
-        $connectionHash = $this->getConnectionHash($connection);
-
-        if (!isset($this->clients[$userId])) {
-            $this->clients[$userId] = [];
-        }
-
-        $this->clients[$userId][$connectionHash] = $connection;
-        $this->connectionToUserId[$connectionHash] = $userId;
+        $this->clients[$conn->resourceId] = [
+            'connection' => $conn,
+            'userData' => $userData,
+        ];
     }
 
-    protected function getConnectionHash(ConnectionInterface $connection): string
+    public function getUserIdByConnection(ConnectionInterface $conn): ?int
     {
-        return spl_object_hash($connection);
+        return $this->clients[$conn->resourceId]['userData']?->id ?? null;
     }
 
-    public function get(int|string $userId): array
+    public function getUserData(ConnectionInterface $conn): ?UserData
     {
-        return $this->clients[$userId] ?? [];
+        return $this->clients[$conn->resourceId]['userData'] ?? null;
     }
 
-    public function remove(int|string $userId, ConnectionInterface $connection): void
+    public function getConnectionByUserId(int $userId): ?ConnectionInterface
     {
-        $connectionHash = $this->getConnectionHash($connection);
-        if (isset($this->clients[$userId][$connectionHash])) {
-            unset($this->clients[$userId][$connectionHash]);
-            unset($this->connectionToUserId[$connectionHash]);
-
-            if (empty($this->clients[$userId])) {
-                unset($this->clients[$userId]);
+        foreach ($this->clients as $client) {
+            if ($client['userData']->id === $userId) {
+                return $client['connection'];
             }
         }
+
+        return null;
     }
-    public function has(int|string $userId): bool
+
+    public function remove(int $userId, ConnectionInterface $conn): void
     {
-        return !empty($this->clients[$userId]);
+        unset($this->clients[$conn->resourceId]);
     }
-
-
-    public function all(): array
-    {
-        return $this->clients;
-    }
-
-    public function getUserIdByConnection(ConnectionInterface $conn): int|string|null
-    {
-        $connectionHash = $this->getConnectionHash($conn);
-        return $this->connectionToUserId[$connectionHash] ?? null;
-    }
-
 }

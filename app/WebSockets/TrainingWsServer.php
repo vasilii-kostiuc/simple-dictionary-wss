@@ -54,15 +54,16 @@ class TrainingWsServer implements MessageComponentInterface
         $this->loop = $loop;
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
-
+        $this->subscriptionsStorage = $subscriptionsStorage;
         $this->messageBrokerFactory = $messageBrokerFactory;
+
         $this->messageBroker = $this->messageBrokerFactory->create();
-       // $this->subscribeToApiMessages($this->messageBroker);
+        
+        $this->subscribeToApiMessages($this->messageBroker);
 
         $this->subscribeInternalMatchMakingMessages($this->messageBroker);
 
         $this->startExpiredTimersChecker();
-        $this->subscriptionsStorage = $subscriptionsStorage;
     }
 
 

@@ -2,11 +2,11 @@
 
 namespace App\ApiClients;
 
+use App\WebSockets\DTO\UserData;
+
 interface SimpleDictionaryApiClientInterface
 {
-    public function validateToken(string $token): bool;
-
-    public function getProfile(string $token): array;
+    public function getUserByToken(string $token): ?UserData;
 
     public function expire(string|int $trainingId): array;
 }

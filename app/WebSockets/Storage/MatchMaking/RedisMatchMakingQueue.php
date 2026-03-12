@@ -2,6 +2,7 @@
 
 namespace App\WebSockets\Storage\MatchMaking;
 
+use App\WebSockets\DTO\UserData;
 use Illuminate\Support\Facades\Redis;
 
 class RedisMatchMakingQueue implements MatchMakingQueueInterface
@@ -10,32 +11,30 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     private const USER_DATA_PREFIX = 'matchmaking:user:';
     private const QUEUE_TTL = 300; // 5 минут
 
-    public function add(string $userId, array $matchParams): void
+    public function add(UserData $userData, array $matchParams): void
     {
-        $this->remove($userId);
+        $this->remove($userData->id, $matchParams);
 
         $queueKey = $this->getQueueKey($matchParams);
-        $userDataKey = $this->getUserDataKey($userId);
-        
-        // Сохраняем данные пользователя с параметрами матча
-        $userData = [
-            'userId' => $userId,
+        $userDataKey = $this->getUserDataKey($userData->id);
+
+        $stored = [
+            'userId' => $userData->id,
+            'name' => $userData->name,
+            'email' => $userData->email,
+            'avatar' => $userData->avatar,
             'matchParams' => $matchParams,
             'timestamp' => time(),
         ];
-        
-        Redis::setex($userDataKey, self::QUEUE_TTL, json_encode($userData));
-        
-        // Добавляем пользователя в sorted set с временной меткой как score
-        Redis::zadd($queueKey, time(), $userId);
+
+        Redis::setex($userDataKey, self::QUEUE_TTL, json_encode($stored));
+        Redis::zadd($queueKey, time(), $userData->id);
         Redis::expire($queueKey, self::QUEUE_TTL);
     }
 
-    public function remove(string $userId): void
+    public function remove(int $userId, array $matchParams = []): void
     {
         $userDataKey = $this->getUserDataKey($userId);
-
-        // Получаем matchParams из сохранённых данных пользователя
         $userData = json_decode(Redis::get($userDataKey), true);
 
         if ($userData !== null) {
@@ -49,28 +48,42 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     public function all(array $matchParams): array
     {
         $queueKey = $this->getQueueKey($matchParams);
+        $userIds = Redis::zrange($queueKey, 0, -1);
 
-        // Получаем всех пользователей из sorted set (по порядку времени добавления)
-        return Redis::zrange($queueKey, 0, -1);
+        $result = [];
+        foreach ($userIds as $userId) {
+            $raw = json_decode(Redis::get($this->getUserDataKey($userId)), true);
+            if ($raw !== null) {
+                $result[] = [
+                    'userId' => $raw['userId'],
+                    'name' => $raw['name'],
+                    'email' => $raw['email'],
+                    'avatar' => $raw['avatar'],
+                ];
+            }
+        }
+
+        return $result;
     }
 
     public function allQueues(): array
     {
-        $keys = Redis::keys(self::QUEUE_PREFIX . '*');
-
-        if (empty($keys)) {
-            return [];
-        }
+        $pattern = self::QUEUE_PREFIX . '*';
+        $keys = Redis::keys($pattern);
 
         $result = [];
-
         foreach ($keys as $queueKey) {
             $userIds = Redis::zrange($queueKey, 0, -1);
-
             foreach ($userIds as $userId) {
-                $userData = json_decode(Redis::get($this->getUserDataKey($userId)), true);
-                if ($userData !== null) {
-                    $result[] = $userData;
+                $raw = json_decode(Redis::get($this->getUserDataKey($userId)), true);
+                if ($raw !== null) {
+                    $result[] = [
+                        'userId' => $raw['userId'],
+                        'name' => $raw['name'],
+                        'email' => $raw['email'],
+                        'avatar' => $raw['avatar'],
+                        'matchParams' => $raw['matchParams'],
+                    ];
                 }
             }
         }
@@ -78,58 +91,50 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         return $result;
     }
 
-    public function findMatch(string $userId, array $matchParams): ?string
+    public function findMatch(int $userId, array $matchParams): ?int
     {
         $queueKey = $this->getQueueKey($matchParams);
-        
-        // Получаем первого пользователя в очереди (кроме текущего)
         $users = Redis::zrange($queueKey, 0, -1);
-        
+
         foreach ($users as $candidateUserId) {
-            if ($candidateUserId !== $userId) {
-                // Найден матч - удаляем обоих из очереди
+            if ((int)$candidateUserId !== $userId) {
                 Redis::zrem($queueKey, $userId, $candidateUserId);
                 Redis::del($this->getUserDataKey($userId));
                 Redis::del($this->getUserDataKey($candidateUserId));
-                
-                return $candidateUserId;
+
+                return (int)$candidateUserId;
             }
         }
-        
+
         return null;
     }
 
     public function clear(array $matchParams): void
     {
         $queueKey = $this->getQueueKey($matchParams);
-        
-        // Получаем всех пользователей для очистки их данных
         $users = Redis::zrange($queueKey, 0, -1);
-        
+
         foreach ($users as $userId) {
             Redis::del($this->getUserDataKey($userId));
         }
-        
-        // Удаляем саму очередь
+
         Redis::del($queueKey);
     }
 
     public function count(array $matchParams): int
     {
-        $queueKey = $this->getQueueKey($matchParams);
-        return (int) Redis::zcard($queueKey);
+        return (int) Redis::zcard($this->getQueueKey($matchParams));
     }
 
     private function getQueueKey(array $matchParams): string
     {
-        // Создаем ключ на основе параметров матча
         ksort($matchParams);
-        $paramsHash = md5(json_encode($matchParams));
-        return self::QUEUE_PREFIX . $paramsHash;
+        return self::QUEUE_PREFIX . md5(json_encode($matchParams));
     }
 
-    private function getUserDataKey(string $userId): string
+    private function getUserDataKey(int $userId): string
     {
         return self::USER_DATA_PREFIX . $userId;
     }
 }
+

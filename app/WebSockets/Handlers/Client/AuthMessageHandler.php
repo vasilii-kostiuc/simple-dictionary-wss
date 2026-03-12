@@ -6,45 +6,38 @@ use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class AuthMessageHandler implements MessageHandlerInterface
 {
-    protected SimpleDictionaryApiClientInterface $client;
-    private ClientsStorageInterface $clientsStorage;
+    public function __construct(
+        private readonly SimpleDictionaryApiClientInterface $apiClient,
+        private readonly ClientsStorageInterface $clientsStorage,
+    ) {}
 
-    public function __construct(SimpleDictionaryApiClientInterface $client, ClientsStorageInterface $clientsStorage)
-    {
-        $this->client = $client;
-        $this->clientsStorage = $clientsStorage;
-    }
-
-    public function handle(ConnectionInterface $from, MessageInterface $msg): void
+    public function handle(ConnectionInterface $conn, MessageInterface $msg): void
     {
         info(__METHOD__);
-        info($msg);
 
-        $msgJson = json_decode($msg->getPayload());
-        $token = $msgJson->token ?? "";
-        $userId = $this->getUserIdFromToken($token);
-        if ($this->validateToken($token) && $userId !== null) {
-            $this->clientsStorage->add($userId, $from);
-            $from->send(new WebSocketMessage('auth_success', ['success' => true, 'message' => 'auth successed']));
-        } else {
-            $from->send(new ErrorMessage('auth_error', $msg->getPayload()));
+        $data = json_decode($msg->getPayload(), true);
+        $token = $data['token'] ?? $data['data']['token'] ?? null;
+
+        if (!$token) {
+            $conn->send(new ErrorMessage('token_required', []));
+            return;
         }
-    }
 
-    private function validateToken(string $token): bool
-    {
-        return $this->client->validateToken($token);
-    }
+        $userData = $this->apiClient->getUserByToken($token);
 
-    private function getUserIdFromToken(string $token): ?int
-    {
-        $profile = $this->client->getProfile($token);
+        if (!$userData) {
+            $conn->send(new ErrorMessage('invalid_token', []));
+            return;
+        }
 
-        return $profile['id'] ?? null;
+        $this->clientsStorage->add($conn, $userData);
+        Log::info('Client authorized', ['userId' => $userData->id]);
+        $conn->send(new WebSocketMessage('auth_success', ['userId' => $userData->id]));
     }
 }
