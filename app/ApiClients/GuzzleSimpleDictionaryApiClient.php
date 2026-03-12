@@ -29,7 +29,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         info("Profile response: " . json_encode($response));
 
         return new UserData(
-            id: $response['user_id'],
+            id: $response['id'],
             name: $response['name'] ?? '',
             email: $response['email'] ?? '',
             avatar: $response['avatar'] ?? null,
