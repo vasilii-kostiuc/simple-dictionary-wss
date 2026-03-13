@@ -23,7 +23,7 @@ class InternalMessageHandlerFactory
     {
         return match ($type) {
             'wss.matchmaking.joined' => new MatchMakingJoinedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
-            'wss.matchmaking.left' => new MatchMakingLeftHandler($this->matchMakingQueue, $this->subscriptionsStorage),
+            'wss.matchmaking.leaved' => new MatchMakingLeftHandler($this->matchMakingQueue, $this->subscriptionsStorage),
             'wss.matchmaking.matched' => new MatchMakingMatchedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
             default => new class implements InternalMessageHandlerInterface
             {

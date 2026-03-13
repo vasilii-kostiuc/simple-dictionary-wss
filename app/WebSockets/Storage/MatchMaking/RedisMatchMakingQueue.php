@@ -11,7 +11,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
 
     private const USER_DATA_PREFIX = 'matchmaking:user:';
 
-    private const QUEUE_TTL = 300; // 5 минут
+    private const QUEUE_TTL = 3600; // 1 час
 
     public function add(UserData $userData, array $matchParams): void
     {
