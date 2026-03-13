@@ -23,7 +23,6 @@ class PublishMatchMakingLeaveListener
                 'user_id' => $event->userId,
             ],
         ]));
-        
 
         // Redis::publish('wss.matchmaking.leave', json_encode([
         //     'user_id' => $event->userId,
