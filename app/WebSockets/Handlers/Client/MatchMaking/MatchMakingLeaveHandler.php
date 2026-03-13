@@ -3,9 +3,9 @@
 namespace App\WebSockets\Handlers\Client\MatchMaking;
 
 use App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent;
-use App\WebSockets\Messages\MatchMaking\MatchMakingLeaveSuccessMessage;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
+use App\WebSockets\Messages\MatchMaking\MatchMakingLeaveSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use Ratchet\ConnectionInterface;
@@ -14,6 +14,7 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 class MatchMakingLeaveHandler implements MessageHandlerInterface
 {
     private ClientsStorageInterface $clientsStorage;
+
     private MatchMakingQueueInterface $matchMakingQueue;
 
     public function __construct(
@@ -26,20 +27,21 @@ class MatchMakingLeaveHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        $data = json_decode($msg->getPayload(), true);
+        $payload = json_decode($msg->getPayload(), true);
         $userId = $this->clientsStorage->getUserIdByConnection($from);
 
-        if($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $data??[]));
+        if ($userId === null) {
+            $from->send(new ErrorMessage('not_authorized', $payload ?? []));
+
             return;
         }
-    
+
         $this->matchMakingQueue->remove($userId);
 
         $from->send(
-            new MatchMakingLeaveSuccessMessage()
+            new MatchMakingLeaveSuccessMessage
         );
-        
+
         event(new MatchMakingLeaveEvent($userId));
     }
 }

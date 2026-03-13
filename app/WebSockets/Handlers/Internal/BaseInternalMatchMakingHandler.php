@@ -2,7 +2,6 @@
 
 namespace App\WebSockets\Handlers\Internal;
 
-use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;

@@ -28,34 +28,32 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(ClientsStorageInterface::class, function () {
-            return new AuthorizedClientsStorage();
+            return new AuthorizedClientsStorage;
         });
 
         $this->app->singleton(SubscriptionsStorageInterface::class, function () {
-            return new SubscriptionsStorage();
+            return new SubscriptionsStorage;
         });
 
         $this->app->singleton(MatchMakingQueueInterface::class, function () {
-            return new RedisMatchMakingQueue();
+            return new RedisMatchMakingQueue;
         });
 
         $this->app->singleton(\App\WebSockets\Storage\Timers\TrainingTimerStorageInterface::class, function () {
-            return new \App\WebSockets\Storage\Timers\MongoTrainingTimerStorage();
+            return new \App\WebSockets\Storage\Timers\MongoTrainingTimerStorage;
         });
 
         $this->app->singleton(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface::class, function () {
-           return \App::make(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory::class)->create();
+            return \App::make(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory::class)->create();
         });
 
-            
-
         $this->app->singleton(SimpleDictionaryApiClientInterface::class, function (Application $app) {
-            info('Environment: ' . $app->environment() . '');
+            info('Environment: '.$app->environment().'');
             if ($app->environment('testing')) {
-                return new FakeSimpleDictionaryApiClient();
+                return new FakeSimpleDictionaryApiClient;
             }
 
-            $defaultConfig['headers']['Authorization'] = 'Bearer '. config('services.api.wss_token');
+            $defaultConfig['headers']['Authorization'] = 'Bearer '.config('services.api.wss_token');
 
             return new \App\ApiClients\GuzzleSimpleDictionaryApiClient(
                 $app->make(\GuzzleHttp\Client::class, $defaultConfig), config('services.api.wss_token')

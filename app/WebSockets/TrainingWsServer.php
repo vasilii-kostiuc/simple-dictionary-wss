@@ -2,36 +2,45 @@
 
 namespace App\WebSockets;
 
+use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
+use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
 use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
-use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
-use App\ApiClients\SimpleDictionaryApiClientInterface;
-
 
 class TrainingWsServer implements MessageComponentInterface
 {
     protected array $clients = [];
 
     protected array $subscriptions = [];
+
     protected ClientsStorageInterface $storage;
+
     protected MessageHandlerFactory $messageHandlerFactory;
+
     protected ApiMessageHandlerFactory $apiMessageHandlerFactory;
+
     protected InternalMessageHandlerFactory $internalMessageHandlerFactory;
+
     private MessageBrokerFactory $messageBrokerFactory;
+
     private $loop;
+
     private MessageBrokerInterface $messageBroker;
+
     private TrainingTimerStorageInterface $timerStorage;
+
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
+
     private SubscriptionsStorageInterface $subscriptionsStorage;
 
     public function __construct(
@@ -58,7 +67,7 @@ class TrainingWsServer implements MessageComponentInterface
         $this->messageBrokerFactory = $messageBrokerFactory;
 
         $this->messageBroker = $this->messageBrokerFactory->create();
-        
+
         $this->subscribeToApiMessages($this->messageBroker);
 
         $this->subscribeInternalMatchMakingMessages($this->messageBroker);
@@ -66,15 +75,13 @@ class TrainingWsServer implements MessageComponentInterface
         $this->startExpiredTimersChecker();
     }
 
-
     private function subscribeInternalMatchMakingMessages(MessageBrokerInterface $messageBroker): void
     {
         Log::info(__METHOD__);
 
+        $subscribeCallback = function ($message) {
 
-        $subscribeCallback =function ($message) {
-
-            Log::info("Internal matchmaking message received: " . $message);
+            Log::info('Internal matchmaking message received: '.$message);
 
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
@@ -85,7 +92,7 @@ class TrainingWsServer implements MessageComponentInterface
 
         $messageBroker->subscribe('wss.matchmaking.joined', function ($message) {
 
-            Log::info("Internal matchmaking message received: " . $message);
+            Log::info('Internal matchmaking message received: '.$message);
 
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
@@ -96,13 +103,13 @@ class TrainingWsServer implements MessageComponentInterface
         $messageBroker->subscribe('wss.matchmaking.leaved', $subscribeCallback);
         $messageBroker->subscribe('wss.matchmaking.matched', $subscribeCallback);
     }
-    
+
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void
     {
         Log::info(__METHOD__);
         $messageBroker->subscribe('training', function ($message) {
 
-            Log::info("API message received: " . $message);
+            Log::info('API message received: '.$message);
 
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
@@ -114,52 +121,53 @@ class TrainingWsServer implements MessageComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
-    function onOpen(ConnectionInterface $conn)
+    public function onOpen(ConnectionInterface $conn)
     {
-        Log::info('New connection ' . $conn->resourceId);
+        Log::info('New connection '.$conn->resourceId);
         $query = [];
 
         $this->clients[$conn->resourceId] = $conn;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
-    function onClose(ConnectionInterface $conn)
+    public function onClose(ConnectionInterface $conn)
     {
-        Log::info(__METHOD__ . ' ' . $conn->resourceId);
+        Log::info(__METHOD__.' '.$conn->resourceId);
 
         $userId = $this->storage->getUserIdByConnection($conn);
 
-        if($userId !== null) {
+        if ($userId !== null) {
             $this->storage->remove($this->storage->getUserIdByConnection($conn), $conn);
         }
 
         $this->subscriptionsStorage->unsubscribeAll($conn);
         info(json_encode($this->subscriptionsStorage->getChannelsByConnection($conn)));
-        Log::info(__METHOD__ . ' ' . $conn->resourceId);
+        Log::info(__METHOD__.' '.$conn->resourceId);
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
-    function onError(ConnectionInterface $conn, \Exception $e)
+    public function onError(ConnectionInterface $conn, \Exception $e)
     {
-        Log::error(__METHOD__ . ' ' . $e->getMessage());
+        Log::error(__METHOD__.' '.$e->getMessage());
     }
 
     public function onMessage(ConnectionInterface $conn, MessageInterface $msg)
     {
-        Log::info(__METHOD__ . ' ' . $msg);
+        Log::info(__METHOD__.' '.$msg);
         Log::info(get_class($msg));
 
         $payload = json_decode($msg->getPayload(), false);
 
-        if($payload === null) {
-            Log::warning('Invalid JSON received: ' . $msg->getPayload());
+        if ($payload === null) {
+            Log::warning('Invalid JSON received: '.$msg->getPayload());
             $conn->send(new ErrorMessage('invalid_json', $msg->getPayload()));
+
             return;
         }
 
@@ -184,9 +192,9 @@ class TrainingWsServer implements MessageComponentInterface
             foreach ($expiredTimers as $timer) {
                 $trainingId = $timer['training_id'];
 
-                Log::info("Completing expired training", [
+                Log::info('Completing expired training', [
                     'training_id' => $trainingId,
-                    'expired_at' => $timer['expires_at']->format('Y-m-d H:i:s')
+                    'expired_at' => $timer['expires_at']->format('Y-m-d H:i:s'),
                 ]);
 
                 $this->simpleDictionaryApiClient->expire($trainingId);
@@ -196,5 +204,4 @@ class TrainingWsServer implements MessageComponentInterface
 
         Log::info('Expired timers checker started (interval: 30s)');
     }
-
 }

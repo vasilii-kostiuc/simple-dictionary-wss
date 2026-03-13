@@ -11,13 +11,15 @@ class MatchMakingQueueSubscribeTest extends WebSocketTestCase
 
         $client->text(json_encode([
             'type' => 'subscribe',
-            'channel' => 'matchmaking.queue',
+            'data' => [
+                'channel' => 'matchmaking.queue',
+            ],
         ]));
 
         $response = $client->receive();  // subscribe_success
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
-        info("Received matchmaking.queue response: " . $response->getPayload());
+        info('Received matchmaking.queue response: '.$response->getPayload());
 
         $this->assertEquals('matchmaking.queue.updated', $payload->type ?? null);
         $this->assertObjectHasProperty('queue', $payload->data ?? []);
@@ -33,7 +35,9 @@ class MatchMakingQueueSubscribeTest extends WebSocketTestCase
         // Subscribe to matchmaking.queue
         $client->text(json_encode([
             'type' => 'subscribe',
-            'channel' => 'matchmaking.queue',
+            'data' => [
+                'channel' => 'matchmaking.queue',
+            ],
         ]));
         $client->receive(); // subscribe_success
         $client->receive(); // matchmaking.queue.updated
@@ -41,7 +45,9 @@ class MatchMakingQueueSubscribeTest extends WebSocketTestCase
         // Join matchmaking
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'steps',
+            'data' => [
+                'match_type' => 'steps',
+            ],
         ]));
 
         $response = $client->receive();
@@ -49,7 +55,7 @@ class MatchMakingQueueSubscribeTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        info("Received matchmaking.queue.updated response after join: " . $response->getPayload());
+        info('Received matchmaking.queue.updated response after join: '.$response->getPayload());
 
         $this->assertEquals('matchmaking.queue.updated', $payload->type ?? null);
 

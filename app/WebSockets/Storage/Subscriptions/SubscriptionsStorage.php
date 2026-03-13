@@ -7,6 +7,7 @@ use Ratchet\ConnectionInterface;
 class SubscriptionsStorage implements SubscriptionsStorageInterface
 {
     protected array $channelSubscribers = []; // [channel => [connId => ConnectionInterface]]
+
     protected array $connectionChannels = []; // [connId => [channel1, channel2, ...]]
 
     public function subscribe(ConnectionInterface $conn, string $channel)
@@ -48,6 +49,7 @@ class SubscriptionsStorage implements SubscriptionsStorageInterface
     public function getChannelsByConnection(ConnectionInterface $conn): array
     {
         $connId = $conn->resourceId;
+
         return array_keys($this->connectionChannels[$connId] ?? []);
     }
 

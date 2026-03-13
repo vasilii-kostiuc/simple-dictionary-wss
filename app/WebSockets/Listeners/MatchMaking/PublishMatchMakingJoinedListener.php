@@ -15,13 +15,16 @@ class PublishMatchMakingJoinedListener
         $this->messageBroker = $messageBroker;
 
     }
+
     public function handle(MatchMakingJoinedEvent $event): void
     {
-        info(__METHOD__  . ' Publishing MatchMakingJoinedEvent for user_id: ' . $event->userId);
+        info(__METHOD__.' Publishing MatchMakingJoinedEvent for user_id: '.$event->userId);
         $this->messageBroker->publish('wss.matchmaking.joined', json_encode([
             'type' => 'wss.matchmaking.joined',
-            'user_id' => $event->userId,
-            'match_params' => $event->matchParams,
+            'data' => [
+                'user_id' => $event->userId,
+                'match_params' => $event->matchParams,
+            ],
         ]));
 
         // Redis::publish('wss.matchmaking.joined', json_encode([
@@ -29,6 +32,6 @@ class PublishMatchMakingJoinedListener
         //     'match_params' => $event->matchParams,
         // ]));
 
-        info(__METHOD__  . ' Published MatchMakingJoinedEvent for user_id: ' . $event->userId);
+        info(__METHOD__.' Published MatchMakingJoinedEvent for user_id: '.$event->userId);
     }
 }

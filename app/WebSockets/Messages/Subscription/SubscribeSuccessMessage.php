@@ -12,5 +12,4 @@ class SubscribeSuccessMessage extends WebSocketMessage
             'channel' => $channel,
         ]);
     }
-
 }

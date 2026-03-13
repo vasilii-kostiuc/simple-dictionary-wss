@@ -7,7 +7,8 @@ use Tests\TestCase;
 
 class TrainingWsServerTest extends TestCase
 {
-    const string WEBSOCKET_SERVER_URL = "ws://0.0.0.0:8080/";
+    const string WEBSOCKET_SERVER_URL = 'ws://0.0.0.0:8080/';
+
     private $pid;
 
     private $started = false;
@@ -16,8 +17,9 @@ class TrainingWsServerTest extends TestCase
     {
         $client = new WebSocket\Client(self::WEBSOCKET_SERVER_URL);
         $client
-            ->addMiddleware(new WebSocket\Middleware\CloseHandler())
-            ->addMiddleware(new WebSocket\Middleware\PingResponder());
+            ->addMiddleware(new WebSocket\Middleware\CloseHandler)
+            ->addMiddleware(new WebSocket\Middleware\PingResponder);
+
         return $client;
     }
 
@@ -28,7 +30,7 @@ class TrainingWsServerTest extends TestCase
         $output = $this->startWebSocketServer();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         if ($this->started) {
             exec("kill -9 {$this->pid}");
@@ -48,7 +50,7 @@ class TrainingWsServerTest extends TestCase
 
         $client = $this->initializeWebSocketClient();
 
-        $client->text("Hello WebSocket.org!");
+        $client->text('Hello WebSocket.org!');
         $message = $client->receive();
 
         $content = $message->getContent();
@@ -58,17 +60,17 @@ class TrainingWsServerTest extends TestCase
 
     public function test_auth_message()
     {
-        //Redis::subscribe(['training'], function () {});
+        // Redis::subscribe(['training'], function () {});
 
         $client = $this->initializeWebSocketClient();
 
-        $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
+        $client->text(json_encode(['type' => 'auth', 'data' => ['token' => 'token']]));
 
         $message = $client->receive();
 
         $messageType = json_decode($message->getPayload())->type ?? null;
         $this->assertEquals($messageType, 'auth_success');
-        info('message: ' . $message->getContent() . '');
+        info('message: '.$message->getContent().'');
         $client->close();
     }
 
@@ -76,16 +78,16 @@ class TrainingWsServerTest extends TestCase
     {
         $client = $this->initializeWebSocketClient();
 
-        $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
+        $client->text(json_encode(['type' => 'auth', 'data' => ['token' => 'token']]));
 
         $message = $client->receive();
         $messageType = json_decode($message->getPayload())->type ?? null;
         $this->assertEquals('auth_success', $messageType);
 
-        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'training.121']));
+        $client->text(json_encode(['type' => 'subscribe', 'data' => ['channel' => 'training.121']]));
 
         $message = $client->receive();
-        info('message: ' . $message->getContent() . '');;
+        info('message: '.$message->getContent().'');
         $messageType = json_decode($message->getPayload())->type ?? null;
         $this->assertEquals('subscribe_success', $messageType);
     }
@@ -95,28 +97,30 @@ class TrainingWsServerTest extends TestCase
         $client = $this->initializeWebSocketClient();
         $client->setTimeout(5);
 
-        $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
+        $client->text(json_encode(['type' => 'auth', 'data' => ['token' => 'token']]));
         $client->receive();
 
-        $client->text(json_encode(['type' => 'subscribe', 'channel' => 'training.121']));
+        $client->text(json_encode(['type' => 'subscribe', 'data' => ['channel' => 'training.121']]));
         $client->receive();
 
         Log::info('Publishing message via external API endpoint');
 
-        $apiUrl = env('API_BASE_URI', '') . 'send-to-wss';
+        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
 
         try {
             $response = Http::post($apiUrl, [
                 'channel' => 'training',
                 'type' => 'training_completed',
-                'training_id' => '121',
-                'completed_at' => now()->toIso8601String(),
+                'data' => [
+                    'training_id' => '121',
+                    'completed_at' => now()->toIso8601String(),
+                ],
             ]);
 
-            $this->assertTrue($response->successful(), 'API request failed with status: ' . $response->status());
+            $this->assertTrue($response->successful(), 'API request failed with status: '.$response->status());
             Log::info('API request successful');
         } catch (\Exception $e) {
-            $this->markTestSkipped('Cannot connect to API endpoint: ' . $apiUrl . '. Error: ' . $e->getMessage());
+            $this->markTestSkipped('Cannot connect to API endpoint: '.$apiUrl.'. Error: '.$e->getMessage());
         }
 
         sleep(1);
@@ -125,17 +129,17 @@ class TrainingWsServerTest extends TestCase
             $message = $client->receive();
 
             $payload = json_decode($message->getPayload());
-            Log::info('Received message: ' . $message->getPayload());
+            Log::info('Received message: '.$message->getPayload());
             $this->assertEquals('training_completed', $payload->type ?? null);
         } catch (\Exception $e) {
-            Log::error('Failed to receive message: ' . $e->getMessage());
+            Log::error('Failed to receive message: '.$e->getMessage());
             $this->fail('No message received');
         }
     }
 
     protected function startWebSocketServer(): array
     {
-        $cmd = "APP_ENV=testing php artisan websocket:serve > /dev/null 2>&1 & echo $!";
+        $cmd = 'APP_ENV=testing php artisan websocket:serve > /dev/null 2>&1 & echo $!';
 
         $output = [];
         exec($cmd, $output);

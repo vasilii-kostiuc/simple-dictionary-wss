@@ -10,7 +10,7 @@ class UnknownApiMessageHandler implements ApiMessageHandlerInterface
     {
         Log::warning('Unknown API message type', [
             'channel' => $channel,
-            'payload' => $payload
+            'payload' => $payload,
         ]);
     }
 }

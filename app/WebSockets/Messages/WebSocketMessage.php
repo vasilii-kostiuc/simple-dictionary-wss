@@ -5,6 +5,7 @@ namespace App\WebSockets\Messages;
 class WebSocketMessage
 {
     public string $type;
+
     public mixed $data;
 
     public function __construct(string $type, array $data)
@@ -20,5 +21,4 @@ class WebSocketMessage
             'data' => $this->data,
         ]);
     }
-
 }

@@ -21,18 +21,21 @@ class AuthMessageHandler implements MessageHandlerInterface
     {
         info(__METHOD__);
 
-        $data = json_decode($msg->getPayload(), true);
-        $token = $data['token'] ?? $data['data']['token'] ?? null;
+        $payload = json_decode($msg->getPayload(), true);
+        $data = $payload['data'] ?? [];
+        $token = $data['token'] ?? null;
 
-        if (!$token) {
+        if (! $token) {
             $conn->send(new ErrorMessage('token_required', []));
+
             return;
         }
 
         $userData = $this->apiClient->getUserByToken($token);
 
-        if (!$userData) {
+        if (! $userData) {
             $conn->send(new ErrorMessage('invalid_token', []));
+
             return;
         }
 

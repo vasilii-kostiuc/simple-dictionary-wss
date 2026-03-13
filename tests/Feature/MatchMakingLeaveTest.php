@@ -14,13 +14,16 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         // Join matchmaking
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'steps',
+            'data' => [
+                'match_type' => 'steps',
+            ],
         ]));
         $client->receive();
 
         // Leave matchmaking
         $client->text(json_encode([
             'type' => 'matchmaking.leave',
+            'data' => [],
         ]));
 
         $response = $client->receive();
@@ -33,7 +36,7 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         $found = false;
         foreach ($queueKeys as $queueKey) {
             $members = Redis::zrange($queueKey, 0, -1);
-            if (!empty($members)) {
+            if (! empty($members)) {
                 $found = true;
             }
         }
@@ -50,13 +53,16 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         // Join matchmaking
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'steps',
+            'data' => [
+                'match_type' => 'steps',
+            ],
         ]));
         $client->receive();
 
         // Leave matchmaking
         $client->text(json_encode([
             'type' => 'matchmaking.leave',
+            'data' => [],
         ]));
         $client->receive();
 
@@ -67,7 +73,7 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         $found = false;
         foreach ($queueKeys as $queueKey) {
             $members = Redis::zrange($queueKey, 0, -1);
-            if (!empty($members)) {
+            if (! empty($members)) {
                 $found = true;
             }
         }
@@ -83,6 +89,7 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         // Без auth сразу отправляем matchmaking.leave
         $client->text(json_encode([
             'type' => 'matchmaking.leave',
+            'data' => [],
         ]));
 
         $response = $client->receive();

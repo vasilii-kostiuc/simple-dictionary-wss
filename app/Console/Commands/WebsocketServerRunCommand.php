@@ -5,27 +5,35 @@ namespace App\Console\Commands;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
+use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
-use App\WebSockets\TrainingWsServer;
 use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
+use App\WebSockets\TrainingWsServer;
 use Illuminate\Console\Command;
 use React\EventLoop\Loop;
 use React\Socket\SocketServer;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
-use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 
 class WebsocketServerRunCommand extends Command
 {
     private MessageHandlerFactory $messageHandlerFactory;
+
     private MessageBrokerFactory $messageBrokerFactory;
+
     private ClientsStorageInterface $clientsStorage;
+
     private ApiMessageHandlerFactory $apiMessageHandlerFactory;
+
     private TrainingTimerStorageInterface $timerStorage;
+
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
+
     private SubscriptionsStorageInterface $subscriptionsStorage;
+
     private MatchMakingQueueInterface $matchMakingQueue;
+
     private InternalMessageHandlerFactory $internalMessageHandlerFactory;
 
     public function __construct(

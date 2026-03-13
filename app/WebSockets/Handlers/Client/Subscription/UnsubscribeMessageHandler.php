@@ -13,11 +13,12 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 class UnsubscribeMessageHandler implements MessageHandlerInterface
 {
     protected SubscriptionsStorageInterface $subscriptionsStorage;
+
     protected ClientsStorageInterface $clientsStorage;
 
     protected array $allowedChannels = [
         'training',
-        'matchmaking.queue'
+        'matchmaking.queue',
     ];
 
     public function __construct(SubscriptionsStorageInterface $subscriptionsStorage, ClientsStorageInterface $clientsStorage)
@@ -30,23 +31,27 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
     {
         info(__METHOD__);
         info($msg);
-        $msgPayload = json_decode($msg->getPayload());
-        $channel = $msgPayload->channel ?? "";
+        $payload = json_decode($msg->getPayload(), true);
+        $data = $payload['data'] ?? [];
+        $channel = $data['channel'] ?? '';
 
         $userId = $this->clientsStorage->getUserIdByConnection($from);
 
         if ($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $msgPayload));
+            $from->send(new ErrorMessage('not_authorized', $payload));
+
             return;
         }
 
         if (empty($channel)) {
-            $from->send(new ErrorMessage('channel_is_required', $msgPayload));
+            $from->send(new ErrorMessage('channel_is_required', $payload));
+
             return;
         }
 
-        if (!$this->isAllowedChannel($channel)) {
-            $from->send(new ErrorMessage('channel_is_not_allowed', $msgPayload));
+        if (! $this->isAllowedChannel($channel)) {
+            $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
+
             return;
         }
 

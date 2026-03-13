@@ -9,8 +9,10 @@ use WebSocket\Middleware\PingResponder;
 
 abstract class WebSocketTestCase extends TestCase
 {
-    protected const string WEBSOCKET_SERVER_URL = "ws://0.0.0.0:8080/";
+    protected const string WEBSOCKET_SERVER_URL = 'ws://0.0.0.0:8080/';
+
     protected $pid;
+
     protected $started = false;
 
     protected function setUp(): void
@@ -31,14 +33,15 @@ abstract class WebSocketTestCase extends TestCase
     {
         $client = new Client(static::WEBSOCKET_SERVER_URL);
         $client
-            ->addMiddleware(new CloseHandler())
-            ->addMiddleware(new PingResponder());
+            ->addMiddleware(new CloseHandler)
+            ->addMiddleware(new PingResponder);
+
         return $client;
     }
 
     protected function startWebSocketServer(): void
     {
-        $cmd = "APP_ENV=testing php artisan websocket:serve > /dev/null 2>&1 & echo $!";
+        $cmd = 'APP_ENV=testing php artisan websocket:serve > /dev/null 2>&1 & echo $!';
 
         $output = [];
         exec($cmd, $output);
@@ -50,13 +53,13 @@ abstract class WebSocketTestCase extends TestCase
 
     protected function authenticateClient(Client $client): void
     {
-        $client->text(json_encode(['type' => 'auth', 'token' => 'token']));
+        $client->text(json_encode(['type' => 'auth', 'data' => ['token' => 'token']]));
         $client->receive();
     }
 
     protected function subscribeClient(Client $client, string $channel): void
     {
-        $client->text(json_encode(['type' => 'subscribe', 'channel' => $channel]));
+        $client->text(json_encode(['type' => 'subscribe', 'data' => ['channel' => $channel]]));
         $client->receive();
     }
 }

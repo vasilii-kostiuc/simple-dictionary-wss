@@ -15,13 +15,15 @@ class PublishMatchMakingLeaveListener
         $this->messageBroker = $messageBroker;
     }
 
-
     public function handle(MatchMakingLeaveEvent $event): void
     {
         $this->messageBroker->publish('wss.matchmaking.leaved', json_encode([
             'type' => 'wss.matchmaking.leaved',
-            'user_id' => $event->userId,
+            'data' => [
+                'user_id' => $event->userId,
+            ],
         ]));
+        
 
         // Redis::publish('wss.matchmaking.leave', json_encode([
         //     'user_id' => $event->userId,

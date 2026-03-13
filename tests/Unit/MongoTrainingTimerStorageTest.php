@@ -13,7 +13,7 @@ class MongoTrainingTimerStorageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->storage = new MongoTrainingTimerStorage();
+        $this->storage = new MongoTrainingTimerStorage;
         $this->cleanupTimers();
     }
 
@@ -41,12 +41,13 @@ class MongoTrainingTimerStorageTest extends TestCase
         $reflection = new \ReflectionClass($this->storage);
         $property = $reflection->getProperty('collection');
         $property->setAccessible(true);
+
         return $property->getValue($this->storage);
     }
 
     public function test_add_timer(): void
     {
-        $trainingId = 'test_training_' . time();
+        $trainingId = 'test_training_'.time();
         $startedAt = Carbon::now();
         $durationSeconds = 300;
 
@@ -57,12 +58,12 @@ class MongoTrainingTimerStorageTest extends TestCase
 
     public function test_has_timer_returns_false_for_nonexistent(): void
     {
-        $this->assertFalse($this->storage->hasTimer('test_nonexistent_' . time()));
+        $this->assertFalse($this->storage->hasTimer('test_nonexistent_'.time()));
     }
 
     public function test_get_timer(): void
     {
-        $trainingId = 'test_training_' . time();
+        $trainingId = 'test_training_'.time();
         $startedAt = Carbon::now();
         $durationSeconds = 300;
 
@@ -79,13 +80,13 @@ class MongoTrainingTimerStorageTest extends TestCase
 
     public function test_get_timer_returns_null_for_nonexistent(): void
     {
-        $timer = $this->storage->getTimer('test_nonexistent_' . time());
+        $timer = $this->storage->getTimer('test_nonexistent_'.time());
         $this->assertNull($timer);
     }
 
     public function test_remove_timer_marks_as_expired(): void
     {
-        $trainingId = 'test_training_' . time();
+        $trainingId = 'test_training_'.time();
         $startedAt = Carbon::now();
         $durationSeconds = 300;
 
@@ -108,12 +109,12 @@ class MongoTrainingTimerStorageTest extends TestCase
     public function test_get_expired_timers(): void
     {
         // Добавляем таймер который уже истек
-        $expiredTrainingId = 'test_expired_' . time();
+        $expiredTrainingId = 'test_expired_'.time();
         $expiredStartedAt = Carbon::now()->subMinutes(10);
         $this->storage->addTimer($expiredTrainingId, $expiredStartedAt, 60); // истек 9 минут назад
 
         // Добавляем активный таймер
-        $activeTrainingId = 'test_active_' . time();
+        $activeTrainingId = 'test_active_'.time();
         $activeStartedAt = Carbon::now();
         $this->storage->addTimer($activeTrainingId, $activeStartedAt, 300); // истечет через 5 минут
 
@@ -128,7 +129,7 @@ class MongoTrainingTimerStorageTest extends TestCase
     public function test_get_expired_timers_excludes_already_expired_status(): void
     {
         // Добавляем истекший таймер
-        $trainingId = 'test_expired_' . time();
+        $trainingId = 'test_expired_'.time();
         $startedAt = Carbon::now()->subMinutes(10);
         $this->storage->addTimer($trainingId, $startedAt, 60);
 
@@ -148,7 +149,7 @@ class MongoTrainingTimerStorageTest extends TestCase
 
     public function test_update_existing_timer(): void
     {
-        $trainingId = 'test_training_' . time();
+        $trainingId = 'test_training_'.time();
         $startedAt = Carbon::now();
 
         // Добавляем таймер на 5 минут

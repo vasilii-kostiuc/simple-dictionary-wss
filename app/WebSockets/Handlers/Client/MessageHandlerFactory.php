@@ -15,8 +15,11 @@ use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 class MessageHandlerFactory
 {
     private SimpleDictionaryApiClientInterface $apiClient;
+
     private ClientsStorageInterface $clientsStorage;
+
     private SubscriptionsStorageInterface $subscriptionsStorage;
+
     private MatchMakingQueueInterface $matchMakingQueue;
 
     public function __construct(
@@ -31,22 +34,22 @@ class MessageHandlerFactory
         $this->matchMakingQueue = $matchMakingQueue;
     }
 
-    public function create(string $type , object $payload): MessageHandlerInterface
+    public function create(string $type, object $payload): MessageHandlerInterface
     {
-        if($type==='subscribe') {
-            $channel = $payload->channel?? '';
+        if ($type === 'subscribe') {
+            $channel = $payload->channel ?? '';
         }
 
         return match ($type) {
             'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
-            'subscribe' => match($channel){
+            'subscribe' => match ($channel) {
                 'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue),
                 default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
             },
             'unsubscribe' => new UnsubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
             'matchmaking.join' => new MatchMakingJoinHandler($this->clientsStorage, $this->matchMakingQueue),
             'matchmaking.leave' => new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue),
-            default => new UnknownMessageHandler()
+            default => new UnknownMessageHandler
         };
     }
 }

@@ -5,7 +5,6 @@ namespace App\WebSockets\Handlers\Client\Subscription;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
-use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Ratchet\ConnectionInterface;
@@ -14,6 +13,7 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 class SubscribeMessageHandler implements MessageHandlerInterface
 {
     protected SubscriptionsStorageInterface $subscriptionsStorage;
+
     protected ClientsStorageInterface $clientsStorage;
 
     protected array $allowedChannels = [
@@ -31,28 +31,32 @@ class SubscribeMessageHandler implements MessageHandlerInterface
     {
         info(__METHOD__);
         info($msg);
-        $msgPayload = json_decode($msg->getPayload());
-        $channel = $msgPayload->channel ?? "";
+        $payload = json_decode($msg->getPayload(), true);
+        $data = $payload['data'] ?? [];
+        $channel = $data['channel'] ?? '';
 
         $userId = $this->clientsStorage->getUserIdByConnection($from);
 
         if ($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $msgPayload));
+            $from->send(new ErrorMessage('not_authorized', $payload));
+
             return;
         }
 
         if (empty($channel)) {
-            $from->send(new ErrorMessage('channel_is_required', $msgPayload));
+            $from->send(new ErrorMessage('channel_is_required', $payload));
+
             return;
         }
 
-        if (!$this->isAllowedChannel($channel)) {
-            $from->send(new ErrorMessage('channel_is_not_allowed', $msgPayload));
+        if (! $this->isAllowedChannel($channel)) {
+            $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
+
             return;
         }
 
         $this->subscriptionsStorage->subscribe($from, $channel);
-        
+
         $from->send(new SubscribeSuccessMessage($channel));
     }
 
@@ -61,7 +65,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         foreach ($this->allowedChannels as $pattern) {
             if (str_ends_with($pattern, '.*')) {
                 $prefix = substr($pattern, 0, -2);
-                if ($channel === $prefix || str_starts_with($channel, $prefix . '.')) {
+                if ($channel === $prefix || str_starts_with($channel, $prefix.'.')) {
                     return true;
                 }
             } elseif ($channel === $pattern) {

@@ -12,7 +12,9 @@ use React\EventLoop\LoopInterface;
 class TrainingStartHandler implements ApiMessageHandlerInterface
 {
     private LoopInterface $loop;
+
     private TrainingTimerStorageInterface $timerStorage;
+
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
 
     public function __construct(LoopInterface $loop, TrainingTimerStorageInterface $timerStorage, SimpleDictionaryApiClientInterface $simpleDictionaryApiClient)
@@ -25,17 +27,19 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
     public function handle(string $channel, mixed $payload): void
     {
         Log::info('Training started', $payload);
-        $trainingId = $payload['training_id'] ?? null;
-        $completionType = $payload['completion_type'] ? TrainingCompletionType::from($payload['completion_type']) : null;
+        $data = $payload['data'] ?? [];
+        $trainingId = $data['training_id'] ?? null;
+        $completionType = isset($data['completion_type']) ? TrainingCompletionType::from($data['completion_type']) : null;
 
-        if (!$trainingId) {
+        if (! $trainingId) {
             Log::error('TrainingStartHandler: Missing training_id', ['payload' => $payload]);
+
             return;
         }
 
         if ($completionType == TrainingCompletionType::Time) {
-            $startedAt = Carbon::parse($payload['started_at']);
-            $this->startTimer($trainingId, $startedAt, $payload['completion_type_params']['duration'] * 60);
+            $startedAt = Carbon::parse($data['started_at']);
+            $this->startTimer($trainingId, $startedAt, $data['completion_type_params']['duration'] * 60);
         }
     }
 
@@ -54,6 +58,7 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
                 $this->timerStorage->removeTimer($trainingId);
             } else {
                 Log::info("Timer for training {$trainingId} was already removed, skipping expiration.");
+
                 return;
             }
         });

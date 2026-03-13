@@ -14,21 +14,23 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
 
         return new UserData(
             id: $id,
-            name: 'John Doe ' . $id,
-            email: 'john.doe' . $id . '@example.com',
+            name: 'John Doe '.$id,
+            email: 'john.doe'.$id.'@example.com',
             avatar: 'https://example.com/avatar.jpg',
         );
     }
 
     public function expire(string|int $trainingId): array
     {
-        $apiUrl = env('API_BASE_URI', '') . 'send-to-wss';
+        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
 
         Http::post($apiUrl, [
             'channel' => 'training',
             'type' => 'training_completed',
-            'training_id' => '121',
-            'completed_at' => now()->toIso8601String(),
+            'data' => [
+                'training_id' => '121',
+                'completed_at' => now()->toIso8601String(),
+            ],
         ]);
 
         return [];

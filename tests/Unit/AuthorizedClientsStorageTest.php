@@ -14,13 +14,14 @@ class AuthorizedClientsStorageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->storage = new AuthorizedClientsStorage();
+        $this->storage = new AuthorizedClientsStorage;
     }
 
     private function createMockConnection(int $resourceId = 1): ConnectionInterface
     {
         $conn = $this->createMock(ConnectionInterface::class);
         $conn->resourceId = $resourceId;
+
         return $conn;
     }
 
@@ -28,8 +29,8 @@ class AuthorizedClientsStorageTest extends TestCase
     {
         return new UserData(
             id: $id,
-            name: 'User ' . $id,
-            email: 'user' . $id . '@example.com',
+            name: 'User '.$id,
+            email: 'user'.$id.'@example.com',
             avatar: null,
         );
     }

@@ -13,13 +13,15 @@ class MatchMakingJoinTest extends WebSocketTestCase
         $this->authenticateClient($client);
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'steps',
+            'data' => [
+                'match_type' => 'steps',
+            ],
         ]));
 
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        info("Received matchmaking.join response: " . $response->getPayload());
+        info('Received matchmaking.join response: '.$response->getPayload());
 
         $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
 
@@ -34,7 +36,9 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'steps',
+            'data' => [
+                'match_type' => 'steps',
+            ],
         ]));
 
         $client->receive();
@@ -58,6 +62,7 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         $client->text(json_encode([
             'type' => 'matchmaking.join',
+            'data' => [],
         ]));
 
         $response = $client->receive();
@@ -77,8 +82,10 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'time',
-            'match_params' => ['difficulty' => 'hard'],
+            'data' => [
+                'match_type' => 'time',
+                'match_params' => ['difficulty' => 'hard'],
+            ],
         ]));
 
         $response = $client->receive();
@@ -96,17 +103,18 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         $client->text(json_encode([
             'type' => 'matchmaking.join',
-            'match_type' => 'steps',
+            'data' => [
+                'match_type' => 'steps',
+            ],
         ]));
 
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        info("Received matchmaking.join response without auth: " . $response->getPayload());
+        info('Received matchmaking.join response without auth: '.$response->getPayload());
         $this->assertEquals('error', $payload->type ?? null);
         $this->assertEquals('not_authorized', $payload->data->error ?? null);
 
         $client->close();
     }
 }
-

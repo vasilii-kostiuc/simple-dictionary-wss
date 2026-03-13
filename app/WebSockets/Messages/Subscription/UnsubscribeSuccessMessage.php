@@ -15,7 +15,7 @@ class UnsubscribeSuccessMessage
     {
         return json_encode([
             'type' => 'unsubscribe_success',
-            'channel' => $this->channel
+            'channel' => $this->channel,
         ]);
     }
 }

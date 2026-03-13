@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Redis;
 class RedisMatchMakingQueue implements MatchMakingQueueInterface
 {
     private const QUEUE_PREFIX = 'matchmaking:queue:';
+
     private const USER_DATA_PREFIX = 'matchmaking:user:';
+
     private const QUEUE_TTL = 300; // 5 минут
 
     public function add(UserData $userData, array $matchParams): void
@@ -68,7 +70,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
 
     public function allQueues(): array
     {
-        $pattern = self::QUEUE_PREFIX . '*';
+        $pattern = self::QUEUE_PREFIX.'*';
         $keys = Redis::keys($pattern);
 
         $result = [];
@@ -97,12 +99,12 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         $users = Redis::zrange($queueKey, 0, -1);
 
         foreach ($users as $candidateUserId) {
-            if ((int)$candidateUserId !== $userId) {
+            if ((int) $candidateUserId !== $userId) {
                 Redis::zrem($queueKey, $userId, $candidateUserId);
                 Redis::del($this->getUserDataKey($userId));
                 Redis::del($this->getUserDataKey($candidateUserId));
 
-                return (int)$candidateUserId;
+                return (int) $candidateUserId;
             }
         }
 
@@ -129,12 +131,12 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     private function getQueueKey(array $matchParams): string
     {
         ksort($matchParams);
-        return self::QUEUE_PREFIX . md5(json_encode($matchParams));
+
+        return self::QUEUE_PREFIX.md5(json_encode($matchParams));
     }
 
     private function getUserDataKey(int $userId): string
     {
-        return self::USER_DATA_PREFIX . $userId;
+        return self::USER_DATA_PREFIX.$userId;
     }
 }
-

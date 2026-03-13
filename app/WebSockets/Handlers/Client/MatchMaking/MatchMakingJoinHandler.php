@@ -21,18 +21,20 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        $data = json_decode($msg->getPayload(), true);
+        $payload = json_decode($msg->getPayload(), true);
+        $data = $payload['data'] ?? [];
         $userData = $this->clientsStorage->getUserData($from);
 
         if ($userData === null) {
-            $from->send(new ErrorMessage('not_authorized', $data ?? []));
+            $from->send(new ErrorMessage('not_authorized', $payload ?? []));
+
             return;
         }
 
         $matchType = MatchType::tryFrom($data['match_type'] ?? MatchType::Steps->value);
-
         if ($matchType === null) {
-            $from->send(new ErrorMessage('invalid_match_type', $data ?? []));
+            $from->send(new ErrorMessage('invalid_match_type', $payload ?? []));
+
             return;
         }
 

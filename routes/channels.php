@@ -1,9 +1,10 @@
 <?php
+
 //
-//use Illuminate\Support\Facades\Broadcast;
-//use Illuminate\Support\Facades\Http;
+// use Illuminate\Support\Facades\Broadcast;
+// use Illuminate\Support\Facades\Http;
 //
-//Broadcast::channel('training.{id}', function (int $id, \Psr\Http\Client\ClientInterface $client) {
+// Broadcast::channel('training.{id}', function (int $id, \Psr\Http\Client\ClientInterface $client) {
 //    $token = request()->bearerToken();
 //    $response = $client->get('/api/user', [
 //        'headers' => [
@@ -19,4 +20,4 @@
 //    $user = json_decode($response->getBody(), true);
 //
 //    return true;
-//});
+// });
