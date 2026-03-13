@@ -128,6 +128,33 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         return (int) Redis::zcard($this->getQueueKey($matchParams));
     }
 
+    public function isUserInQueue(int $userId): bool
+    {
+        $userDataKey = $this->getUserDataKey($userId);
+
+        return Redis::exists($userDataKey) > 0;
+    }
+
+    public function extract(int $userId): ?array
+    {
+        $userDataKey = $this->getUserDataKey($userId);
+        $userData = json_decode(Redis::get($userDataKey), true);
+
+        if ($userData === null) {
+            return null;
+        }
+
+        $this->remove($userId);
+
+        return [
+            'userId' => $userData['userId'],
+            'name' => $userData['name'],
+            'email' => $userData['email'],
+            'avatar' => $userData['avatar'],
+            'matchParams' => $userData['matchParams'],
+        ];
+    }
+
     private function getQueueKey(array $matchParams): string
     {
         ksort($matchParams);

@@ -19,4 +19,8 @@ interface MatchMakingQueueInterface
     public function clear(array $matchParams): void;
 
     public function count(array $matchParams): int;
+
+    public function isUserInQueue(int $userId): bool;
+
+    public function extract(int $userId): ?array;
 }
