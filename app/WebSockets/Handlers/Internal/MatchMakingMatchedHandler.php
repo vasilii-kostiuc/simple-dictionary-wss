@@ -4,9 +4,9 @@ namespace App\WebSockets\Handlers\Internal;
 
 class MatchMakingMatchedHandler extends BaseInternalMatchMakingHandler
 {
-    public function handle(string $channel, mixed $data): void
+    public function handle(string $channel, mixed $payload): void
     {
-        info(message: __METHOD__ . ' Received message on channel: ' . $channel . ' with payload: ' . json_encode($data));
+        info(message: __METHOD__ . ' Received message on channel: ' . $channel . ' with payload: ' . json_encode($payload));
 
         $this->broadcastQueueUpdated();
     }

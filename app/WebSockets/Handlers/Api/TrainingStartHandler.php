@@ -22,20 +22,20 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
     }
 
-    public function handle(string $channel, mixed $data): void
+    public function handle(string $channel, mixed $payload): void
     {
-        Log::info('Training started', $data);
-        $trainingId = $data['training_id'] ?? null;
-        $completionType = $data['completion_type'] ? TrainingCompletionType::from($data['completion_type']) : null;
+        Log::info('Training started', $payload);
+        $trainingId = $payload['training_id'] ?? null;
+        $completionType = $payload['completion_type'] ? TrainingCompletionType::from($payload['completion_type']) : null;
 
         if (!$trainingId) {
-            Log::error('TrainingStartHandler: Missing training_id', ['data' => $data]);
+            Log::error('TrainingStartHandler: Missing training_id', ['payload' => $payload]);
             return;
         }
 
         if ($completionType == TrainingCompletionType::Time) {
-            $startedAt = Carbon::parse($data['started_at']);
-            $this->startTimer($trainingId, $startedAt, $data['completion_type_params']['duration'] * 60);
+            $startedAt = Carbon::parse($payload['started_at']);
+            $this->startTimer($trainingId, $startedAt, $payload['completion_type_params']['duration'] * 60);
         }
     }
 

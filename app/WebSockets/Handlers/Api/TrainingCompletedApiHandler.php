@@ -15,20 +15,20 @@ class TrainingCompletedApiHandler implements ApiMessageHandlerInterface
         $this->subscriptionsStorage = $subscriptionsStorage;
     }
 
-    public function handle(string $channel, mixed $data): void
+    public function handle(string $channel, mixed $payload): void
     {
         Log::info('Training completed broker message received', [
             'channel' => $channel,
-            'data' => $data
+            'payload' => $payload
         ]);
 
-        $trainingId = $data['training_id'] ?? null;
+        $trainingId = $payload['training_id'] ?? null;
 
         $count = $this->subscriptionsStorage->countByChannel("training.$trainingId");
         Log::info("Current number of subscriptions is $count");
 
         $connections = $this->subscriptionsStorage->getConnectionsByChannel('training.' . $trainingId);
-        $message = new TrainingCompletedMessage($trainingId, $data['completed_at']);
+        $message = new TrainingCompletedMessage($trainingId, $payload['completed_at']);
 
         foreach ($connections as $connectionId => $conn) {
             Log::info('Sending training completed message to connection', ['connection_id' => $connectionId]);
