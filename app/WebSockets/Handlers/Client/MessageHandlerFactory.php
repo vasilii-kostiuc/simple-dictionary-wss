@@ -37,7 +37,7 @@ class MessageHandlerFactory
     public function create(string $type, object $payload): MessageHandlerInterface
     {
         if ($type === 'subscribe') {
-            $channel = $payload->channel ?? '';
+            $channel = $payload->data?->channel ?? '';
         }
 
         return match ($type) {
