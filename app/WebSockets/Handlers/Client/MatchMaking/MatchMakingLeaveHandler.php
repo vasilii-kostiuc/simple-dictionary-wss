@@ -4,7 +4,6 @@ namespace App\WebSockets\Handlers\Client\MatchMaking;
 
 use App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
-use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchMaking\MatchMakingLeaveSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
@@ -29,12 +28,6 @@ class MatchMakingLeaveHandler implements MessageHandlerInterface
     {
         $payload = json_decode($msg->getPayload(), true);
         $userId = $this->clientsStorage->getUserIdByConnection($from);
-
-        if ($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $payload ?? []));
-
-            return;
-        }
 
         $this->matchMakingQueue->remove($userId);
 

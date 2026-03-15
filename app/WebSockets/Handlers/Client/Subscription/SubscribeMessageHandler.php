@@ -37,12 +37,6 @@ class SubscribeMessageHandler implements MessageHandlerInterface
 
         $userId = $this->clientsStorage->getUserIdByConnection($from);
 
-        if ($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $payload));
-
-            return;
-        }
-
         if (empty($channel)) {
             $from->send(new ErrorMessage('channel_is_required', $payload));
 
@@ -65,7 +59,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         foreach ($this->allowedChannels as $pattern) {
             if (str_ends_with($pattern, '.*')) {
                 $prefix = substr($pattern, 0, -2);
-                if ($channel === $prefix || str_starts_with($channel, $prefix.'.')) {
+                if ($channel === $prefix || str_starts_with($channel, $prefix . '.')) {
                     return true;
                 }
             } elseif ($channel === $pattern) {

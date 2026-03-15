@@ -37,12 +37,6 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
 
         $userId = $this->clientsStorage->getUserIdByConnection($from);
 
-        if ($userId === null) {
-            $from->send(new ErrorMessage('not_authorized', $payload));
-
-            return;
-        }
-
         if (empty($channel)) {
             $from->send(new ErrorMessage('channel_is_required', $payload));
 

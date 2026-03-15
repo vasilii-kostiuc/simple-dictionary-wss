@@ -42,13 +42,25 @@ class MessageHandlerFactory
 
         return match ($type) {
             'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
-            'subscribe' => match ($channel) {
-                'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue),
-                default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
-            },
-            'unsubscribe' => new UnsubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
-            'matchmaking.join' => new MatchMakingJoinHandler($this->clientsStorage, $this->matchMakingQueue),
-            'matchmaking.leave' => new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue),
+            'subscribe' => new AuthorizedMessageHandler(
+                match ($channel) {
+                    'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue),
+                    default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+                },
+                $this->clientsStorage
+            ),
+            'unsubscribe' => new AuthorizedMessageHandler(
+                new UnsubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+                $this->clientsStorage
+            ),
+            'matchmaking.join' => new AuthorizedMessageHandler(
+                new MatchMakingJoinHandler($this->clientsStorage, $this->matchMakingQueue),
+                $this->clientsStorage
+            ),
+            'matchmaking.leave' => new AuthorizedMessageHandler(
+                new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue),
+                $this->clientsStorage
+            ),
             default => new UnknownMessageHandler
         };
     }

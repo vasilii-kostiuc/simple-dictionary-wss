@@ -5,7 +5,6 @@ namespace App\WebSockets\Handlers\Client\MatchMaking;
 use App\WebSockets\Enums\MatchType;
 use App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
-use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchMaking\MatchMakingJoinSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
@@ -24,12 +23,6 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
         $userData = $this->clientsStorage->getUserData($from);
-
-        if ($userData === null) {
-            $from->send(new ErrorMessage('not_authorized', $payload ?? []));
-
-            return;
-        }
 
         $matchType = MatchType::tryFrom($data['match_type'] ?? MatchType::Steps->value);
         if ($matchType === null) {

@@ -2,11 +2,8 @@
 
 namespace App\WebSockets\Handlers\Client\MatchMaking;
 
-use App\WebSockets\Enums\MatchType;
-use App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
-use App\WebSockets\Messages\MatchMaking\MatchMakingJoinSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use Ratchet\ConnectionInterface;
@@ -17,20 +14,13 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
     public function __construct(
         private readonly ClientsStorageInterface $clientsStorage,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
-    ) {
-    }
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
         $userData = $this->clientsStorage->getUserData($from);
-
-        if ($userData === null) {
-            $from->send(new ErrorMessage('not_authorized', $payload ?? []));
-
-            return;
-        }
 
         $opponentId = $data['opponent_id'] ?? null;
         if ($opponentId === null) {
@@ -53,9 +43,5 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
         $this->matchMakingQueue->remove($userData->id);
         $this->matchMakingQueue->remove($opponentId);
-
-
-
-
     }
 }
