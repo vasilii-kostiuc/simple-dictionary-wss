@@ -39,8 +39,8 @@ class AppServiceProvider extends ServiceProvider
             return new RedisMatchMakingQueue;
         });
 
-        $this->app->singleton(\App\WebSockets\Storage\Timers\TrainingTimerStorageInterface::class, function () {
-            return new \App\WebSockets\Storage\Timers\MongoTrainingTimerStorage;
+        $this->app->singleton(\App\WebSockets\Storage\Timers\TimerStorageInterface::class, function () {
+            return new \App\WebSockets\Storage\Timers\MongoTimerStorage;
         });
 
         $this->app->singleton(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface::class, function () {

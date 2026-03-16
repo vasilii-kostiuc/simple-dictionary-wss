@@ -1,30 +1,32 @@
 <?php
 
-namespace App\WebSockets\Handlers\Api;
+namespace App\WebSockets\Handlers\Api\Match;
 
+use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Enums\TimerType;
 use App\WebSockets\Enums\TrainingCompletionType;
-use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
+use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use React\EventLoop\LoopInterface;
 
-class TrainingStartHandler implements ApiMessageHandlerInterface
+class MatchStartedHandler implements ApiMessageHandlerInterface
 {
     private LoopInterface $loop;
 
-    private TrainingTimerStorageInterface $timerStorage;
+    private TimerStorageInterface $timerStorage;
 
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
 
-    public function __construct(LoopInterface $loop, TrainingTimerStorageInterface $timerStorage, SimpleDictionaryApiClientInterface $simpleDictionaryApiClient)
+    public function __construct(LoopInterface $loop, TimerStorageInterface $timerStorage, SimpleDictionaryApiClientInterface $simpleDictionaryApiClient)
     {
         $this->loop = $loop;
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
     }
 
-    public function handle(string $channel, mixed $payload): void
+    public function handle(mixed $payload): void
     {
         Log::info('Training started', $payload);
         $data = $payload['data'] ?? [];
@@ -47,15 +49,15 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
     {
         Log::info("Starting timer for training {$trainingId}, duration: {$durationSeconds}s");
 
-        $this->timerStorage->addTimer($trainingId, $startedAt, $durationSeconds);
+        $this->timerStorage->addTimer(TimerType::Match ->value, $trainingId, $startedAt, $durationSeconds);
         $this->loop->addTimer($durationSeconds, function () use ($trainingId) {
             Log::info("Timer expired for training {$trainingId}, calling API to complete");
 
-            if ($this->timerStorage->hasTimer($trainingId)) {
+            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $trainingId)) {
                 Log::info("Timer for training {$trainingId} is valid, proceeding to expire training.");
 
                 $this->simpleDictionaryApiClient->expire($trainingId);
-                $this->timerStorage->removeTimer($trainingId);
+                $this->timerStorage->removeTimer(TimerType::Match ->value, $trainingId);
             } else {
                 Log::info("Timer for training {$trainingId} was already removed, skipping expiration.");
 

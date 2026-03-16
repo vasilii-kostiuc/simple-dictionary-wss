@@ -16,7 +16,7 @@ class TrainingStartTest extends WebSocketTestCase
 
         try {
             $response = Http::post($apiUrl, [
-                'channel' => 'training',
+                'channel' => 'api.training',
                 'type' => 'training_started',
                 'data' => [
                     'training_id' => '121',

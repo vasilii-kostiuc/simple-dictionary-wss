@@ -9,4 +9,6 @@ interface SimpleDictionaryApiClientInterface
     public function getUserByToken(string $token): ?UserData;
 
     public function expire(string|int $trainingId): array;
+
+    public function createMatch(array $participants, array $matchParams): array;
 }

@@ -109,7 +109,7 @@ class TrainingWsServerTest extends TestCase
 
         try {
             $response = Http::post($apiUrl, [
-                'channel' => 'training',
+                'channel' => 'api.training',
                 'type' => 'training_completed',
                 'data' => [
                     'training_id' => '121',

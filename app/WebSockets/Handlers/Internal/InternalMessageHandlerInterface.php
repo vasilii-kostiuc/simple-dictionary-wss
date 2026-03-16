@@ -4,5 +4,5 @@ namespace App\WebSockets\Handlers\Internal;
 
 interface InternalMessageHandlerInterface
 {
-    public function handle(string $channel, mixed $payload): void;
+    public function handle(mixed $payload): void;
 }

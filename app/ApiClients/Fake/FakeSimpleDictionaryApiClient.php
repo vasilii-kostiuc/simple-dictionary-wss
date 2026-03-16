@@ -25,7 +25,7 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
         $apiUrl = env('API_BASE_URI', '').'send-to-wss';
 
         Http::post($apiUrl, [
-            'channel' => 'training',
+            'channel' => 'api.training',
             'type' => 'training_completed',
             'data' => [
                 'training_id' => '121',
@@ -34,5 +34,20 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
         ]);
 
         return [];
+    }
+
+    public function createMatch(array $participants, array $matchParams): array
+    {
+        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
+
+        return [
+            'status' => 'success',
+            'message' => 'Match created successfully',
+            'data' => [
+                'match_id' => rand(1000, 9999),
+                'participants' => $participants,
+                'match_params' => $matchParams,
+            ],
+        ];
     }
 }

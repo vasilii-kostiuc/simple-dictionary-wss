@@ -66,4 +66,23 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
         return [];
     }
+
+    public function createMatch(array $participants, array $matchParams): array
+    {
+        $matchCreateData = [
+            'lang_from_id' => $matchParams['lang_from_id'] ?? 1,//English by default
+            'lang_to_id' => $matchParams['lang_to_id'] ?? 2,//Russian by default
+            'match_type' => $matchParams['match_type'] ?? MatchType::Time->value,
+            'match_type_params' => $matchParams['match_type_params'] ?? ['duration' => '5'],
+            'participants' => $participants,
+            'match_params' => $matchParams,
+        ];
+
+
+        $response = $this->call('POST', 'matches', [
+            'json' => $matchCreateData,
+        ]);
+
+        return $response;
+    }
 }

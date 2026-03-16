@@ -9,7 +9,7 @@ use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
-use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
+use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use App\WebSockets\TrainingWsServer;
 use Illuminate\Console\Command;
 use React\EventLoop\Loop;
@@ -26,7 +26,7 @@ class WebsocketServerRunCommand extends Command
 
     private ApiMessageHandlerFactory $apiMessageHandlerFactory;
 
-    private TrainingTimerStorageInterface $timerStorage;
+    private TimerStorageInterface $timerStorage;
 
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
 
@@ -41,10 +41,10 @@ class WebsocketServerRunCommand extends Command
         MessageBrokerFactory $messageBrokerFactory,
         ClientsStorageInterface $clientsStorage,
         SubscriptionsStorageInterface $subscriptionsStorage,
-        TrainingTimerStorageInterface $timerStorage,
+        TimerStorageInterface $timerStorage,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
         MatchMakingQueueInterface $matchMakingQueue,
-        InternalMessageHandlerFactory $internalMessageHandlerFactory
+        InternalMessageHandlerFactory $internalMessageHandlerFactory,
     ) {
         parent::__construct();
         $this->messageHandlerFactory = $messageHandlerFactory;
@@ -54,7 +54,7 @@ class WebsocketServerRunCommand extends Command
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
         $this->matchMakingQueue = $matchMakingQueue;
-        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->timerStorage);
+        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->clientsStorage, $this->timerStorage);
         $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
     }
 
