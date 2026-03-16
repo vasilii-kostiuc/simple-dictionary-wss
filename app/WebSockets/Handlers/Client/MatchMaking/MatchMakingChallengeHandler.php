@@ -53,6 +53,6 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
             ['id' => $opponentId, 'type' => 'user'],
         ];
 
-        $this->apiClient->createMatch($userData->id, $matchParams);
+        $this->apiClient->createMatch($participants, $matchParams);
     }
 }
