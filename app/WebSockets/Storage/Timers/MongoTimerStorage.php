@@ -8,7 +8,7 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Client;
 use MongoDB\Collection;
 
-class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
+class MongoTimerStorage implements TimerStorageInterface
 {
     private Collection $collection;
 
@@ -19,25 +19,33 @@ class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
         $client = new Client("mongodb://{$mongoHost}:{$mongoPort}");
 
         $this->collection = $client->selectDatabase(env('MONGODB_DATABASE', 'wss_db'))
-            ->selectCollection('training_timers');
+            ->selectCollection('timers');
 
         try {
             $this->collection->createIndex(['expires_at' => 1]);
-            $this->collection->createIndex(['training_id' => 1], ['unique' => true]);
+            $this->collection->createIndex(['timer_key' => 1], ['unique' => true]);
         } catch (\Exception $e) {
             Log::warning('Failed to create MongoDB indexes: '.$e->getMessage());
         }
     }
 
-    public function addTimer(string $trainingId, Carbon $startedAt, int $durationSeconds): void
+    private function getTimerKey(string $type, string $id): string
     {
+        return "{$type}:{$id}";
+    }
+
+    public function addTimer(string $type, string $id, Carbon $startedAt, int $durationSeconds): void
+    {
+        $timerKey = $this->getTimerKey($type, $id);
         $expiresAt = new UTCDateTime(($startedAt->timestamp + $durationSeconds) * 1000);
 
         $this->collection->updateOne(
-            ['training_id' => $trainingId],
+            ['timer_key' => $timerKey],
             [
                 '$set' => [
-                    'training_id' => $trainingId,
+                    'timer_key' => $timerKey,
+                    'type' => $type,
+                    'entity_id' => $id,
                     'started_at' => new UTCDateTime($startedAt->timestamp * 1000),
                     'expires_at' => $expiresAt,
                     'duration_seconds' => $durationSeconds,
@@ -49,16 +57,20 @@ class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
         );
 
         Log::info('Timer added to MongoDB', [
-            'training_id' => $trainingId,
+            'timer_key' => $timerKey,
+            'type' => $type,
+            'entity_id' => $id,
             'duration' => $durationSeconds,
             'expires_at' => date('Y-m-d H:i:s', time() + $durationSeconds),
         ]);
     }
 
-    public function removeTimer(string $trainingId): void
+    public function removeTimer(string $type, string $id): void
     {
+        $timerKey = $this->getTimerKey($type, $id);
+
         $result = $this->collection->updateOne(
-            ['training_id' => $trainingId],
+            ['timer_key' => $timerKey],
             [
                 '$set' => [
                     'status' => 'expired',
@@ -68,7 +80,9 @@ class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
         );
 
         Log::info('Timer marked as expired in MongoDB', [
-            'training_id' => $trainingId,
+            'timer_key' => $timerKey,
+            'type' => $type,
+            'entity_id' => $id,
             'modified_count' => $result->getModifiedCount(),
         ]);
     }
@@ -85,7 +99,9 @@ class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
         $timers = [];
         foreach ($cursor as $document) {
             $timers[] = [
-                'training_id' => $document['training_id'],
+                'type' => $document['type'],
+                'entity_id' => $document['entity_id'],
+                'timer_key' => $document['timer_key'],
                 'started_at' => $document['started_at']->toDateTime(),
                 'expires_at' => $document['expires_at']->toDateTime(),
                 'duration_seconds' => $document['duration_seconds'],
@@ -95,18 +111,22 @@ class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
         return $timers;
     }
 
-    public function hasTimer(string $trainingId): bool
+    public function hasTimer(string $type, string $id): bool
     {
+        $timerKey = $this->getTimerKey($type, $id);
+
         return $this->collection->countDocuments([
-            'training_id' => $trainingId,
+            'timer_key' => $timerKey,
             'status' => 'active',
         ]) > 0;
     }
 
-    public function getTimer(string $trainingId): ?array
+    public function getTimer(string $type, string $id): ?array
     {
+        $timerKey = $this->getTimerKey($type, $id);
+
         $document = $this->collection->findOne([
-            'training_id' => $trainingId,
+            'timer_key' => $timerKey,
             'status' => 'active',
         ]);
 
@@ -115,7 +135,9 @@ class MongoTrainingTimerStorage implements TrainingTimerStorageInterface
         }
 
         return [
-            'training_id' => $document['training_id'],
+            'type' => $document['type'],
+            'entity_id' => $document['entity_id'],
+            'timer_key' => $document['timer_key'],
             'started_at' => $document['started_at']->toDateTime(),
             'expires_at' => $document['expires_at']->toDateTime(),
             'duration_seconds' => $document['duration_seconds'],

@@ -4,8 +4,13 @@ namespace App\WebSockets\Handlers\Api;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
-use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
+use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use React\EventLoop\LoopInterface;
+use App\WebSockets\Handlers\Api\Training\TrainingStartHandler;
+use App\WebSockets\Handlers\Api\Training\TrainingCompletedApiHandler;
+use App\WebSockets\Handlers\Api\Match\MatchCreatedHandler;
+use App\WebSockets\Handlers\Api\Match\MatchStartedHandler;
+use App\WebSockets\Handlers\Api\UnknownApiMessageHandler;
 
 class ApiMessageHandlerFactory
 {
@@ -15,13 +20,13 @@ class ApiMessageHandlerFactory
 
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
 
-    private TrainingTimerStorageInterface $trainingTimerStorage;
+    private TimerStorageInterface $trainingTimerStorage;
 
     public function __construct(
         SubscriptionsStorageInterface $subscriptionsStorage,
         LoopInterface $loop,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
-        TrainingTimerStorageInterface $timerStorage
+        TimerStorageInterface $timerStorage
     ) {
         $this->subscriptionsStorage = $subscriptionsStorage;
         $this->loop = $loop;

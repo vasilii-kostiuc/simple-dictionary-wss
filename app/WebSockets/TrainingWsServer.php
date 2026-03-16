@@ -9,7 +9,7 @@ use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
-use App\WebSockets\Storage\Timers\TrainingTimerStorageInterface;
+use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
@@ -37,7 +37,7 @@ class TrainingWsServer implements MessageComponentInterface
 
     private MessageBrokerInterface $messageBroker;
 
-    private TrainingTimerStorageInterface $timerStorage;
+    private TimerStorageInterface $timerStorage;
 
     private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
 
@@ -49,7 +49,7 @@ class TrainingWsServer implements MessageComponentInterface
         InternalMessageHandlerFactory $internalMessageHandlerFactory,
         MessageBrokerFactory $messageBrokerFactory,
         ClientsStorageInterface $clientsStorage,
-        TrainingTimerStorageInterface $timerStorage,
+        TimerStorageInterface $timerStorage,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
         SubscriptionsStorageInterface $subscriptionsStorage,
         $loop
@@ -190,15 +190,17 @@ class TrainingWsServer implements MessageComponentInterface
             Log::info('Found expired timers', ['count' => count($expiredTimers)]);
 
             foreach ($expiredTimers as $timer) {
-                $trainingId = $timer['training_id'];
+                $type = $timer['type'];
+                $entityId = $timer['entity_id'];
 
-                Log::info('Completing expired training', [
-                    'training_id' => $trainingId,
+                Log::info('Completing expired timer', [
+                    'type' => $type,
+                    'entity_id' => $entityId,
                     'expired_at' => $timer['expires_at']->format('Y-m-d H:i:s'),
                 ]);
 
-                $this->simpleDictionaryApiClient->expire($trainingId);
-                $this->timerStorage->removeTimer($trainingId);
+                $this->simpleDictionaryApiClient->expire($entityId);
+                $this->timerStorage->removeTimer($type, $entityId);
             }
         });
 

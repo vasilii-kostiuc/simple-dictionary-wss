@@ -66,4 +66,16 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
         return [];
     }
+
+    public function createMatch(array $participants, array $matchParams): array
+    {
+        $response = $this->call('POST', 'matches', [
+            'json' => [
+                'participants' => $participants,
+                'match_params' => $matchParams,
+            ],
+        ]);
+
+        return $response;
+    }
 }

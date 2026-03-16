@@ -1,7 +1,8 @@
 <?php
 
-namespace App\WebSockets\Handlers\Api;
+namespace App\WebSockets\Handlers\Api\Training;
 
+use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Training\TrainingCompletedMessage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
@@ -38,4 +39,5 @@ class TrainingCompletedApiHandler implements ApiMessageHandlerInterface
 
         Log::info('Training completed message sent to '.count($connections).' clients');
     }
+
 }
