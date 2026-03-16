@@ -25,7 +25,7 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
         $apiUrl = env('API_BASE_URI', '').'send-to-wss';
 
         Http::post($apiUrl, [
-            'channel' => 'training',
+            'channel' => 'api.training',
             'type' => 'training_completed',
             'data' => [
                 'training_id' => '121',

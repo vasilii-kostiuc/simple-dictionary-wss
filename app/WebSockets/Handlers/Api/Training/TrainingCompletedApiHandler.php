@@ -16,10 +16,9 @@ class TrainingCompletedApiHandler implements ApiMessageHandlerInterface
         $this->subscriptionsStorage = $subscriptionsStorage;
     }
 
-    public function handle(string $channel, mixed $payload): void
+    public function handle(mixed $payload): void
     {
         Log::info('Training completed broker message received', [
-            'channel' => $channel,
             'payload' => $payload,
         ]);
 

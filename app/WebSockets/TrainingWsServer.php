@@ -80,26 +80,14 @@ class TrainingWsServer implements MessageComponentInterface
         Log::info(__METHOD__);
 
         $subscribeCallback = function ($message) {
-
             Log::info('Internal matchmaking message received: '.$message);
-
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
-
             $handler = $this->internalMessageHandlerFactory->create($type);
-            $handler->handle('matchmaking', $data);
+            $handler->handle($data);
         };
 
-        $messageBroker->subscribe('wss.matchmaking.joined', function ($message) {
-
-            Log::info('Internal matchmaking message received: '.$message);
-
-            $data = json_decode($message, true);
-            $type = $data['type'] ?? '';
-
-            $handler = $this->internalMessageHandlerFactory->create($type);
-            $handler->handle('wss.matchmaking.joined', $data);
-        });
+        $messageBroker->subscribe('wss.matchmaking.joined', $subscribeCallback);
         $messageBroker->subscribe('wss.matchmaking.leaved', $subscribeCallback);
         $messageBroker->subscribe('wss.matchmaking.matched', $subscribeCallback);
     }
@@ -107,17 +95,17 @@ class TrainingWsServer implements MessageComponentInterface
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void
     {
         Log::info(__METHOD__);
-        $messageBroker->subscribe('training', function ($message) {
 
+        $subscribeCallback = function ($message) {
             Log::info('API message received: '.$message);
-
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
-
             $handler = $this->apiMessageHandlerFactory->create($type);
-            $handler->handle('training', $data);
-        });
+            $handler->handle($data);
+        };
 
+        $messageBroker->subscribe('api.training', $subscribeCallback);
+        $messageBroker->subscribe('api.match', $subscribeCallback);
     }
 
     /**
@@ -172,7 +160,6 @@ class TrainingWsServer implements MessageComponentInterface
         }
 
         $handler = $this->messageHandlerFactory->create($payload->type ?? '', $payload);
-
         $handler->handle($conn, $msg);
     }
 

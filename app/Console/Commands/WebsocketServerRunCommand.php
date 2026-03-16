@@ -44,7 +44,7 @@ class WebsocketServerRunCommand extends Command
         TimerStorageInterface $timerStorage,
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
         MatchMakingQueueInterface $matchMakingQueue,
-        InternalMessageHandlerFactory $internalMessageHandlerFactory
+        InternalMessageHandlerFactory $internalMessageHandlerFactory,
     ) {
         parent::__construct();
         $this->messageHandlerFactory = $messageHandlerFactory;
@@ -54,7 +54,7 @@ class WebsocketServerRunCommand extends Command
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
         $this->matchMakingQueue = $matchMakingQueue;
-        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->timerStorage);
+        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->clientsStorage, $this->timerStorage);
         $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
     }
 

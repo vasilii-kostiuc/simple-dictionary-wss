@@ -6,10 +6,9 @@ use Illuminate\Support\Facades\Log;
 
 class UnknownApiMessageHandler implements ApiMessageHandlerInterface
 {
-    public function handle(string $channel, mixed $payload): void
+    public function handle(mixed $payload): void
     {
         Log::warning('Unknown API message type', [
-            'channel' => $channel,
             'payload' => $payload,
         ]);
     }

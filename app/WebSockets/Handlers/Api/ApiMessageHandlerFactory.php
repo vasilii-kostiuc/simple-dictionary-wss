@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Api;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use React\EventLoop\LoopInterface;
@@ -14,24 +15,13 @@ use App\WebSockets\Handlers\Api\UnknownApiMessageHandler;
 
 class ApiMessageHandlerFactory
 {
-    private SubscriptionsStorageInterface $subscriptionsStorage;
-
-    private LoopInterface $loop;
-
-    private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
-
-    private TimerStorageInterface $trainingTimerStorage;
-
     public function __construct(
-        SubscriptionsStorageInterface $subscriptionsStorage,
-        LoopInterface $loop,
-        SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
-        TimerStorageInterface $timerStorage
+        private readonly SubscriptionsStorageInterface $subscriptionsStorage,
+        private readonly LoopInterface $loop,
+        private readonly SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
+        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly TimerStorageInterface $trainingTimerStorage
     ) {
-        $this->subscriptionsStorage = $subscriptionsStorage;
-        $this->loop = $loop;
-        $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
-        $this->trainingTimerStorage = $timerStorage;
     }
 
     public function create(string $type): ApiMessageHandlerInterface
@@ -39,6 +29,8 @@ class ApiMessageHandlerFactory
         return match ($type) {
             'training_started' => new TrainingStartHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
             'training_completed' => new TrainingCompletedApiHandler($this->subscriptionsStorage),
+            'match_created' => new MatchCreatedHandler($this->clientsStorage),
+            //'match_started' => new MatchStartedHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
             default => new UnknownApiMessageHandler
         };
     }

@@ -1,17 +1,17 @@
 <?php
 
-namespace App\WebSockets\Handlers\Api\Training;
+namespace App\WebSockets\Handlers\Api\Match;
 
+use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Enums\TimerType;
 use App\WebSockets\Enums\TrainingCompletionType;
-use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use React\EventLoop\LoopInterface;
 
-class TrainingStartHandler implements ApiMessageHandlerInterface
+class MatchStartedHandler implements ApiMessageHandlerInterface
 {
     private LoopInterface $loop;
 
@@ -49,15 +49,15 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
     {
         Log::info("Starting timer for training {$trainingId}, duration: {$durationSeconds}s");
 
-        $this->timerStorage->addTimer(TimerType::Training->value, $trainingId, $startedAt, $durationSeconds);
+        $this->timerStorage->addTimer(TimerType::Match ->value, $trainingId, $startedAt, $durationSeconds);
         $this->loop->addTimer($durationSeconds, function () use ($trainingId) {
             Log::info("Timer expired for training {$trainingId}, calling API to complete");
 
-            if ($this->timerStorage->hasTimer(TimerType::Training->value, $trainingId)) {
+            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $trainingId)) {
                 Log::info("Timer for training {$trainingId} is valid, proceeding to expire training.");
 
                 $this->simpleDictionaryApiClient->expire($trainingId);
-                $this->timerStorage->removeTimer(TimerType::Training->value, $trainingId);
+                $this->timerStorage->removeTimer(TimerType::Match ->value, $trainingId);
             } else {
                 Log::info("Timer for training {$trainingId} was already removed, skipping expiration.");
 
@@ -66,4 +66,3 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
         });
     }
 }
-

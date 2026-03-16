@@ -27,9 +27,9 @@ class InternalMessageHandlerFactory
             'wss.matchmaking.matched' => new MatchMakingMatchedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
             default => new class implements InternalMessageHandlerInterface
             {
-                public function handle(string $channel, mixed $payload): void
+                public function handle(mixed $payload): void
                 {
-                    info("Received unknown internal message type on channel: $channel with payload: ".json_encode($payload));
+                    info("Received unknown internal message type with payload: ".json_encode($payload));
                 }
             }
         };
