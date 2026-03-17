@@ -2,15 +2,9 @@
 
 namespace App\WebSockets\Handlers\Api\Match;
 
-use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Enums\TimerType;
-use App\WebSockets\Enums\TrainingCompletionType;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use App\WebSockets\Storage\Timers\TimerStorageInterface;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use React\EventLoop\LoopInterface;
 
 class MatchCreatedHandler implements ApiMessageHandlerInterface
 {
