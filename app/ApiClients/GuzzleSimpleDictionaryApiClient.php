@@ -3,6 +3,7 @@
 namespace App\ApiClients;
 
 use App\WebSockets\DTO\UserData;
+use App\WebSockets\Enums\MatchType;
 use GuzzleHttp\Exception\GuzzleException;
 
 class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
@@ -55,6 +56,8 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
             $response = $this->client->request($method, $uri, $options);
 
+            info("API Response ({$uri}): Status {$response->getStatusCode()}, Body: ".(string) $response->getBody());
+
             if ($response->getStatusCode() === 200) {
                 $body = json_decode((string) $response->getBody(), true);
 
@@ -79,9 +82,9 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         ];
 
 
-        $response = $this->call('POST', 'matches', [
-            'json' => $matchCreateData,
-        ]);
+        $response = $this->call('POST', 'matches', ['json' => $matchCreateData]);
+
+        info(__METHOD__.' Match creation response: '.json_encode($response));
 
         return $response;
     }

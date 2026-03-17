@@ -60,7 +60,9 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
             ['id' => $opponentId, 'type' => 'user'],
         ];
 
-        $this->apiClient->createMatch($participants, $opponentData['matchParams']);
+        $createResult = $this->apiClient->createMatch($participants, $opponentData['matchParams']);
+
+        info(__METHOD__.' Match creation result: '.json_encode($createResult));
 
         $from->send(json_encode(['type' => 'matchmaking_challenge_success', 'data' => []]));
     }

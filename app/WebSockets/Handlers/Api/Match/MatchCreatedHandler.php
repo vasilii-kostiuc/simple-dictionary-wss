@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Api\Match;
 
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
+use App\WebSockets\Messages\MatchMaking\MatchCreatedMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use Illuminate\Support\Facades\Log;
 
@@ -32,16 +33,10 @@ class MatchCreatedHandler implements ApiMessageHandlerInterface
             $userId = $participant['user_id'] ?? null;
 
             if ($userId) {
-                $connections = $this->clientsStorage->getConnectionsByUserId($userId);
-                foreach ($connections as $connectionId => $conn) {
-                    Log::info('Sending match created message to connection', ['connection_id' => $connectionId]);
-                    $conn->send(json_encode([
-                        'type' => 'match.created',
-                        'data' => [
-                            'id' => $matchId,
-                            'participants' => $participants,
-                        ],
-                    ]));
+                $connection = $this->clientsStorage->getConnectionByUserId($userId);
+                if ($connection) {
+                    Log::info('Sending match created message to connection', ['connection_id' => $connection->resourceId]);
+                    $connection->send(new MatchCreatedMessage($data));
                 }
             }
 
