@@ -14,73 +14,37 @@ use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
+use React\EventLoop\LoopInterface;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
 
 class TrainingWsServer implements MessageComponentInterface
 {
     protected array $clients = [];
-
     protected array $subscriptions = [];
 
-    protected ClientsStorageInterface $storage;
-
-    protected MessageHandlerFactory $messageHandlerFactory;
-
-    protected ApiMessageHandlerFactory $apiMessageHandlerFactory;
-
-    protected InternalMessageHandlerFactory $internalMessageHandlerFactory;
-
-    private MessageBrokerFactory $messageBrokerFactory;
-
-    private $loop;
-
-    private MessageBrokerInterface $messageBroker;
-
-    private TimerStorageInterface $timerStorage;
-
-    private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
-
-    private SubscriptionsStorageInterface $subscriptionsStorage;
-
     public function __construct(
-        MessageHandlerFactory $messageHandlerFactory,
-        ApiMessageHandlerFactory $apiMessageHandlerFactory,
-        InternalMessageHandlerFactory $internalMessageHandlerFactory,
-        MessageBrokerFactory $messageBrokerFactory,
-        ClientsStorageInterface $clientsStorage,
-        TimerStorageInterface $timerStorage,
-        SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
-        SubscriptionsStorageInterface $subscriptionsStorage,
-        $loop
+        protected readonly MessageHandlerFactory $messageHandlerFactory,
+        protected readonly ApiMessageHandlerFactory $apiMessageHandlerFactory,
+        protected readonly InternalMessageHandlerFactory $internalMessageHandlerFactory,
+        protected readonly MessageBrokerFactory $messageBrokerFactory,
+        protected readonly ClientsStorageInterface $storage,
+        protected readonly TimerStorageInterface $timerStorage,
+        protected readonly SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
+        protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
+        protected readonly LoopInterface $loop
     ) {
         Log::info(__METHOD__);
 
-        $this->storage = $clientsStorage;
-        $this->messageHandlerFactory = $messageHandlerFactory;
-        $this->apiMessageHandlerFactory = $apiMessageHandlerFactory;
-        $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
-        $this->loop = $loop;
-        $this->timerStorage = $timerStorage;
-        $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
-        $this->subscriptionsStorage = $subscriptionsStorage;
-        $this->messageBrokerFactory = $messageBrokerFactory;
-
         $this->messageBroker = $this->messageBrokerFactory->create();
-
         $this->subscribeToApiMessages($this->messageBroker);
-
         $this->subscribeInternalMatchMakingMessages($this->messageBroker);
-
         $this->startExpiredTimersChecker();
     }
 
     private function subscribeInternalMatchMakingMessages(MessageBrokerInterface $messageBroker): void
     {
-        Log::info(__METHOD__);
-
         $subscribeCallback = function ($message) {
-            Log::info('Internal matchmaking message received: '.$message);
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
             $handler = $this->internalMessageHandlerFactory->create($type);
@@ -94,10 +58,8 @@ class TrainingWsServer implements MessageComponentInterface
 
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void
     {
-        Log::info(__METHOD__);
 
         $subscribeCallback = function ($message) {
-            Log::info('API message received: '.$message);
             $data = json_decode($message, true);
             $type = $data['type'] ?? '';
             $handler = $this->apiMessageHandlerFactory->create($type);
@@ -142,7 +104,7 @@ class TrainingWsServer implements MessageComponentInterface
      */
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
-        Log::error(__METHOD__.' '.$e->getMessage());
+        Log::error(__METHOD__.' '.$e->getMessage().PHP_EOL.$e->getTraceAsString());
     }
 
     public function onMessage(ConnectionInterface $conn, MessageInterface $msg)
