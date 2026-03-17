@@ -6,6 +6,7 @@ use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingJoinHandler;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingLeaveHandler;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingSubscribeHandler;
+use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingChallengeHandler;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
@@ -40,13 +41,14 @@ class MessageHandlerFactory
             $channel = $payload->data?->channel ?? '';
         }
 
+        info("Creating message handler for type: $type");
         return match ($type) {
             'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
             'subscribe' => new AuthorizedMessageHandler(
-                match ($channel) {
-                    'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue),
-                    default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
-                },
+                    match ($channel) {
+                        'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue),
+                        default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+                    },
                 $this->clientsStorage
             ),
             'unsubscribe' => new AuthorizedMessageHandler(
@@ -59,6 +61,10 @@ class MessageHandlerFactory
             ),
             'matchmaking.leave' => new AuthorizedMessageHandler(
                 new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue),
+                $this->clientsStorage
+            ),
+            'matchmaking.challenge' => new AuthorizedMessageHandler(
+                new MatchMakingChallengeHandler($this->clientsStorage, $this->matchMakingQueue, $this->apiClient),
                 $this->clientsStorage
             ),
             default => new UnknownMessageHandler

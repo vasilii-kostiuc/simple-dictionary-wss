@@ -51,9 +51,9 @@ abstract class WebSocketTestCase extends TestCase
         sleep(3);
     }
 
-    protected function authenticateClient(Client $client): void
+    protected function authenticateClient(Client $client, string $token = 'token'): void
     {
-        $client->text(json_encode(['type' => 'auth', 'data' => ['token' => 'token']]));
+        $client->text(json_encode(['type' => 'auth', 'data' => ['token' => $token]]));
         $client->receive();
     }
 
