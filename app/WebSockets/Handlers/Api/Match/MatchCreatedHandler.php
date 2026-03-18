@@ -2,8 +2,8 @@
 
 namespace App\WebSockets\Handlers\Api\Match;
 
+use App\WebSockets\Messages\Match\MatchCreatedMessage;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
-use App\WebSockets\Messages\MatchMaking\MatchCreatedMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use Illuminate\Support\Facades\Log;
 

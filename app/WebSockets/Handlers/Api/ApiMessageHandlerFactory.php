@@ -30,7 +30,7 @@ class ApiMessageHandlerFactory
             'training_started' => new TrainingStartHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
             'training_completed' => new TrainingCompletedApiHandler($this->subscriptionsStorage),
             'match_created' => new MatchCreatedHandler($this->clientsStorage),
-            //'match_started' => new MatchStartedHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
+            'match_started' => new MatchStartedHandler($this->loop, $this->trainingTimerStorage, $this->clientsStorage),
             default => new UnknownApiMessageHandler
         };
     }

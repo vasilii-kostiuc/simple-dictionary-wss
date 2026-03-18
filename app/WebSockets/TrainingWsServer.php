@@ -55,6 +55,7 @@ class TrainingWsServer implements MessageComponentInterface
         $messageBroker->subscribe('wss.matchmaking.joined', $subscribeCallback);
         $messageBroker->subscribe('wss.matchmaking.leaved', $subscribeCallback);
         $messageBroker->subscribe('wss.matchmaking.matched', $subscribeCallback);
+        $messageBroker->subscribe('wss.matchmaking.queue.updated', $subscribeCallback);
     }
 
     private function subscribeToApiMessages(MessageBrokerInterface $messageBroker): void
@@ -76,7 +77,7 @@ class TrainingWsServer implements MessageComponentInterface
      */
     public function onOpen(ConnectionInterface $conn)
     {
-        Log::info('New connection ' . $conn->resourceId);
+        Log::info('New connection '.$conn->resourceId);
         $query = [];
 
         $this->clients[$conn->resourceId] = $conn;
@@ -87,7 +88,7 @@ class TrainingWsServer implements MessageComponentInterface
      */
     public function onClose(ConnectionInterface $conn)
     {
-        Log::info(__METHOD__ . ' ' . $conn->resourceId);
+        Log::info(__METHOD__.' '.$conn->resourceId);
 
         $userId = $this->storage->getUserIdByConnection($conn);
 
@@ -97,7 +98,7 @@ class TrainingWsServer implements MessageComponentInterface
 
         $this->subscriptionsStorage->unsubscribeAll($conn);
         info(json_encode($this->subscriptionsStorage->getChannelsByConnection($conn)));
-        Log::info(__METHOD__ . ' ' . $conn->resourceId);
+        Log::info(__METHOD__.' '.$conn->resourceId);
     }
 
     /**
@@ -105,18 +106,18 @@ class TrainingWsServer implements MessageComponentInterface
      */
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
-        Log::error(__METHOD__ . ' ' . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
+        Log::error(__METHOD__.' '.$e->getMessage().PHP_EOL.$e->getTraceAsString());
     }
 
     public function onMessage(ConnectionInterface $conn, MessageInterface $msg)
     {
-        Log::info(__METHOD__ . ' ' . $msg);
+        Log::info(__METHOD__.' '.$msg);
         Log::info(get_class($msg));
 
         $payload = json_decode($msg->getPayload(), false);
 
         if ($payload === null) {
-            Log::warning('Invalid JSON received: ' . $msg->getPayload());
+            Log::warning('Invalid JSON received: '.$msg->getPayload());
             $conn->send(new ErrorMessage('invalid_json', $msg->getPayload()));
 
             return;

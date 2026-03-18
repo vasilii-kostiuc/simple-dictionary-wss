@@ -75,5 +75,10 @@ class AppServiceProvider extends ServiceProvider
             \App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent::class,
             \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingLeaveListener::class
         );
+
+        $this->app['events']->listen(
+            \App\WebSockets\Events\MatchMaking\MatchMakingQueueUpdatedEvent::class,
+            \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingQueueUpdatedListener::class
+        );
     }
 }

@@ -1,8 +1,7 @@
 <?php
 
-namespace App\WebSockets\Messages\MatchMaking;
+namespace App\WebSockets\Messages\Match;
 
-use App\WebSockets\Enums\MatchType;
 use App\WebSockets\Messages\WebSocketMessage;
 
 class MatchCreatedMessage extends WebSocketMessage

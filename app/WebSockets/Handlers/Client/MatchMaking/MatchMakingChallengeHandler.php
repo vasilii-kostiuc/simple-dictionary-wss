@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Client\MatchMaking;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Events\MatchMaking\MatchMakingQueueUpdatedEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
@@ -45,25 +46,25 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
             return;
         }
 
-        $opponentData = $this->matchMakingQueue->extract($opponentId);
+        $matchData = $this->matchMakingQueue->extract($opponentId);
 
-        if ($opponentData === null) {
+        if ($matchData === null) {
             $from->send(new ErrorMessage('opponent_not_in_queue', $payload ?? []));
 
             return;
         }
-
-        $this->matchMakingQueue->remove($userData->id);
 
         $participants = [
             ['id' => $userData->id, 'type' => 'user'],
             ['id' => $opponentId, 'type' => 'user'],
         ];
 
-        $createResult = $this->apiClient->createMatch($participants, $opponentData['matchParams']);
+        $createResult = $this->apiClient->createMatch($participants, $matchData['matchParams']);
 
         info(__METHOD__.' Match creation result: '.json_encode($createResult));
 
-        $from->send(json_encode(['type' => 'matchmaking_challenge_success', 'data' => []]));
+        $from->send(json_encode(['type' => 'matchmaking_challenge_success', 'data' => $createResult]));
+
+        event(new MatchMakingQueueUpdatedEvent());
     }
 }

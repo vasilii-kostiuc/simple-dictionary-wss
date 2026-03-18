@@ -2,10 +2,10 @@
 
 namespace App\WebSockets\Handlers\Api\Match;
 
+use App\WebSockets\Messages\Match\MatchStartedMessage;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
-use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Enums\TimerType;
-use App\WebSockets\Enums\TrainingCompletionType;
+use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -13,35 +13,42 @@ use React\EventLoop\LoopInterface;
 
 class MatchStartedHandler implements ApiMessageHandlerInterface
 {
-    private LoopInterface $loop;
-
-    private TimerStorageInterface $timerStorage;
-
-    private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
-
-    public function __construct(LoopInterface $loop, TimerStorageInterface $timerStorage, SimpleDictionaryApiClientInterface $simpleDictionaryApiClient)
-    {
-        $this->loop = $loop;
-        $this->timerStorage = $timerStorage;
-        $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
+    public function __construct(
+        private readonly LoopInterface $loop,
+        private readonly TimerStorageInterface $timerStorage,
+        private readonly ClientsStorageInterface $clientsStorage
+    ) {
     }
 
     public function handle(mixed $payload): void
     {
-        Log::info('Training started', $payload);
+        info(__METHOD__.' Match created ', $payload);
         $data = $payload['data'] ?? [];
-        $trainingId = $data['training_id'] ?? null;
-        $completionType = isset($data['completion_type']) ? TrainingCompletionType::from($data['completion_type']) : null;
+        $matchId = $data['id'] ?? null;
 
-        if (! $trainingId) {
-            Log::error('TrainingStartHandler: Missing training_id', ['payload' => $payload]);
+        if (! $matchId) {
+            Log::error('MatchCreatedHandler: Missing id', ['payload' => $payload]);
 
             return;
         }
 
-        if ($completionType == TrainingCompletionType::Time) {
-            $startedAt = Carbon::parse($data['started_at']);
-            $this->startTimer($trainingId, $startedAt, $data['completion_type_params']['duration'] * 60);
+        $participants = $data['participants'] ?? [];
+
+        foreach ($participants as $participant) {
+            $userId = $participant['user_id'] ?? null;
+
+            if ($userId) {
+                $connection = $this->clientsStorage->getConnectionByUserId($userId);
+                if ($connection) {
+                    Log::info('Sending match started message to connection', ['connection_id' => $connection->resourceId]);
+                    $connection->send(new MatchStartedMessage($data));
+                }
+            }
+
+            //add for guest users as well
+            $guestId = $participant['guest_id'] ?? null;
+
+
         }
     }
 

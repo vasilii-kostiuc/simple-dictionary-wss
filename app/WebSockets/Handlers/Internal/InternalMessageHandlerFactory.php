@@ -4,6 +4,10 @@ namespace App\WebSockets\Handlers\Internal;
 
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
+use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingJoinedHandler;
+use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingLeftHandler;
+use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingMatchedHandler;
+use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingQueueUpdatedHandler;
 
 class InternalMessageHandlerFactory
 {
@@ -25,6 +29,7 @@ class InternalMessageHandlerFactory
             'wss.matchmaking.joined' => new MatchMakingJoinedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
             'wss.matchmaking.leaved' => new MatchMakingLeftHandler($this->matchMakingQueue, $this->subscriptionsStorage),
             'wss.matchmaking.matched' => new MatchMakingMatchedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
+            'wss.matchmaking.queue.updated' => new MatchMakingQueueUpdatedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
             default => new class implements InternalMessageHandlerInterface
             {
                 public function handle(mixed $payload): void

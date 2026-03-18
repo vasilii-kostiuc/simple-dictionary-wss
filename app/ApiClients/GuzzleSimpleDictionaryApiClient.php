@@ -58,7 +58,8 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
             info("API Response ({$uri}): Status {$response->getStatusCode()}, Body: ".(string) $response->getBody());
 
-            if ($response->getStatusCode() === 200) {
+            if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+
                 $body = json_decode((string) $response->getBody(), true);
 
                 return $body['data'] ?? $body ?? [];
@@ -73,14 +74,13 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
     public function createMatch(array $participants, array $matchParams): array
     {
         $matchCreateData = [
-            'lang_from_id' => $matchParams['lang_from_id'] ?? 1,//English by default
-            'lang_to_id' => $matchParams['lang_to_id'] ?? 2,//Russian by default
+            'language_from_id' => $matchParams['language_from_id'] ?? 2,//English by default
+            'language_to_id' => $matchParams['language_to_id'] ?? 1,//Russian by default
             'match_type' => $matchParams['match_type'] ?? MatchType::Time->value,
-            'match_type_params' => $matchParams['match_type_params'] ?? ['duration' => '5'],
+            'match_type_params' => $matchParams,
             'participants' => $participants,
             'match_params' => $matchParams,
         ];
-
 
         $response = $this->call('POST', 'matches', ['json' => $matchCreateData]);
 
