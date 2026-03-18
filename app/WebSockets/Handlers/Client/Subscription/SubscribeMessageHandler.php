@@ -18,6 +18,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
 
     protected array $allowedChannels = [
         'training.*',
+        'match.*',
         'matchmaking.queue',
     ];
 
@@ -59,7 +60,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         foreach ($this->allowedChannels as $pattern) {
             if (str_ends_with($pattern, '.*')) {
                 $prefix = substr($pattern, 0, -2);
-                if ($channel === $prefix || str_starts_with($channel, $prefix . '.')) {
+                if ($channel === $prefix || str_starts_with($channel, $prefix.'.')) {
                     return true;
                 }
             } elseif ($channel === $pattern) {
