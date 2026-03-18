@@ -65,6 +65,8 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
         $from->send(json_encode(['type' => 'matchmaking_challenge_success', 'data' => $createResult]));
 
+        $this->matchMakingQueue->remove($userData->id);
+
         event(new MatchMakingQueueUpdatedEvent());
     }
 }
