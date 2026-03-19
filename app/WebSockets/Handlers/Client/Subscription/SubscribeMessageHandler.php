@@ -36,8 +36,6 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         $data = $payload['data'] ?? [];
         $channel = $data['channel'] ?? '';
 
-        $userId = $this->clientsStorage->getUserIdByConnection($from);
-
         if (empty($channel)) {
             $from->send(new ErrorMessage('channel_is_required', $payload));
 
