@@ -33,7 +33,7 @@ class ApiMessageHandlerFactory
             'training_started' => new TrainingStartHandler($this->loop, $this->trainingTimerStorage, $this->simpleDictionaryApiClient),
             'training_completed' => new TrainingCompletedApiHandler($this->subscriptionsStorage),
             'match_created' => new MatchCreatedHandler($this->clientsStorage),
-            'match_started' => new MatchStartedHandler($this->loop, $this->trainingTimerStorage, $this->clientsStorage),
+            'match_started' => new MatchStartedHandler($this->loop, $this->trainingTimerStorage, $this->clientsStorage, $this->simpleDictionaryApiClient),
             'next_step_generated' => new MatchStepGeneratedHandler($this->clientsStorage),
             'match_summary' => new MatchSummaryHandler($this->clientsStorage),
             'match_completed' => new MatchCompletedHandler($this->clientsStorage),

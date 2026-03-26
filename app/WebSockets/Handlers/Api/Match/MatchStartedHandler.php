@@ -2,8 +2,10 @@
 
 namespace App\WebSockets\Handlers\Api\Match;
 
+use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Messages\Match\MatchStartedMessage;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
+use App\WebSockets\Enums\MatchCompletionType;
 use App\WebSockets\Enums\TimerType;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Timers\TimerStorageInterface;
@@ -16,59 +18,69 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
     public function __construct(
         private readonly LoopInterface $loop,
         private readonly TimerStorageInterface $timerStorage,
-        private readonly ClientsStorageInterface $clientsStorage
+        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
     ) {
     }
 
     public function handle(mixed $payload): void
     {
-        info(__METHOD__.' Match created ', $payload);
+        info(__METHOD__.' Match started ', $payload);
         $data = $payload['data'] ?? [];
         $matchId = $data['id'] ?? null;
 
         if (! $matchId) {
-            Log::error('MatchCreatedHandler: Missing id', ['payload' => $payload]);
+            Log::error('MatchStartedHandler: Missing id', ['payload' => $payload]);
 
             return;
         }
 
         $participants = $data['participants'] ?? [];
+        $message = new MatchStartedMessage($data);
 
         foreach ($participants as $participant) {
             $userId = $participant['user_id'] ?? null;
-
             if ($userId) {
                 $connection = $this->clientsStorage->getConnectionByUserId($userId);
                 if ($connection) {
-                    Log::info('Sending match started message to connection', ['connection_id' => $connection->resourceId]);
-                    $connection->send(new MatchStartedMessage($data));
+                    Log::info('Sending match started message to user', ['user_id' => $userId]);
+                    $connection->send($message);
                 }
             }
 
-            //add for guest users as well
             $guestId = $participant['guest_id'] ?? null;
+            if ($guestId) {
+                $connection = $this->clientsStorage->getConnectionByUserId($guestId);
+                if ($connection) {
+                    Log::info('Sending match started message to guest', ['guest_id' => $guestId]);
+                    $connection->send($message);
+                }
+            }
+        }
 
+        $completionType = isset($data['completion_type']) ? MatchCompletionType::from($data['completion_type']) : null;
 
+        if ($completionType === MatchCompletionType::Time) {
+            $startedAt = Carbon::parse($data['started_at']);
+            $this->startTimer($matchId, $startedAt, $data['completion_type_params']['duration'] * 60);
         }
     }
 
-    private function startTimer(string $trainingId, Carbon $startedAt, int $durationSeconds): void
+    private function startTimer(string $matchId, Carbon $startedAt, int $durationSeconds): void
     {
-        Log::info("Starting timer for training {$trainingId}, duration: {$durationSeconds}s");
+        Log::info("Starting timer for match {$matchId}, duration: {$durationSeconds}s");
 
-        $this->timerStorage->addTimer(TimerType::Match ->value, $trainingId, $startedAt, $durationSeconds);
-        $this->loop->addTimer($durationSeconds, function () use ($trainingId) {
-            Log::info("Timer expired for training {$trainingId}, calling API to complete");
+        $this->timerStorage->addTimer(TimerType::Match ->value, $matchId, $startedAt, $durationSeconds);
+        $this->loop->addTimer($durationSeconds, function () use ($matchId) {
+            Log::info("Timer expired for match {$matchId}, calling API to complete");
 
-            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $trainingId)) {
-                Log::info("Timer for training {$trainingId} is valid, proceeding to expire training.");
+            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $matchId)) {
+                Log::info("Timer for match {$matchId} is valid, proceeding to expire match.");
 
-                $this->simpleDictionaryApiClient->expire($trainingId);
-                $this->timerStorage->removeTimer(TimerType::Match ->value, $trainingId);
+                $this->simpleDictionaryApiClient->expire($matchId);
+                $this->timerStorage->removeTimer(TimerType::Match ->value, $matchId);
             } else {
-                Log::info("Timer for training {$trainingId} was already removed, skipping expiration.");
-
-                return;
+                Log::info("Timer for match {$matchId} was already removed, skipping expiration.");
             }
         });
     }
