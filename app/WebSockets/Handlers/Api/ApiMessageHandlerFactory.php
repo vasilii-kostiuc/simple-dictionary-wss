@@ -12,6 +12,7 @@ use App\WebSockets\Handlers\Api\Training\TrainingCompletedApiHandler;
 use App\WebSockets\Handlers\Api\Match\MatchCreatedHandler;
 use App\WebSockets\Handlers\Api\Match\MatchStartedHandler;
 use App\WebSockets\Handlers\Api\Match\MatchStepGeneratedHandler;
+use App\WebSockets\Handlers\Api\Match\MatchCompletedHandler;
 use App\WebSockets\Handlers\Api\Match\MatchSummaryHandler;
 use App\WebSockets\Handlers\Api\UnknownApiMessageHandler;
 
@@ -35,6 +36,7 @@ class ApiMessageHandlerFactory
             'match_started' => new MatchStartedHandler($this->loop, $this->trainingTimerStorage, $this->clientsStorage),
             'next_step_generated' => new MatchStepGeneratedHandler($this->clientsStorage),
             'match_summary' => new MatchSummaryHandler($this->clientsStorage),
+            'match_completed' => new MatchCompletedHandler($this->clientsStorage),
             default => new UnknownApiMessageHandler
         };
     }
