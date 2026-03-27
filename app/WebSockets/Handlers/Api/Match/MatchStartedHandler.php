@@ -3,10 +3,10 @@
 namespace App\WebSockets\Handlers\Api\Match;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Messages\Match\MatchStartedMessage;
-use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Enums\MatchCompletionType;
 use App\WebSockets\Enums\TimerType;
+use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
+use App\WebSockets\Messages\Match\MatchStartedMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use Carbon\Carbon;
@@ -20,8 +20,7 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
         private readonly TimerStorageInterface $timerStorage,
         private readonly ClientsStorageInterface $clientsStorage,
         private readonly SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
-    ) {
-    }
+    ) {}
 
     public function handle(mixed $payload): void
     {
@@ -70,15 +69,15 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
     {
         Log::info("Starting timer for match {$matchId}, duration: {$durationSeconds}s");
 
-        $this->timerStorage->addTimer(TimerType::Match ->value, $matchId, $startedAt, $durationSeconds);
+        $this->timerStorage->addTimer(TimerType::Match->value, $matchId, $startedAt, $durationSeconds);
         $this->loop->addTimer($durationSeconds, function () use ($matchId) {
             Log::info("Timer expired for match {$matchId}, calling API to complete");
 
-            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $matchId)) {
+            if ($this->timerStorage->hasTimer(TimerType::Match->value, $matchId)) {
                 Log::info("Timer for match {$matchId} is valid, proceeding to expire match.");
 
-                $this->simpleDictionaryApiClient->expire($matchId);
-                $this->timerStorage->removeTimer(TimerType::Match ->value, $matchId);
+                $this->simpleDictionaryApiClient->expireMatch($matchId);
+                $this->timerStorage->removeTimer(TimerType::Match->value, $matchId);
             } else {
                 Log::info("Timer for match {$matchId} was already removed, skipping expiration.");
             }

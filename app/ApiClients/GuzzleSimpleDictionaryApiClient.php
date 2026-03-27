@@ -45,6 +45,13 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         ]);
     }
 
+    public function expireMatch(string|int $matchId): array
+    {
+        return $this->call('POST', "matches/{$matchId}/expire", [
+            'json' => ['completed_by' => 'timer'],
+        ]);
+    }
+
     protected function call(string $method, string $uri, array $options = []): array
     {
         info("API Call: {$method} {$uri} with options: ".json_encode($options));
@@ -74,8 +81,8 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
     public function createMatch(array $participants, array $matchParams): array
     {
         $matchCreateData = [
-            'language_from_id' => $matchParams['language_from_id'] ?? 2,//English by default
-            'language_to_id' => $matchParams['language_to_id'] ?? 1,//Russian by default
+            'language_from_id' => $matchParams['language_from_id'] ?? 2, // English by default
+            'language_to_id' => $matchParams['language_to_id'] ?? 1, // Russian by default
             'match_type' => $matchParams['match_type'] ?? MatchType::Time->value,
             'match_type_params' => $matchParams,
             'participants' => $participants,

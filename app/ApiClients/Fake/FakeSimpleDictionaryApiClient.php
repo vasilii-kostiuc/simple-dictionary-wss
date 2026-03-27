@@ -28,7 +28,23 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
             'channel' => 'api.training',
             'type' => 'training_completed',
             'data' => [
-                'training_id' => '121',
+                'training_id' => $trainingId,
+                'completed_at' => now()->toIso8601String(),
+            ],
+        ]);
+
+        return [];
+    }
+
+    public function expireMatch(string|int $matchId): array
+    {
+        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
+
+        Http::post($apiUrl, [
+            'channel' => 'api.match',
+            'type' => 'match_completed',
+            'data' => [
+                'id' => $matchId,
                 'completed_at' => now()->toIso8601String(),
             ],
         ]);
