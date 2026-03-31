@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Sender\WebSocketMessageSender;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
@@ -29,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(ClientsStorageInterface::class, function () {
             return new AuthorizedClientsStorage;
+        });
+
+        $this->app->singleton(WebSocketMessageSenderInterface::class, function (Application $app) {
+            return new WebSocketMessageSender($app->make(ClientsStorageInterface::class));
         });
 
         $this->app->singleton(SubscriptionsStorageInterface::class, function () {

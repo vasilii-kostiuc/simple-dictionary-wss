@@ -6,6 +6,8 @@ use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Events\MatchMaking\MatchMakingQueueUpdatedEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
+use App\WebSockets\Messages\WebSocketMessage;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use Illuminate\Support\Facades\Log;
@@ -18,8 +20,8 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         private readonly ClientsStorageInterface $clientsStorage,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly SimpleDictionaryApiClientInterface $apiClient,
-    ) {
-    }
+        private readonly WebSocketMessageSenderInterface $sender,
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
@@ -32,7 +34,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         Log::info('Received opponent_id: '.$opponentId);
 
         if ($opponentId === null) {
-            $from->send(new ErrorMessage('opponent_id_required', $payload ?? []));
+            $this->sender->sendToConnection($from, new ErrorMessage('opponent_id_required', $payload ?? []));
 
             return;
         }
@@ -41,7 +43,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         Log::info('Current matchmaking queue: '.json_encode($this->matchMakingQueue->allQueues()));
 
         if (! $this->matchMakingQueue->isUserInQueue($opponentId)) {
-            $from->send(new ErrorMessage('opponent_not_in_queue', $payload ?? []));
+            $this->sender->sendToConnection($from, new ErrorMessage('opponent_not_in_queue', $payload ?? []));
 
             return;
         }
@@ -49,7 +51,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         $matchData = $this->matchMakingQueue->extract($opponentId);
 
         if ($matchData === null) {
-            $from->send(new ErrorMessage('opponent_not_in_queue', $payload ?? []));
+            $this->sender->sendToConnection($from, new ErrorMessage('opponent_not_in_queue', $payload ?? []));
 
             return;
         }
@@ -63,10 +65,10 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
         info(__METHOD__.' Match creation result: '.json_encode($createResult));
 
-        $from->send(json_encode(['type' => 'matchmaking_challenge_success', 'data' => $createResult]));
+        $this->sender->sendToConnection($from, new WebSocketMessage('matchmaking_challenge_success', $createResult ?? []));
 
         $this->matchMakingQueue->remove($userData->id);
 
-        event(new MatchMakingQueueUpdatedEvent());
+        event(new MatchMakingQueueUpdatedEvent);
     }
 }

@@ -2,16 +2,15 @@
 
 namespace App\WebSockets\Handlers\Api\Match;
 
-use App\WebSockets\Messages\Match\MatchCreatedMessage;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Messages\Match\MatchCreatedMessage;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use Illuminate\Support\Facades\Log;
 
 class MatchCreatedHandler implements ApiMessageHandlerInterface
 {
-
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage
+        private readonly WebSocketMessageSenderInterface $sender
     ) {
     }
 
@@ -33,19 +32,14 @@ class MatchCreatedHandler implements ApiMessageHandlerInterface
             $userId = $participant['user_id'] ?? null;
 
             if ($userId) {
-                $connection = $this->clientsStorage->getConnectionByUserId($userId);
-                if ($connection) {
-                    Log::info('Sending match created message to connection', ['connection_id' => $connection->resourceId]);
-                    $connection->send(new MatchCreatedMessage($data));
-                }
+                Log::info('Sending match created message to user', ['user_id' => $userId]);
+                $this->sender->sendToUser($userId, new MatchCreatedMessage($data));
             }
 
-            //add for guest users as well
+            // add for guest users as well
             $guestId = $participant['guest_id'] ?? null;
-
 
         }
 
     }
-
 }

@@ -6,6 +6,7 @@ use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
@@ -45,6 +46,7 @@ class WebsocketServerRunCommand extends Command
         SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
         MatchMakingQueueInterface $matchMakingQueue,
         InternalMessageHandlerFactory $internalMessageHandlerFactory,
+        WebSocketMessageSenderInterface $sender,
     ) {
         parent::__construct();
         $this->messageHandlerFactory = $messageHandlerFactory;
@@ -54,7 +56,7 @@ class WebsocketServerRunCommand extends Command
         $this->timerStorage = $timerStorage;
         $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
         $this->matchMakingQueue = $matchMakingQueue;
-        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $this->clientsStorage, $this->timerStorage);
+        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $sender, $this->timerStorage);
         $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
     }
 

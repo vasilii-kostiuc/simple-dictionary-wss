@@ -13,7 +13,7 @@ interface ClientsStorageInterface
 
     public function getUserData(ConnectionInterface $conn): ?UserData;
 
-    public function getConnectionByUserId(int $userId): ?ConnectionInterface;
+    public function getConnectionsByUserId(int $userId): array;
 
     public function remove(int $userId, ConnectionInterface $conn): void;
 }

@@ -4,14 +4,15 @@ namespace App\WebSockets\Handlers\Api\Match;
 
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Match\NextStepGeneratedMessage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use Illuminate\Support\Facades\Log;
 
 class MatchStepGeneratedHandler implements ApiMessageHandlerInterface
 {
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage,
-    ) {}
+        private readonly WebSocketMessageSenderInterface $sender,
+    ) {
+    }
 
     public function handle(mixed $payload): void
     {
@@ -27,20 +28,16 @@ class MatchStepGeneratedHandler implements ApiMessageHandlerInterface
             return;
         }
 
+        $message = new NextStepGeneratedMessage($data);
+
         if ($userId) {
-            $connection = $this->clientsStorage->getConnectionByUserId($userId);
-            if ($connection) {
-                Log::info('Sending next_step_generated to user', ['user_id' => $userId]);
-                $connection->send(new NextStepGeneratedMessage($data));
-            }
+            Log::info('Sending next_step_generated to user', ['user_id' => $userId]);
+            $this->sender->sendToUser($userId, $message);
         }
 
         if ($guestId) {
-            $connection = $this->clientsStorage->getConnectionByUserId($guestId);
-            if ($connection) {
-                Log::info('Sending next_step_generated to guest', ['guest_id' => $guestId]);
-                $connection->send(new NextStepGeneratedMessage($data));
-            }
+            Log::info('Sending next_step_generated to guest', ['guest_id' => $guestId]);
+            $this->sender->sendToUser($guestId, $message);
         }
     }
 }

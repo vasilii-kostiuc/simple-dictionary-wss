@@ -93,12 +93,12 @@ class AuthorizedClientsStorageTest extends TestCase
 
         $this->storage->add($conn, $userData);
 
-        $this->assertSame($conn, $this->storage->getConnectionByUserId(123));
+        $this->assertSame([$conn], $this->storage->getConnectionsByUserId(123));
     }
 
     public function test_get_connection_by_user_id_returns_null_for_unknown(): void
     {
-        $this->assertNull($this->storage->getConnectionByUserId(999));
+        $this->assertEmpty($this->storage->getConnectionsByUserId(999));
     }
 
     public function test_remove_deletes_connection(): void
@@ -156,7 +156,7 @@ class AuthorizedClientsStorageTest extends TestCase
         $this->storage->remove(200, $conn2);
 
         $this->assertNull($this->storage->getUserIdByConnection($conn2));
-        $this->assertNull($this->storage->getConnectionByUserId(200));
+        $this->assertEmpty($this->storage->getConnectionsByUserId(200));
 
         $this->assertEquals(100, $this->storage->getUserIdByConnection($conn1));
         $this->assertEquals(300, $this->storage->getUserIdByConnection($conn3));

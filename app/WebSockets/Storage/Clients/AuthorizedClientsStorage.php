@@ -27,15 +27,16 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
         return $this->clients[$conn->resourceId]['userData'] ?? null;
     }
 
-    public function getConnectionByUserId(int $userId): ?ConnectionInterface
+    public function getConnectionsByUserId(int $userId): array
     {
+        $connections = [];
         foreach ($this->clients as $client) {
             if ($client['userData']->id === $userId) {
-                return $client['connection'];
+                $connections[] = $client['connection'];
             }
         }
 
-        return null;
+        return $connections;
     }
 
     public function remove(int $userId, ConnectionInterface $conn): void

@@ -7,7 +7,7 @@ use App\WebSockets\Enums\MatchCompletionType;
 use App\WebSockets\Enums\TimerType;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Match\MatchStartedMessage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +18,7 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
     public function __construct(
         private readonly LoopInterface $loop,
         private readonly TimerStorageInterface $timerStorage,
-        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly WebSocketMessageSenderInterface $sender,
         private readonly SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
     ) {}
 
@@ -40,20 +40,14 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
         foreach ($participants as $participant) {
             $userId = $participant['user_id'] ?? null;
             if ($userId) {
-                $connection = $this->clientsStorage->getConnectionByUserId($userId);
-                if ($connection) {
-                    Log::info('Sending match started message to user', ['user_id' => $userId]);
-                    $connection->send($message);
-                }
+                Log::info('Sending match started message to user', ['user_id' => $userId]);
+                $this->sender->sendToUser($userId, $message);
             }
 
             $guestId = $participant['guest_id'] ?? null;
             if ($guestId) {
-                $connection = $this->clientsStorage->getConnectionByUserId($guestId);
-                if ($connection) {
-                    Log::info('Sending match started message to guest', ['guest_id' => $guestId]);
-                    $connection->send($message);
-                }
+                Log::info('Sending match started message to guest', ['guest_id' => $guestId]);
+                $this->sender->sendToUser($guestId, $message);
             }
         }
 

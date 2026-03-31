@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers\Client\MatchMaking;
 
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
@@ -16,6 +17,7 @@ class MatchMakingSubscribeHandler extends SubscribeMessageHandler
         SubscriptionsStorageInterface $subscriptionsStorage,
         ClientsStorageInterface $clientsStorage,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
+        private readonly WebSocketMessageSenderInterface $sender,
     ) {
         parent::__construct($subscriptionsStorage, $clientsStorage);
     }
@@ -24,7 +26,7 @@ class MatchMakingSubscribeHandler extends SubscribeMessageHandler
     {
         parent::handle($conn, $message);
 
-        $conn->send(new MatchMakingQueueUpdatedMessage(
+        $this->sender->sendToConnection($conn, new MatchMakingQueueUpdatedMessage(
             $this->matchMakingQueue->allQueues()
         ));
     }

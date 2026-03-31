@@ -5,6 +5,7 @@ namespace App\WebSockets\Handlers\Client\MatchMaking;
 use App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\MatchMaking\MatchMakingLeaveSuccessMessage;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use Ratchet\ConnectionInterface;
@@ -12,16 +13,11 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class MatchMakingLeaveHandler implements MessageHandlerInterface
 {
-    private ClientsStorageInterface $clientsStorage;
-
-    private MatchMakingQueueInterface $matchMakingQueue;
-
     public function __construct(
-        ClientsStorageInterface $clientsStorage,
-        MatchMakingQueueInterface $matchMakingQueue,
+        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly MatchMakingQueueInterface $matchMakingQueue,
+        private readonly WebSocketMessageSenderInterface $sender,
     ) {
-        $this->clientsStorage = $clientsStorage;
-        $this->matchMakingQueue = $matchMakingQueue;
     }
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
@@ -31,9 +27,7 @@ class MatchMakingLeaveHandler implements MessageHandlerInterface
 
         $this->matchMakingQueue->remove($userId);
 
-        $from->send(
-            new MatchMakingLeaveSuccessMessage
-        );
+        $this->sender->sendToConnection($from, new MatchMakingLeaveSuccessMessage);
 
         event(new MatchMakingLeaveEvent($userId));
     }

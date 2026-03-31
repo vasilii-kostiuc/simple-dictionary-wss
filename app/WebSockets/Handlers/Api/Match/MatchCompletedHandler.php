@@ -4,13 +4,13 @@ namespace App\WebSockets\Handlers\Api\Match;
 
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Match\MatchCompletedMessage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use Illuminate\Support\Facades\Log;
 
 class MatchCompletedHandler implements ApiMessageHandlerInterface
 {
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly WebSocketMessageSenderInterface $sender,
     ) {
     }
 
@@ -34,19 +34,13 @@ class MatchCompletedHandler implements ApiMessageHandlerInterface
             $guestId = $participant['guest_id'] ?? null;
 
             if ($userId) {
-                $connection = $this->clientsStorage->getConnectionByUserId($userId);
-                if ($connection) {
-                    Log::info('Sending match_completed to user', ['user_id' => $userId]);
-                    $connection->send($message);
-                }
+                Log::info('Sending match_completed to user', ['user_id' => $userId]);
+                $this->sender->sendToUser($userId, $message);
             }
 
             if ($guestId) {
-                $connection = $this->clientsStorage->getConnectionByUserId($guestId);
-                if ($connection) {
-                    Log::info('Sending match_completed to guest', ['guest_id' => $guestId]);
-                    $connection->send($message);
-                }
+                Log::info('Sending match_completed to guest', ['guest_id' => $guestId]);
+                $this->sender->sendToUser($guestId, $message);
             }
         }
     }
