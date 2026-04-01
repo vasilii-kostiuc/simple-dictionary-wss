@@ -8,6 +8,8 @@ use App\WebSockets\Sender\WebSocketMessageSender;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\CompositeClientsStorage;
+use App\WebSockets\Storage\Clients\GuestsClientsStorage;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
 use App\WebSockets\Storage\MatchMaking\RedisMatchMakingQueue;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
@@ -29,8 +31,19 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        $this->app->singleton(ClientsStorageInterface::class, function () {
+        $this->app->singleton(AuthorizedClientsStorage::class, function () {
             return new AuthorizedClientsStorage;
+        });
+
+        $this->app->singleton(GuestsClientsStorage::class, function () {
+            return new GuestsClientsStorage;
+        });
+
+        $this->app->singleton(ClientsStorageInterface::class, function (Application $app) {
+            return new CompositeClientsStorage(
+                $app->make(AuthorizedClientsStorage::class),
+                $app->make(GuestsClientsStorage::class),
+            );
         });
 
         $this->app->singleton(WebSocketMessageSenderInterface::class, function (Application $app) {

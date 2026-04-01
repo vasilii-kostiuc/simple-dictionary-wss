@@ -9,11 +9,11 @@ interface ClientsStorageInterface
 {
     public function add(ConnectionInterface $conn, UserData $userData): void;
 
-    public function getUserIdByConnection(ConnectionInterface $conn): ?int;
+    public function getIdentifierByConnection(ConnectionInterface $conn): ?string;
 
     public function getUserData(ConnectionInterface $conn): ?UserData;
 
-    public function getConnectionsByUserId(int $userId): array;
+    public function getConnectionsByIdentifier(string $identifier): array;
 
-    public function remove(int $userId, ConnectionInterface $conn): void;
+    public function remove(ConnectionInterface $conn): void;
 }

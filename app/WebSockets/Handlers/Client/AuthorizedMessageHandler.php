@@ -12,13 +12,14 @@ class AuthorizedMessageHandler implements MessageHandlerInterface
     public function __construct(
         private readonly MessageHandlerInterface $inner,
         private readonly ClientsStorageInterface $clientsStorage,
-    ) {}
+    ) {
+    }
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        $userId = $this->clientsStorage->getUserIdByConnection($from);
+        $identifier = $this->clientsStorage->getIdentifierByConnection($from);
 
-        if ($userId === null) {
+        if ($identifier === null) {
             $payload = json_decode($msg->getPayload(), true) ?? [];
             $from->send(new ErrorMessage('not_authorized', $payload));
             return;

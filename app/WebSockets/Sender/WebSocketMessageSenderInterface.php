@@ -7,7 +7,7 @@ use Ratchet\ConnectionInterface;
 
 interface WebSocketMessageSenderInterface
 {
-    public function sendToUser(int $userId, WebSocketMessage $message): void;
+    public function sendToIdentifier(string $identifier, WebSocketMessage $message): void;
 
     public function sendToConnection(ConnectionInterface $conn, WebSocketMessage $message): void;
 }

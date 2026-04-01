@@ -35,12 +35,12 @@ class MatchCompletedHandler implements ApiMessageHandlerInterface
 
             if ($userId) {
                 Log::info('Sending match_completed to user', ['user_id' => $userId]);
-                $this->sender->sendToUser($userId, $message);
+                $this->sender->sendToIdentifier((string) $userId, $message);
             }
 
             if ($guestId) {
                 Log::info('Sending match_completed to guest', ['guest_id' => $guestId]);
-                $this->sender->sendToUser($guestId, $message);
+                $this->sender->sendToIdentifier($guestId, $message);
             }
         }
     }

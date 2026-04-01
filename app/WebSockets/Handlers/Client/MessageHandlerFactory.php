@@ -50,11 +50,12 @@ class MessageHandlerFactory
 
         return match ($type) {
             'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
+            'guest_auth' => new GuestAuthHandler($this->clientsStorage),
             'subscribe' => new AuthorizedMessageHandler(
-                match ($channel) {
-                    'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue, $this->sender),
-                    default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
-                },
+                    match ($channel) {
+                        'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue, $this->sender),
+                        default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+                    },
                 $this->clientsStorage
             ),
             'unsubscribe' => new AuthorizedMessageHandler(

@@ -90,11 +90,7 @@ class TrainingWsServer implements MessageComponentInterface
     {
         Log::info(__METHOD__.' '.$conn->resourceId);
 
-        $userId = $this->storage->getUserIdByConnection($conn);
-
-        if ($userId !== null) {
-            $this->storage->remove($this->storage->getUserIdByConnection($conn), $conn);
-        }
+        $this->storage->remove($conn);
 
         $this->subscriptionsStorage->unsubscribeAll($conn);
         info(json_encode($this->subscriptionsStorage->getChannelsByConnection($conn)));

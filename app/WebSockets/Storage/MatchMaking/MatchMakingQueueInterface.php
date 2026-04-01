@@ -8,19 +8,19 @@ interface MatchMakingQueueInterface
 {
     public function add(UserData $userData, array $matchParams): void;
 
-    public function remove(int $userId, array $matchParams = []): void;
+    public function remove(string $identifier, array $matchParams = []): void;
 
     public function all(array $matchParams): array;
 
     public function allQueues(): array;
 
-    public function findMatch(int $userId, array $matchParams): ?int;
+    public function findMatch(string $identifier, array $matchParams): ?string;
 
     public function clear(array $matchParams): void;
 
     public function count(array $matchParams): int;
 
-    public function isUserInQueue(int $userId): bool;
+    public function isUserInQueue(string $identifier): bool;
 
-    public function extract(int $userId): ?array;
+    public function extract(string $identifier): ?array;
 }

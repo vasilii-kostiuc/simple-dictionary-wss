@@ -30,9 +30,9 @@ class WebSocketMessageSenderTest extends TestCase
         $conn2->expects($this->once())->method('send')->with($message);
 
         $storage = $this->createMock(ClientsStorageInterface::class);
-        $storage->method('getConnectionsByUserId')->with(42)->willReturn([$conn1, $conn2]);
+        $storage->method('getConnectionsByIdentifier')->with('42')->willReturn([$conn1, $conn2]);
 
-        $this->makeSender($storage)->sendToUser(42, $message);
+        $this->makeSender($storage)->sendToIdentifier('42', $message);
     }
 
     public function test_sends_nothing_when_user_has_no_connections(): void
@@ -40,10 +40,10 @@ class WebSocketMessageSenderTest extends TestCase
         $message = $this->makeMessage();
 
         $storage = $this->createMock(ClientsStorageInterface::class);
-        $storage->method('getConnectionsByUserId')->with(99)->willReturn([]);
+        $storage->method('getConnectionsByIdentifier')->with('99')->willReturn([]);
 
         // No exception — just silently does nothing
-        $this->makeSender($storage)->sendToUser(99, $message);
+        $this->makeSender($storage)->sendToIdentifier('99', $message);
         $this->assertTrue(true);
     }
 }

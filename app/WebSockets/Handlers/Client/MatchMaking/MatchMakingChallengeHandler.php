@@ -21,7 +21,8 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly SimpleDictionaryApiClientInterface $apiClient,
         private readonly WebSocketMessageSenderInterface $sender,
-    ) {}
+    ) {
+    }
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
@@ -30,7 +31,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         $data = $payload['data'] ?? [];
         $userData = $this->clientsStorage->getUserData($from);
 
-        $opponentId = isset($data['opponent_id']) ? (int) $data['opponent_id'] : null;
+        $opponentId = isset($data['opponent_id']) ? (string) $data['opponent_id'] : null;
         Log::info('Received opponent_id: '.$opponentId);
 
         if ($opponentId === null) {
@@ -39,7 +40,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
             return;
         }
 
-        Log::info("User {$userData->id} is challenging opponent with ID: $opponentId");
+        Log::info("User {$userData->getIdentifier()} is challenging opponent with ID: $opponentId");
         Log::info('Current matchmaking queue: '.json_encode($this->matchMakingQueue->allQueues()));
 
         if (! $this->matchMakingQueue->isUserInQueue($opponentId)) {
@@ -56,10 +57,15 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
             return;
         }
 
-        $participants = [
-            ['id' => $userData->id, 'type' => 'user'],
-            ['id' => $opponentId, 'type' => 'user'],
-        ];
+        $currentParticipant = $userData->isGuest()
+            ? ['guest_id' => $userData->guestId, 'type' => 'guest']
+            : ['user_id' => $userData->id, 'type' => 'user'];
+
+        $opponentParticipant = ($matchData['guestId'] ?? null)
+            ? ['guest_id' => $matchData['guestId'], 'type' => 'guest']
+            : ['user_id' => $matchData['userId'], 'type' => 'user'];
+
+        $participants = [$currentParticipant, $opponentParticipant];
 
         $createResult = $this->apiClient->createMatch($participants, $matchData['matchParams']);
 
@@ -67,7 +73,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
         $this->sender->sendToConnection($from, new WebSocketMessage('matchmaking_challenge_success', $createResult ?? []));
 
-        $this->matchMakingQueue->remove($userData->id);
+        $this->matchMakingQueue->remove($userData->getIdentifier());
 
         event(new MatchMakingQueueUpdatedEvent);
     }

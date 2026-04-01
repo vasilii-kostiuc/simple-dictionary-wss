@@ -20,7 +20,8 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
         private readonly TimerStorageInterface $timerStorage,
         private readonly WebSocketMessageSenderInterface $sender,
         private readonly SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
-    ) {}
+    ) {
+    }
 
     public function handle(mixed $payload): void
     {
@@ -41,13 +42,13 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
             $userId = $participant['user_id'] ?? null;
             if ($userId) {
                 Log::info('Sending match started message to user', ['user_id' => $userId]);
-                $this->sender->sendToUser($userId, $message);
+                $this->sender->sendToIdentifier((string) $userId, $message);
             }
 
             $guestId = $participant['guest_id'] ?? null;
             if ($guestId) {
                 Log::info('Sending match started message to guest', ['guest_id' => $guestId]);
-                $this->sender->sendToUser($guestId, $message);
+                $this->sender->sendToIdentifier($guestId, $message);
             }
         }
 
@@ -63,15 +64,15 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
     {
         Log::info("Starting timer for match {$matchId}, duration: {$durationSeconds}s");
 
-        $this->timerStorage->addTimer(TimerType::Match->value, $matchId, $startedAt, $durationSeconds);
+        $this->timerStorage->addTimer(TimerType::Match ->value, $matchId, $startedAt, $durationSeconds);
         $this->loop->addTimer($durationSeconds, function () use ($matchId) {
             Log::info("Timer expired for match {$matchId}, calling API to complete");
 
-            if ($this->timerStorage->hasTimer(TimerType::Match->value, $matchId)) {
+            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $matchId)) {
                 Log::info("Timer for match {$matchId} is valid, proceeding to expire match.");
 
                 $this->simpleDictionaryApiClient->expireMatch($matchId);
-                $this->timerStorage->removeTimer(TimerType::Match->value, $matchId);
+                $this->timerStorage->removeTimer(TimerType::Match ->value, $matchId);
             } else {
                 Log::info("Timer for match {$matchId} was already removed, skipping expiration.");
             }

@@ -42,6 +42,6 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
 
         $this->sender->sendToConnection($from, new MatchMakingJoinSuccessMessage($matchType, $matchParams));
 
-        event(new MatchMakingJoinedEvent($userData->id, $matchParams));
+        event(new MatchMakingJoinedEvent($userData->getIdentifier(), $matchParams));
     }
 }

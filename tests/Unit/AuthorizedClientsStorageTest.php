@@ -42,7 +42,7 @@ class AuthorizedClientsStorageTest extends TestCase
 
         $this->storage->add($conn, $userData);
 
-        $this->assertEquals(123, $this->storage->getUserIdByConnection($conn));
+        $this->assertEquals('123', $this->storage->getIdentifierByConnection($conn));
         $this->assertSame($userData, $this->storage->getUserData($conn));
     }
 
@@ -55,7 +55,7 @@ class AuthorizedClientsStorageTest extends TestCase
         $this->storage->add($conn, $userData1);
         $this->storage->add($conn, $userData2);
 
-        $this->assertEquals(456, $this->storage->getUserIdByConnection($conn));
+        $this->assertEquals('456', $this->storage->getIdentifierByConnection($conn));
     }
 
     public function test_add_different_connections_for_different_users(): void
@@ -68,15 +68,15 @@ class AuthorizedClientsStorageTest extends TestCase
         $this->storage->add($conn1, $userData1);
         $this->storage->add($conn2, $userData2);
 
-        $this->assertEquals(123, $this->storage->getUserIdByConnection($conn1));
-        $this->assertEquals(456, $this->storage->getUserIdByConnection($conn2));
+        $this->assertEquals('123', $this->storage->getIdentifierByConnection($conn1));
+        $this->assertEquals('456', $this->storage->getIdentifierByConnection($conn2));
     }
 
     public function test_get_user_id_by_connection_returns_null_for_unknown(): void
     {
         $conn = $this->createMockConnection(99);
 
-        $this->assertNull($this->storage->getUserIdByConnection($conn));
+        $this->assertNull($this->storage->getIdentifierByConnection($conn));
     }
 
     public function test_get_user_data_returns_null_for_unknown(): void
@@ -93,12 +93,12 @@ class AuthorizedClientsStorageTest extends TestCase
 
         $this->storage->add($conn, $userData);
 
-        $this->assertSame([$conn], $this->storage->getConnectionsByUserId(123));
+        $this->assertSame([$conn], $this->storage->getConnectionsByIdentifier('123'));
     }
 
     public function test_get_connection_by_user_id_returns_null_for_unknown(): void
     {
-        $this->assertEmpty($this->storage->getConnectionsByUserId(999));
+        $this->assertEmpty($this->storage->getConnectionsByIdentifier('999'));
     }
 
     public function test_remove_deletes_connection(): void
@@ -107,9 +107,9 @@ class AuthorizedClientsStorageTest extends TestCase
         $userData = $this->makeUserData(123);
 
         $this->storage->add($conn, $userData);
-        $this->storage->remove(123, $conn);
+        $this->storage->remove($conn);
 
-        $this->assertNull($this->storage->getUserIdByConnection($conn));
+        $this->assertNull($this->storage->getIdentifierByConnection($conn));
         $this->assertNull($this->storage->getUserData($conn));
     }
 
@@ -117,9 +117,9 @@ class AuthorizedClientsStorageTest extends TestCase
     {
         $conn = $this->createMockConnection(99);
 
-        $this->storage->remove(999, $conn);
+        $this->storage->remove($conn);
 
-        $this->assertNull($this->storage->getUserIdByConnection($conn));
+        $this->assertNull($this->storage->getIdentifierByConnection($conn));
     }
 
     public function test_get_user_data_returns_correct_user_data(): void
@@ -149,16 +149,16 @@ class AuthorizedClientsStorageTest extends TestCase
         $this->storage->add($conn2, $userData2);
         $this->storage->add($conn3, $userData3);
 
-        $this->assertEquals(100, $this->storage->getUserIdByConnection($conn1));
-        $this->assertEquals(200, $this->storage->getUserIdByConnection($conn2));
-        $this->assertEquals(300, $this->storage->getUserIdByConnection($conn3));
+        $this->assertEquals('100', $this->storage->getIdentifierByConnection($conn1));
+        $this->assertEquals('200', $this->storage->getIdentifierByConnection($conn2));
+        $this->assertEquals('300', $this->storage->getIdentifierByConnection($conn3));
 
-        $this->storage->remove(200, $conn2);
+        $this->storage->remove($conn2);
 
-        $this->assertNull($this->storage->getUserIdByConnection($conn2));
-        $this->assertEmpty($this->storage->getConnectionsByUserId(200));
+        $this->assertNull($this->storage->getIdentifierByConnection($conn2));
+        $this->assertEmpty($this->storage->getConnectionsByIdentifier('200'));
 
-        $this->assertEquals(100, $this->storage->getUserIdByConnection($conn1));
-        $this->assertEquals(300, $this->storage->getUserIdByConnection($conn3));
+        $this->assertEquals('100', $this->storage->getIdentifierByConnection($conn1));
+        $this->assertEquals('300', $this->storage->getIdentifierByConnection($conn3));
     }
 }

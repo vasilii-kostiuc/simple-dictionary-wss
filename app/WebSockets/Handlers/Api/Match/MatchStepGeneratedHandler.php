@@ -32,12 +32,12 @@ class MatchStepGeneratedHandler implements ApiMessageHandlerInterface
 
         if ($userId) {
             Log::info('Sending next_step_generated to user', ['user_id' => $userId]);
-            $this->sender->sendToUser($userId, $message);
+            $this->sender->sendToIdentifier((string) $userId, $message);
         }
 
         if ($guestId) {
             Log::info('Sending next_step_generated to guest', ['guest_id' => $guestId]);
-            $this->sender->sendToUser($guestId, $message);
+            $this->sender->sendToIdentifier($guestId, $message);
         }
     }
 }

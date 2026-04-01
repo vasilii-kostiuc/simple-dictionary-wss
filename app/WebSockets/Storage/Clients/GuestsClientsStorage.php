@@ -5,7 +5,7 @@ namespace App\WebSockets\Storage\Clients;
 use App\WebSockets\DTO\UserData;
 use Ratchet\ConnectionInterface;
 
-class AuthorizedClientsStorage implements ClientsStorageInterface
+class GuestsClientsStorage implements ClientsStorageInterface
 {
     private array $clients = [];
 
@@ -19,9 +19,7 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
 
     public function getIdentifierByConnection(ConnectionInterface $conn): ?string
     {
-        $userData = $this->clients[$conn->resourceId]['userData'] ?? null;
-
-        return $userData !== null ? $userData->getIdentifier() : null;
+        return $this->clients[$conn->resourceId]['userData']?->guestId ?? null;
     }
 
     public function getUserData(ConnectionInterface $conn): ?UserData
@@ -33,7 +31,7 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
     {
         $connections = [];
         foreach ($this->clients as $client) {
-            if ($client['userData']->getIdentifier() === $identifier) {
+            if ($client['userData']->guestId === $identifier) {
                 $connections[] = $client['connection'];
             }
         }

@@ -10,20 +10,23 @@ class WebSocketMessageSender implements WebSocketMessageSenderInterface
 {
     public function __construct(
         private readonly ClientsStorageInterface $clientsStorage,
-    ) {}
+    ) {
+    }
 
-    public function sendToUser(int $userId, WebSocketMessage $message): void
+    public function sendToIdentifier(string $identifier, WebSocketMessage $message): void
     {
-        foreach ($this->clientsStorage->getConnectionsByUserId($userId) as $connection) {
+        foreach ($this->clientsStorage->getConnectionsByIdentifier($identifier) as $connection) {
             $connection->send($message);
         }
     }
 
     public function sendToConnection(ConnectionInterface $conn, WebSocketMessage $message): void
     {
-        $userData = $this->clientsStorage->getUserData($conn);
-        if (! $userData) {
-            $this->sendToUser($userData->id, $message);
+        $identifier = $this->clientsStorage->getIdentifierByConnection($conn);
+        if ($identifier !== null) {
+            foreach ($this->clientsStorage->getConnectionsByIdentifier($identifier) as $connection) {
+                $connection->send($message);
+            }
 
             return;
         }

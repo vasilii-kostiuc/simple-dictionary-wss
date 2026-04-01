@@ -30,15 +30,17 @@ class MatchCreatedHandler implements ApiMessageHandlerInterface
 
         foreach ($participants as $participant) {
             $userId = $participant['user_id'] ?? null;
+            $guestId = $participant['guest_id'] ?? null;
 
             if ($userId) {
                 Log::info('Sending match created message to user', ['user_id' => $userId]);
-                $this->sender->sendToUser($userId, new MatchCreatedMessage($data));
+                $this->sender->sendToIdentifier((string) $userId, new MatchCreatedMessage($data));
             }
 
-            // add for guest users as well
-            $guestId = $participant['guest_id'] ?? null;
-
+            if ($guestId) {
+                Log::info('Sending match created message to guest', ['guest_id' => $guestId]);
+                $this->sender->sendToIdentifier($guestId, new MatchCreatedMessage($data));
+            }
         }
 
     }

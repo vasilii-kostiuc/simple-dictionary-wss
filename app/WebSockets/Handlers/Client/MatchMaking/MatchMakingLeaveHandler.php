@@ -22,13 +22,12 @@ class MatchMakingLeaveHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        $payload = json_decode($msg->getPayload(), true);
-        $userId = $this->clientsStorage->getUserIdByConnection($from);
+        $identifier = $this->clientsStorage->getIdentifierByConnection($from);
 
-        $this->matchMakingQueue->remove($userId);
+        $this->matchMakingQueue->remove($identifier);
 
         $this->sender->sendToConnection($from, new MatchMakingLeaveSuccessMessage);
 
-        event(new MatchMakingLeaveEvent($userId));
+        event(new MatchMakingLeaveEvent($identifier));
     }
 }
