@@ -30,6 +30,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
         $userData = $this->clientsStorage->getUserData($from);
+        info("userData :", $this->clientsStorage->getUserData($from)->toArray());
 
         $opponentId = isset($data['opponent_id']) ? (string) $data['opponent_id'] : null;
         Log::info('Received opponent_id: '.$opponentId);
@@ -59,11 +60,11 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
         $currentParticipant = $userData->isGuest()
             ? ['guest_id' => $userData->guestId, 'type' => 'guest']
-            : ['user_id' => $userData->id, 'type' => 'user'];
+            : ['id' => $userData->getIdentifier(), 'type' => 'user'];
 
         $opponentParticipant = ($matchData['guestId'] ?? null)
             ? ['guest_id' => $matchData['guestId'], 'type' => 'guest']
-            : ['user_id' => $matchData['userId'], 'type' => 'user'];
+            : ['id' => $matchData['userId'], 'type' => 'user'];
 
         $participants = [$currentParticipant, $opponentParticipant];
 

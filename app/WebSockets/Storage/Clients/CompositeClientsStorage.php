@@ -9,7 +9,7 @@ class CompositeClientsStorage implements ClientsStorageInterface
 {
     public function __construct(
         private readonly AuthorizedClientsStorage $authorized,
-        private readonly GuestsClientsStorage $guests,
+        private readonly GuestClientsStorage      $guests,
     ) {
     }
 

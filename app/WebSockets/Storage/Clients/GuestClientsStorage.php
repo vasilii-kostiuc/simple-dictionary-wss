@@ -5,7 +5,7 @@ namespace App\WebSockets\Storage\Clients;
 use App\WebSockets\DTO\UserData;
 use Ratchet\ConnectionInterface;
 
-class GuestsClientsStorage implements ClientsStorageInterface
+class GuestClientsStorage implements ClientsStorageInterface
 {
     private array $clients = [];
 
