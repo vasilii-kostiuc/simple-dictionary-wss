@@ -6,7 +6,7 @@ use App\ApiClients\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Events\MatchMaking\MatchMakingQueueUpdatedEvent;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
-use App\WebSockets\Messages\WebSocketMessage;
+use App\WebSockets\Messages\MatchMaking\MatchMakingChallengeSuccessMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
@@ -72,7 +72,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
         info(__METHOD__.' Match creation result: '.json_encode($createResult));
 
-        $this->sender->sendToConnection($from, new WebSocketMessage('matchmaking_challenge_success', $createResult ?? []));
+        $this->sender->sendToConnection($from, new MatchMakingChallengeSuccessMessage($createResult ?? []));
 
         $this->matchMakingQueue->remove($userData->getIdentifier());
 

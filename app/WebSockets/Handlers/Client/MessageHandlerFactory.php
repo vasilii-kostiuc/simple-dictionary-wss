@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Client;
 
 use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Enums\ClientRequestType;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingChallengeHandler;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingJoinHandler;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingLeaveHandler;
@@ -42,39 +43,42 @@ class MessageHandlerFactory
 
     public function create(string $type, object $payload): MessageHandlerInterface
     {
-        if ($type === 'subscribe') {
-            $channel = $payload->data?->channel ?? '';
-        }
+        $channel = $payload->data?->channel ?? '';
 
         info("Creating message handler for type: $type");
 
-        return match ($type) {
-            'auth' => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
-            'guest_auth' => new GuestAuthHandler($this->clientsStorage),
-            'subscribe' => new AuthorizedMessageHandler(
-                    match ($channel) {
-                        'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue, $this->sender),
-                        default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
-                    },
+        $requestType = ClientRequestType::tryFrom($type);
+
+        if ($requestType === null) {
+            return new UnknownMessageHandler;
+        }
+
+        return match ($requestType) {
+            ClientRequestType::Auth => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
+            ClientRequestType::GuestAuth => new GuestAuthHandler($this->clientsStorage),
+            ClientRequestType::Subscribe => new AuthorizedMessageHandler(
+                match ($channel) {
+                    'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue, $this->sender),
+                    default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+                },
                 $this->clientsStorage
             ),
-            'unsubscribe' => new AuthorizedMessageHandler(
-                new UnsubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+            ClientRequestType::Unsubscribe => new AuthorizedMessageHandler(
+                new UnsubscribeMessageHandler($this->subscriptionsStorage),
                 $this->clientsStorage
             ),
-            'matchmaking.join' => new AuthorizedMessageHandler(
+            ClientRequestType::MatchmakingJoin => new AuthorizedMessageHandler(
                 new MatchMakingJoinHandler($this->clientsStorage, $this->matchMakingQueue, $this->sender),
                 $this->clientsStorage
             ),
-            'matchmaking.leave' => new AuthorizedMessageHandler(
+            ClientRequestType::MatchmakingLeave => new AuthorizedMessageHandler(
                 new MatchMakingLeaveHandler($this->clientsStorage, $this->matchMakingQueue, $this->sender),
                 $this->clientsStorage
             ),
-            'matchmaking.challenge' => new AuthorizedMessageHandler(
+            ClientRequestType::MatchmakingChallenge => new AuthorizedMessageHandler(
                 new MatchMakingChallengeHandler($this->clientsStorage, $this->matchMakingQueue, $this->apiClient, $this->sender),
                 $this->clientsStorage
             ),
-            default => new UnknownMessageHandler
         };
     }
 }
