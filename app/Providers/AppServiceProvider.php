@@ -17,6 +17,8 @@ use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use React\EventLoop\Loop;
+use React\EventLoop\LoopInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,6 +54,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(SubscriptionsStorageInterface::class, function () {
             return new SubscriptionsStorage;
+        });
+
+        $this->app->singleton(LoopInterface::class, function () {
+            return Loop::get();
         });
 
         $this->app->singleton(MatchMakingQueueInterface::class, function () {

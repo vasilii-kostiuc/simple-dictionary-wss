@@ -2,62 +2,18 @@
 
 namespace App\Console\Commands;
 
-use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Handlers\Api\ApiMessageHandlerFactory;
-use App\WebSockets\Handlers\Client\MessageHandlerFactory;
-use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
-use App\WebSockets\Sender\WebSocketMessageSenderInterface;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
-use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
-use App\WebSockets\Storage\Timers\TimerStorageInterface;
 use App\WebSockets\TrainingWsServer;
 use Illuminate\Console\Command;
-use React\EventLoop\Loop;
+use React\EventLoop\LoopInterface;
 use React\Socket\SocketServer;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
 
 class WebsocketServerRunCommand extends Command
 {
-    private MessageHandlerFactory $messageHandlerFactory;
-
-    private MessageBrokerFactory $messageBrokerFactory;
-
-    private ClientsStorageInterface $clientsStorage;
-
-    private ApiMessageHandlerFactory $apiMessageHandlerFactory;
-
-    private TimerStorageInterface $timerStorage;
-
-    private SimpleDictionaryApiClientInterface $simpleDictionaryApiClient;
-
-    private SubscriptionsStorageInterface $subscriptionsStorage;
-
-    private MatchMakingQueueInterface $matchMakingQueue;
-
-    private InternalMessageHandlerFactory $internalMessageHandlerFactory;
-
     public function __construct(
-        MessageHandlerFactory $messageHandlerFactory,
-        MessageBrokerFactory $messageBrokerFactory,
-        ClientsStorageInterface $clientsStorage,
-        SubscriptionsStorageInterface $subscriptionsStorage,
-        TimerStorageInterface $timerStorage,
-        SimpleDictionaryApiClientInterface $simpleDictionaryApiClient,
-        MatchMakingQueueInterface $matchMakingQueue,
-        InternalMessageHandlerFactory $internalMessageHandlerFactory,
-        WebSocketMessageSenderInterface $sender,
+        private readonly TrainingWsServer $trainingWsServer,
+        private readonly LoopInterface $loop,
     ) {
         parent::__construct();
-        $this->messageHandlerFactory = $messageHandlerFactory;
-        $this->messageBrokerFactory = $messageBrokerFactory;
-        $this->clientsStorage = $clientsStorage;
-        $this->subscriptionsStorage = $subscriptionsStorage;
-        $this->timerStorage = $timerStorage;
-        $this->simpleDictionaryApiClient = $simpleDictionaryApiClient;
-        $this->matchMakingQueue = $matchMakingQueue;
-        $this->apiMessageHandlerFactory = new ApiMessageHandlerFactory($this->subscriptionsStorage, Loop::get(), $this->simpleDictionaryApiClient, $sender, $this->timerStorage);
-        $this->internalMessageHandlerFactory = $internalMessageHandlerFactory;
     }
 
     /**
@@ -77,28 +33,18 @@ class WebsocketServerRunCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
-        $loop = Loop::get();
-
-        $trainingWsServer = new TrainingWsServer(
-            $this->messageHandlerFactory,
-            $this->apiMessageHandlerFactory,
-            $this->internalMessageHandlerFactory,
-            $this->messageBrokerFactory,
-            $this->clientsStorage,
-            $this->timerStorage,
-            $this->simpleDictionaryApiClient,
-            $this->subscriptionsStorage,
-            $loop
-        );
+        $this->trainingWsServer->boot();
 
         new \Ratchet\Server\IoServer(
-            new \Ratchet\Http\HttpServer(new \Ratchet\WebSocket\WsServer($trainingWsServer)),
-            new SocketServer('0.0.0.0:8080', [], $loop),
-            $loop
+            new \Ratchet\Http\HttpServer(new \Ratchet\WebSocket\WsServer($this->trainingWsServer)),
+            new SocketServer('0.0.0.0:8080', [], $this->loop),
+            $this->loop
         );
 
-        $loop->run();
+        $this->loop->run();
+
+        return self::SUCCESS;
     }
 }
