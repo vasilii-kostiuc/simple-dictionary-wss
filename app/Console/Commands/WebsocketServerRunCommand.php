@@ -2,16 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\WebSockets\TrainingWsServer;
+use App\WebSockets\TrainingWsRuntime;
 use Illuminate\Console\Command;
-use React\EventLoop\LoopInterface;
-use React\Socket\SocketServer;
 
 class WebsocketServerRunCommand extends Command
 {
     public function __construct(
-        private readonly TrainingWsServer $trainingWsServer,
-        private readonly LoopInterface $loop,
+        private readonly TrainingWsRuntime $trainingWsRuntime,
     ) {
         parent::__construct();
     }
@@ -35,15 +32,7 @@ class WebsocketServerRunCommand extends Command
      */
     public function handle(): int
     {
-        $this->trainingWsServer->boot();
-
-        new \Ratchet\Server\IoServer(
-            new \Ratchet\Http\HttpServer(new \Ratchet\WebSocket\WsServer($this->trainingWsServer)),
-            new SocketServer('0.0.0.0:8080', [], $this->loop),
-            $this->loop
-        );
-
-        $this->loop->run();
+        $this->trainingWsRuntime->run();
 
         return self::SUCCESS;
     }
