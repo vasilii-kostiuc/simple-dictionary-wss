@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\WebSockets\Enums\ErrorCode;
+use App\WebSockets\Enums\ServerEventType;
 use Illuminate\Support\Facades\Redis;
 
 class MatchMakingJoinTest extends WebSocketTestCase
@@ -23,7 +25,7 @@ class MatchMakingJoinTest extends WebSocketTestCase
 
         info('Received matchmaking.join response: '.$response->getPayload());
 
-        $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingJoinSuccess->value, $payload->type ?? null);
 
         $client->close();
     }
@@ -68,7 +70,7 @@ class MatchMakingJoinTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingJoinSuccess->value, $payload->type ?? null);
         $this->assertEquals('steps', $payload->data->match_type ?? null);
 
         $client->close();
@@ -91,7 +93,7 @@ class MatchMakingJoinTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('matchmaking_join_success', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingJoinSuccess->value, $payload->type ?? null);
         $this->assertEquals('time', $payload->data->match_type ?? null);
 
         $client->close();
@@ -112,8 +114,8 @@ class MatchMakingJoinTest extends WebSocketTestCase
         $payload = json_decode($response->getPayload());
 
         info('Received matchmaking.join response without auth: '.$response->getPayload());
-        $this->assertEquals('error', $payload->type ?? null);
-        $this->assertEquals('not_authorized', $payload->data->error ?? null);
+        $this->assertEquals(ServerEventType::Error->value, $payload->type ?? null);
+        $this->assertEquals(ErrorCode::NotAuthorized->value, $payload->data->error ?? null);
 
         $client->close();
     }

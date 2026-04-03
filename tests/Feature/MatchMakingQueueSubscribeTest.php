@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\WebSockets\Enums\ServerEventType;
+
 class MatchMakingQueueSubscribeTest extends WebSocketTestCase
 {
     public function test_subscribe_to_matchmaking_queue_receives_updated_queue(): void
@@ -21,7 +23,7 @@ class MatchMakingQueueSubscribeTest extends WebSocketTestCase
         $payload = json_decode($response->getPayload());
         info('Received matchmaking.queue response: '.$response->getPayload());
 
-        $this->assertEquals('matchmaking.queue.updated', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingQueueUpdated->value, $payload->type ?? null);
         $this->assertObjectHasProperty('queue', $payload->data ?? []);
 
         $client->close();
@@ -57,7 +59,7 @@ class MatchMakingQueueSubscribeTest extends WebSocketTestCase
 
         info('Received matchmaking.queue.updated response after join: '.$response->getPayload());
 
-        $this->assertEquals('matchmaking.queue.updated', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingQueueUpdated->value, $payload->type ?? null);
 
         $this->assertObjectHasProperty('queue', $payload->data ?? []);
 

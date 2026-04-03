@@ -1,5 +1,6 @@
 <?php
 
+use App\WebSockets\Enums\ServerEventType;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -69,7 +70,7 @@ class TrainingWsServerTest extends TestCase
         $message = $client->receive();
 
         $messageType = json_decode($message->getPayload())->type ?? null;
-        $this->assertEquals($messageType, 'auth_success');
+        $this->assertEquals($messageType, ServerEventType::AuthSuccess->value);
         info('message: '.$message->getContent().'');
         $client->close();
     }
@@ -82,14 +83,14 @@ class TrainingWsServerTest extends TestCase
 
         $message = $client->receive();
         $messageType = json_decode($message->getPayload())->type ?? null;
-        $this->assertEquals('auth_success', $messageType);
+        $this->assertEquals(ServerEventType::AuthSuccess->value, $messageType);
 
         $client->text(json_encode(['type' => 'subscribe', 'data' => ['channel' => 'training.121']]));
 
         $message = $client->receive();
         info('message: '.$message->getContent().'');
         $messageType = json_decode($message->getPayload())->type ?? null;
-        $this->assertEquals('subscribe_success', $messageType);
+        $this->assertEquals(ServerEventType::SubscribeSuccess->value, $messageType);
     }
 
     public function test_api_message_handling(): void
@@ -130,7 +131,7 @@ class TrainingWsServerTest extends TestCase
 
             $payload = json_decode($message->getPayload());
             Log::info('Received message: '.$message->getPayload());
-            $this->assertEquals('training_completed', $payload->type ?? null);
+            $this->assertEquals(ServerEventType::TrainingCompleted->value, $payload->type ?? null);
         } catch (\Exception $e) {
             Log::error('Failed to receive message: '.$e->getMessage());
             $this->fail('No message received');

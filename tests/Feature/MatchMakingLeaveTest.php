@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\WebSockets\Enums\ErrorCode;
+use App\WebSockets\Enums\ServerEventType;
 use Illuminate\Support\Facades\Redis;
 
 class MatchMakingLeaveTest extends WebSocketTestCase
@@ -29,7 +31,7 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('matchmaking_leave_success', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingLeaveSuccess->value, $payload->type ?? null);
 
         // Проверяем, что пользователь удалён из очереди
         $queueKeys = Redis::keys('matchmaking:queue:*');
@@ -95,8 +97,8 @@ class MatchMakingLeaveTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('error', $payload->type ?? null);
-        $this->assertEquals('not_authorized', $payload->data->error ?? null);
+        $this->assertEquals(ServerEventType::Error->value, $payload->type ?? null);
+        $this->assertEquals(ErrorCode::NotAuthorized->value, $payload->data->error ?? null);
 
         $client->close();
     }

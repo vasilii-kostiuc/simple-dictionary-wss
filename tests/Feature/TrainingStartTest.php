@@ -1,5 +1,6 @@
 <?php
 
+use App\WebSockets\Enums\ServerEventType;
 use Tests\Feature\WebSocketTestCase;
 
 class TrainingStartTest extends WebSocketTestCase
@@ -41,7 +42,7 @@ class TrainingStartTest extends WebSocketTestCase
 
             $payload = json_decode($message->getPayload());
             Log::info('Received message: '.$message->getPayload());
-            $this->assertEquals('training_completed', $payload->type ?? null);
+            $this->assertEquals(ServerEventType::TrainingCompleted->value, $payload->type ?? null);
         } catch (\Exception $e) {
             Log::error('Failed to receive message: '.$e->getMessage());
             $this->fail('No message received');

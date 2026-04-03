@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\WebSockets\Enums\ErrorCode;
+use App\WebSockets\Enums\ServerEventType;
 use Illuminate\Support\Facades\Redis;
 
 class MatchMakingChallengeHandlerTest extends WebSocketTestCase
@@ -35,7 +37,7 @@ class MatchMakingChallengeHandlerTest extends WebSocketTestCase
 
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('matchmaking_challenge_success', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::MatchmakingChallengeSuccess->value, $payload->type ?? null);
 
         $client->close();
         $opponent->close();
@@ -56,8 +58,8 @@ class MatchMakingChallengeHandlerTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('error', $payload->type ?? null);
-        $this->assertEquals('opponent_not_in_queue', $payload->data->error ?? null);
+        $this->assertEquals(ServerEventType::Error->value, $payload->type ?? null);
+        $this->assertEquals(ErrorCode::OpponentNotInQueue->value, $payload->data->error ?? null);
 
         $client->close();
     }
@@ -75,8 +77,8 @@ class MatchMakingChallengeHandlerTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('error', $payload->type ?? null);
-        $this->assertEquals('opponent_id_required', $payload->data->error ?? null);
+        $this->assertEquals(ServerEventType::Error->value, $payload->type ?? null);
+        $this->assertEquals(ErrorCode::OpponentIdRequired->value, $payload->data->error ?? null);
 
         $client->close();
     }
@@ -95,7 +97,7 @@ class MatchMakingChallengeHandlerTest extends WebSocketTestCase
         $response = $client->receive();
         $payload = json_decode($response->getPayload());
 
-        $this->assertEquals('error', $payload->type ?? null);
+        $this->assertEquals(ServerEventType::Error->value, $payload->type ?? null);
 
         $client->close();
     }
