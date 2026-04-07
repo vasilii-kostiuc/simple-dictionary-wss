@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
+use App\WebSockets\Identity\RandomGuestIdentityGenerator;
 use App\WebSockets\Sender\WebSocketMessageSender;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
@@ -62,6 +64,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(MatchMakingQueueInterface::class, function () {
             return new RedisMatchMakingQueue;
+        });
+
+        $this->app->singleton(GuestIdentityGeneratorInterface::class, function () {
+            return new RandomGuestIdentityGenerator;
         });
 
         $this->app->singleton(\App\WebSockets\Storage\Timers\TimerStorageInterface::class, function () {

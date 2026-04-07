@@ -14,6 +14,16 @@ class MongoTimerStorageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // $mongoHost = env('MONGODB_HOST', 'wss_mongo');
+        // $mongoPort = env('MONGODB_PORT', 27017);
+
+        // $socket = @fsockopen($mongoHost, (int) $mongoPort, $errno, $errstr, 1);
+        // if ($socket === false) {
+        //     $this->markTestSkipped("MongoDB недоступна ({$mongoHost}:{$mongoPort}): {$errstr}");
+        // }
+        // fclose($socket);
+
         $this->storage = new MongoTimerStorage;
         $this->cleanupTimers();
     }
@@ -101,7 +111,7 @@ class MongoTimerStorageTest extends TestCase
 
         // Проверяем что документ существует, но со статусом expired
         $collection = $this->getCollection();
-        $timerKey = TimerType::Training->value . ':' . $trainingId;
+        $timerKey = TimerType::Training->value.':'.$trainingId;
         $document = $collection->findOne(['timer_key' => $timerKey]);
 
         $this->assertNotNull($document);
@@ -177,13 +187,13 @@ class MongoTimerStorageTest extends TestCase
         $startedAt = Carbon::now();
         $durationSeconds = 600;
 
-        $this->storage->addTimer(TimerType::Match->value, $matchId, $startedAt, $durationSeconds);
+        $this->storage->addTimer(TimerType::Match ->value, $matchId, $startedAt, $durationSeconds);
 
-        $this->assertTrue($this->storage->hasTimer(TimerType::Match->value, $matchId));
+        $this->assertTrue($this->storage->hasTimer(TimerType::Match ->value, $matchId));
 
-        $timer = $this->storage->getTimer(TimerType::Match->value, $matchId);
+        $timer = $this->storage->getTimer(TimerType::Match ->value, $matchId);
         $this->assertNotNull($timer);
-        $this->assertEquals(TimerType::Match->value, $timer['type']);
+        $this->assertEquals(TimerType::Match ->value, $timer['type']);
         $this->assertEquals($matchId, $timer['entity_id']);
     }
 }

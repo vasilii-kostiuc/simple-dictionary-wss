@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Client;
 
 use App\WebSockets\DTO\UserData;
+use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
@@ -15,6 +16,7 @@ class GuestAuthHandler implements MessageHandlerInterface
 {
     public function __construct(
         private readonly ClientsStorageInterface $clientsStorage,
+        private readonly GuestIdentityGeneratorInterface $identityGenerator,
     ) {
     }
 
@@ -36,15 +38,15 @@ class GuestAuthHandler implements MessageHandlerInterface
             $guestId = (string) Str::uuid();
         }
 
-        if (! $name) {
-            $name = 'Guest';
-        }
+
+        $name = $this->identityGenerator->generateName();
+        $avatar = $this->identityGenerator->generateAvatar($guestId);
 
         $userData = new UserData(
             id: null,
             name: $name,
             email: '',
-            avatar: null,
+            avatar: $avatar,
             guestId: $guestId,
         );
 
@@ -52,9 +54,6 @@ class GuestAuthHandler implements MessageHandlerInterface
 
         Log::info('Guest authorized', ['guestId' => $guestId]);
 
-        $conn->send(new WebSocketMessage('guest_auth_success', [
-            'guest_id' => $guestId,
-            'name' => $name,
-        ]));
+        $conn->send(new WebSocketMessage('guest_auth_success', $userData->toArray()));
     }
 }

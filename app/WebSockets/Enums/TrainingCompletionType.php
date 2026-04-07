@@ -8,3 +8,4 @@ enum TrainingCompletionType: string
     case Steps = 'steps';
     case Unlimited = 'unlimited';
 }
+

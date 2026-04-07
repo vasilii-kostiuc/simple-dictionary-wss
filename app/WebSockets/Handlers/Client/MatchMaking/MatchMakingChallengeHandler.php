@@ -59,11 +59,11 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         }
 
         $currentParticipant = $userData->isGuest()
-            ? ['id' => $userData->getIdentifier(), 'type' => 'guest']
+            ? ['id' => $userData->getIdentifier(), 'type' => 'guest', 'name' => $userData->name, 'avatar' => $userData->avatar]
             : ['id' => $userData->getIdentifier(), 'type' => 'user'];
 
         $opponentParticipant = ($matchData['guestId'] ?? null)
-            ? ['id' => $matchData['guestId'], 'type' => 'guest']
+            ? ['id' => $matchData['guestId'], 'type' => 'guest', 'name' => $matchData['name'], 'avatar' => $matchData['avatar']]
             : ['id' => $matchData['userId'], 'type' => 'user'];
 
         $participants = [$currentParticipant, $opponentParticipant];

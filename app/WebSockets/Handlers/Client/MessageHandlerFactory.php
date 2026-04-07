@@ -10,6 +10,7 @@ use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingLeaveHandler;
 use App\WebSockets\Handlers\Client\MatchMaking\MatchMakingSubscribeHandler;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
+use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
@@ -17,28 +18,14 @@ use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 
 class MessageHandlerFactory
 {
-    private SimpleDictionaryApiClientInterface $apiClient;
-
-    private ClientsStorageInterface $clientsStorage;
-
-    private SubscriptionsStorageInterface $subscriptionsStorage;
-
-    private MatchMakingQueueInterface $matchMakingQueue;
-
-    private WebSocketMessageSenderInterface $sender;
-
     public function __construct(
-        SimpleDictionaryApiClientInterface $apiClient,
-        ClientsStorageInterface $clientsStorage,
-        SubscriptionsStorageInterface $subscriptionsStorage,
-        MatchMakingQueueInterface $matchMakingQueue,
-        WebSocketMessageSenderInterface $sender,
+        private SimpleDictionaryApiClientInterface $apiClient,
+        private ClientsStorageInterface $clientsStorage,
+        private SubscriptionsStorageInterface $subscriptionsStorage,
+        private MatchMakingQueueInterface $matchMakingQueue,
+        private WebSocketMessageSenderInterface $sender,
+        private GuestIdentityGeneratorInterface $guestIdentityGenerator,
     ) {
-        $this->apiClient = $apiClient;
-        $this->clientsStorage = $clientsStorage;
-        $this->subscriptionsStorage = $subscriptionsStorage;
-        $this->matchMakingQueue = $matchMakingQueue;
-        $this->sender = $sender;
     }
 
     public function create(string $type, object $payload): MessageHandlerInterface
@@ -55,12 +42,12 @@ class MessageHandlerFactory
 
         return match ($requestType) {
             ClientRequestType::Auth => new AuthMessageHandler($this->apiClient, $this->clientsStorage),
-            ClientRequestType::GuestAuth => new GuestAuthHandler($this->clientsStorage),
+            ClientRequestType::GuestAuth => new GuestAuthHandler($this->clientsStorage, $this->guestIdentityGenerator),
             ClientRequestType::Subscribe => new AuthorizedMessageHandler(
-                match ($channel) {
-                    'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue, $this->sender),
-                    default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
-                },
+                    match ($channel) {
+                        'matchmaking.queue' => new MatchMakingSubscribeHandler($this->subscriptionsStorage, $this->clientsStorage, $this->matchMakingQueue, $this->sender),
+                        default => new SubscribeMessageHandler($this->subscriptionsStorage, $this->clientsStorage),
+                    },
                 $this->clientsStorage
             ),
             ClientRequestType::Unsubscribe => new AuthorizedMessageHandler(
