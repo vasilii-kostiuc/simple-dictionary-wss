@@ -22,6 +22,7 @@ enum ServerEventType: string
     case MatchmakingQueueUpdated = 'matchmaking.queue.updated';
 
     // Training / Match
+    case TrainingStarted = 'training_started';
     case TrainingCompleted = 'training_completed';
     case MatchCreated = 'match_created';
     case MatchStarted = 'match_started';

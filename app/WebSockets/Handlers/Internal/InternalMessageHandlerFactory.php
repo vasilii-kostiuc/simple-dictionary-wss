@@ -2,41 +2,19 @@
 
 namespace App\WebSockets\Handlers\Internal;
 
-use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
-use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
-use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingJoinedHandler;
-use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingLeftHandler;
-use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingMatchedHandler;
-use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingQueueUpdatedHandler;
-
 class InternalMessageHandlerFactory
 {
-    private MatchMakingQueueInterface $matchMakingQueue;
-
-    private SubscriptionsStorageInterface $subscriptionsStorage;
-
+    /**
+     * @param array<string, InternalMessageHandlerInterface> $handlers
+     */
     public function __construct(
-        MatchMakingQueueInterface $matchMakingQueue,
-        SubscriptionsStorageInterface $subscriptionsStorage
+        private readonly array $handlers,
+        private readonly InternalMessageHandlerInterface $unknownHandler,
     ) {
-        $this->matchMakingQueue = $matchMakingQueue;
-        $this->subscriptionsStorage = $subscriptionsStorage;
     }
 
     public function create(string $type): InternalMessageHandlerInterface
     {
-        return match ($type) {
-            'wss.matchmaking.joined' => new MatchMakingJoinedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
-            'wss.matchmaking.leaved' => new MatchMakingLeftHandler($this->matchMakingQueue, $this->subscriptionsStorage),
-            'wss.matchmaking.matched' => new MatchMakingMatchedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
-            'wss.matchmaking.queue.updated' => new MatchMakingQueueUpdatedHandler($this->matchMakingQueue, $this->subscriptionsStorage),
-            default => new class implements InternalMessageHandlerInterface
-            {
-                public function handle(mixed $payload): void
-                {
-                    info("Received unknown internal message type with payload: ".json_encode($payload));
-                }
-            }
-        };
+        return $this->handlers[$type] ?? $this->unknownHandler;
     }
 }

@@ -12,20 +12,16 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class SubscribeMessageHandler implements MessageHandlerInterface
 {
-    protected SubscriptionsStorageInterface $subscriptionsStorage;
-
-    protected ClientsStorageInterface $clientsStorage;
-
     protected array $allowedChannels = [
         'training.*',
         'match.*',
         'matchmaking.queue',
     ];
 
-    public function __construct(SubscriptionsStorageInterface $subscriptionsStorage, ClientsStorageInterface $clientsStorage)
-    {
-        $this->subscriptionsStorage = $subscriptionsStorage;
-        $this->clientsStorage = $clientsStorage;
+    public function __construct(
+        protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
+        protected readonly ClientsStorageInterface $clientsStorage
+    ) {
     }
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
@@ -42,7 +38,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
             return;
         }
 
-        if (! $this->isAllowedChannel($channel)) {
+        if (!$this->isAllowedChannel($channel)) {
             $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
 
             return;
@@ -58,7 +54,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         foreach ($this->allowedChannels as $pattern) {
             if (str_ends_with($pattern, '.*')) {
                 $prefix = substr($pattern, 0, -2);
-                if ($channel === $prefix || str_starts_with($channel, $prefix.'.')) {
+                if ($channel === $prefix || str_starts_with($channel, $prefix . '.')) {
                     return true;
                 }
             } elseif ($channel === $pattern) {
