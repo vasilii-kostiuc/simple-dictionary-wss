@@ -2,11 +2,11 @@
 
 namespace App\Domain\MatchMaking\Contracts;
 
-use App\Domain\Shared\DTO\ConnectedUser;
+use App\Domain\Shared\Identity\ClientIdentity;
 
 interface MatchMakingQueueInterface
 {
-    public function add(ConnectedUser $userData, array $matchParams): void;
+    public function add(ClientIdentity $identity, array $matchParams): void;
 
     public function remove(string $identifier, array $matchParams = []): void;
 

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\WebSockets\Lifecycle\ConnectionLifecycleService;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
@@ -44,12 +44,12 @@ class ConnectionLifecycleServiceTest extends TestCase
         $connection = $this->createMock(ConnectionInterface::class);
         $connection->resourceId = 42;
 
-        $storage = $this->createMock(ClientsStorageInterface::class);
+        $clientRegistry = $this->createMock(ClientRegistryInterface::class);
         $subscriptions = $this->createMock(SubscriptionsStorageInterface::class);
 
-        $storage->expects($this->once())->method('remove')->with($connection);
+        $clientRegistry->expects($this->once())->method('forget')->with($connection);
         $subscriptions->expects($this->once())->method('unsubscribeAll')->with($connection);
 
-        (new ConnectionLifecycleService($storage, $subscriptions))->onClose($connection);
+        (new ConnectionLifecycleService($clientRegistry, $subscriptions))->onClose($connection);
     }
 }

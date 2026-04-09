@@ -8,14 +8,14 @@ use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchMaking\MatchMakingChallengeSuccessMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class MatchMakingChallengeHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly ClientRegistryInterface $clientRegistry,
         private readonly ChallengeMatchMakingAction $challengeAction,
         private readonly WebSocketMessageSenderInterface $sender,
     ) {
@@ -25,7 +25,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
     {
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
-        $user = $this->clientsStorage->getUserData($from);
+        $identity = $this->clientRegistry->getIdentity($from);
 
         $opponentId = isset($data['opponent_id']) ? (string) $data['opponent_id'] : null;
 
@@ -36,7 +36,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         }
 
         try {
-            $createResult = $this->challengeAction->execute($user, $opponentId);
+            $createResult = $this->challengeAction->execute($identity, $opponentId);
             $this->sender->sendToConnection($from, new MatchMakingChallengeSuccessMessage($createResult));
         } catch (MatchMakingException $e) {
             $this->sender->sendToConnection($from, new ErrorMessage($e->getErrorCode(), $payload ?? []));

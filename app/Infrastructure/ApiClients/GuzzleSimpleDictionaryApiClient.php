@@ -3,7 +3,6 @@
 namespace App\Infrastructure\ApiClients;
 
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
-use App\Domain\Shared\DTO\ConnectedUser;
 use App\Domain\MatchMaking\Enums\MatchType;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -20,22 +19,11 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         $this->token = $token;
     }
 
-    public function getUserByToken(string $token): ?ConnectedUser
+    public function validateToken(string $token): array
     {
-        $response = $this->call('POST', 'auth/token/validate', [
+        return $this->call('POST', 'auth/token/validate', [
             'json' => ['user_token' => $token],
         ]);
-
-        if (empty($response)) {
-            return null;
-        }
-
-        return new ConnectedUser(
-            id: $response['id'],
-            name: $response['name'] ?? '',
-            email: $response['email'] ?? '',
-            avatar: $response['avatar'] ?? null,
-        );
     }
 
     public function expire(string|int $trainingId): array

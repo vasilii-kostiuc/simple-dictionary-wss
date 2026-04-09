@@ -6,14 +6,14 @@ use App\Application\MatchMaking\Actions\LeaveMatchMakingAction;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\MatchMaking\MatchMakingLeaveSuccessMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class MatchMakingLeaveHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly ClientRegistryInterface $clientRegistry,
         private readonly LeaveMatchMakingAction $leaveAction,
         private readonly WebSocketMessageSenderInterface $sender,
     ) {
@@ -21,7 +21,7 @@ class MatchMakingLeaveHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        $identifier = $this->clientsStorage->getIdentifierByConnection($from);
+        $identifier = $this->clientRegistry->getIdentifierByConnection($from);
 
         $this->leaveAction->execute($identifier);
 

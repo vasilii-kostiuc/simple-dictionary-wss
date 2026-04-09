@@ -4,14 +4,16 @@ namespace App\Providers;
 
 use App\Infrastructure\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
-use App\WebSockets\Identity\RandomGuestIdentityGenerator;
+use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
+use App\Domain\Shared\Identity\UserIdentityResolverInterface;
+use App\Infrastructure\Identity\RandomGuestIdentityFactory;
+use App\Infrastructure\Identity\SimpleDictionaryApiUserIdentityResolver;
 use App\WebSockets\Sender\WebSocketMessageSender;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
-use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use App\WebSockets\Storage\Clients\CompositeClientsStorage;
-use App\WebSockets\Storage\Clients\GuestClientsStorage;
+use App\WebSockets\Storage\Clients\AuthorizedClientRegistry;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
+use App\WebSockets\Storage\Clients\CompositeClientRegistry;
+use App\WebSockets\Storage\Clients\GuestClientRegistry;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
@@ -35,23 +37,23 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        $this->app->singleton(AuthorizedClientsStorage::class, function () {
-            return new AuthorizedClientsStorage;
+        $this->app->singleton(AuthorizedClientRegistry::class, function () {
+            return new AuthorizedClientRegistry;
         });
 
-        $this->app->singleton(GuestClientsStorage::class, function () {
-            return new GuestClientsStorage;
+        $this->app->singleton(GuestClientRegistry::class, function () {
+            return new GuestClientRegistry;
         });
 
-        $this->app->singleton(ClientsStorageInterface::class, function (Application $app) {
-            return new CompositeClientsStorage(
-                $app->make(AuthorizedClientsStorage::class),
-                $app->make(GuestClientsStorage::class),
+        $this->app->singleton(ClientRegistryInterface::class, function (Application $app) {
+            return new CompositeClientRegistry(
+                $app->make(AuthorizedClientRegistry::class),
+                $app->make(GuestClientRegistry::class),
             );
         });
 
         $this->app->singleton(WebSocketMessageSenderInterface::class, function (Application $app) {
-            return new WebSocketMessageSender($app->make(ClientsStorageInterface::class));
+            return new WebSocketMessageSender($app->make(ClientRegistryInterface::class));
         });
 
         $this->app->singleton(SubscriptionsStorageInterface::class, function () {
@@ -66,8 +68,14 @@ class AppServiceProvider extends ServiceProvider
             return new RedisMatchMakingQueue;
         });
 
-        $this->app->singleton(GuestIdentityGeneratorInterface::class, function () {
-            return new RandomGuestIdentityGenerator;
+        $this->app->singleton(GuestIdentityFactoryInterface::class, function () {
+            return new RandomGuestIdentityFactory;
+        });
+
+        $this->app->singleton(UserIdentityResolverInterface::class, function (Application $app) {
+            return new SimpleDictionaryApiUserIdentityResolver(
+                $app->make(SimpleDictionaryApiClientInterface::class),
+            );
         });
 
         $this->app->singleton(\App\Domain\Shared\Contracts\TimerStorageInterface::class, function () {

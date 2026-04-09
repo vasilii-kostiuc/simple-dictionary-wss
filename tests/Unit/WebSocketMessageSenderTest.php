@@ -4,15 +4,15 @@ namespace Tests\Unit;
 
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Sender\WebSocketMessageSender;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
 
 class WebSocketMessageSenderTest extends TestCase
 {
-    private function makeSender(ClientsStorageInterface $storage): WebSocketMessageSender
+    private function makeSender(ClientRegistryInterface $clientRegistry): WebSocketMessageSender
     {
-        return new WebSocketMessageSender($storage);
+        return new WebSocketMessageSender($clientRegistry);
     }
 
     private function makeMessage(): WebSocketMessage
@@ -29,21 +29,21 @@ class WebSocketMessageSenderTest extends TestCase
         $conn1->expects($this->once())->method('send')->with($message);
         $conn2->expects($this->once())->method('send')->with($message);
 
-        $storage = $this->createMock(ClientsStorageInterface::class);
-        $storage->method('getConnectionsByIdentifier')->with('42')->willReturn([$conn1, $conn2]);
+        $clientRegistry = $this->createMock(ClientRegistryInterface::class);
+        $clientRegistry->method('getConnectionsByIdentifier')->with('42')->willReturn([$conn1, $conn2]);
 
-        $this->makeSender($storage)->sendToIdentifier('42', $message);
+        $this->makeSender($clientRegistry)->sendToIdentifier('42', $message);
     }
 
     public function test_sends_nothing_when_user_has_no_connections(): void
     {
         $message = $this->makeMessage();
 
-        $storage = $this->createMock(ClientsStorageInterface::class);
-        $storage->method('getConnectionsByIdentifier')->with('99')->willReturn([]);
+        $clientRegistry = $this->createMock(ClientRegistryInterface::class);
+        $clientRegistry->method('getConnectionsByIdentifier')->with('99')->willReturn([]);
 
         // No exception — just silently does nothing
-        $this->makeSender($storage)->sendToIdentifier('99', $message);
+        $this->makeSender($clientRegistry)->sendToIdentifier('99', $message);
         $this->assertTrue(true);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Application\MatchMaking\Actions;
 use App\Application\MatchMaking\Events\MatchMakingJoinedEvent;
 use App\Application\MatchMaking\Exceptions\MatchMakingException;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
-use App\Domain\Shared\DTO\ConnectedUser;
+use App\Domain\Shared\Identity\ClientIdentity;
 use App\Domain\MatchMaking\Enums\MatchType;
 
 class JoinMatchMakingAction
@@ -19,7 +19,7 @@ class JoinMatchMakingAction
      * @return array{matchType: MatchType, matchParams: array}
      * @throws MatchMakingException
      */
-    public function execute(ConnectedUser $user, array $data): array
+    public function execute(ClientIdentity $identity, array $data): array
     {
         $matchType = MatchType::tryFrom($data['match_type'] ?? MatchType::Steps->value);
 
@@ -30,9 +30,9 @@ class JoinMatchMakingAction
         $matchParams = ['match_type' => $matchType->value];
         $matchParams = array_merge($matchParams, $data['match_params'] ?? []);
 
-        $this->matchMakingQueue->add($user, $matchParams);
+        $this->matchMakingQueue->add($identity, $matchParams);
 
-        event(new MatchMakingJoinedEvent($user->getIdentifier(), $matchParams));
+        event(new MatchMakingJoinedEvent($identity->getIdentifier(), $matchParams));
 
         return [
             'matchType' => $matchType,

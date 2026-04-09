@@ -31,7 +31,7 @@ use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingLeftHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingMatchedHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingQueueUpdatedHandler;
 use App\WebSockets\Handlers\Internal\UnknownInternalMessageHandler;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -80,25 +80,25 @@ class WebSocketHandlersServiceProvider extends ServiceProvider
     private function registerClientFactory(): void
     {
         $this->app->singleton(MessageHandlerFactory::class, function (Application $app) {
-            $cs = $app->make(ClientsStorageInterface::class);
+            $clientRegistry = $app->make(ClientRegistryInterface::class);
 
-            $subscribeResolver = function (string $channel) use ($app, $cs): MessageHandlerInterface {
+            $subscribeResolver = function (string $channel) use ($app, $clientRegistry): MessageHandlerInterface {
                 $inner = match ($channel) {
                     'matchmaking.queue' => $app->make(MatchMakingSubscribeHandler::class),
                     default             => $app->make(SubscribeMessageHandler::class),
                 };
 
-                return new AuthorizedMessageHandler($inner, $cs);
+                return new AuthorizedMessageHandler($inner, $clientRegistry);
             };
 
             return new MessageHandlerFactory(
                 handlers: [
                     ClientRequestType::Auth->value               => $app->make(AuthMessageHandler::class),
                     ClientRequestType::GuestAuth->value          => $app->make(GuestAuthHandler::class),
-                    ClientRequestType::Unsubscribe->value        => new AuthorizedMessageHandler($app->make(UnsubscribeMessageHandler::class), $cs),
-                    ClientRequestType::MatchmakingJoin->value    => new AuthorizedMessageHandler($app->make(MatchMakingJoinHandler::class), $cs),
-                    ClientRequestType::MatchmakingLeave->value   => new AuthorizedMessageHandler($app->make(MatchMakingLeaveHandler::class), $cs),
-                    ClientRequestType::MatchmakingChallenge->value => new AuthorizedMessageHandler($app->make(MatchMakingChallengeHandler::class), $cs),
+                    ClientRequestType::Unsubscribe->value        => new AuthorizedMessageHandler($app->make(UnsubscribeMessageHandler::class), $clientRegistry),
+                    ClientRequestType::MatchmakingJoin->value    => new AuthorizedMessageHandler($app->make(MatchMakingJoinHandler::class), $clientRegistry),
+                    ClientRequestType::MatchmakingLeave->value   => new AuthorizedMessageHandler($app->make(MatchMakingLeaveHandler::class), $clientRegistry),
+                    ClientRequestType::MatchmakingChallenge->value => new AuthorizedMessageHandler($app->make(MatchMakingChallengeHandler::class), $clientRegistry),
                 ],
                 subscribeResolver: $subscribeResolver,
                 unknownHandler: $app->make(UnknownMessageHandler::class),

@@ -2,18 +2,18 @@
 
 namespace App\WebSockets\Handlers\Client;
 
-use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Domain\Shared\Identity\UserIdentityResolverInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class AuthMessageHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private readonly SimpleDictionaryApiClientInterface $apiClient,
-        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly UserIdentityResolverInterface $userIdentityResolver,
+        private readonly ClientRegistryInterface $clientRegistry,
     ) {
     }
 
@@ -29,15 +29,15 @@ class AuthMessageHandler implements MessageHandlerInterface
             return;
         }
 
-        $userData = $this->apiClient->getUserByToken($token);
+        $identity = $this->userIdentityResolver->resolveByToken($token);
 
-        if (! $userData) {
+        if (! $identity) {
             $conn->send(new ErrorMessage('invalid_token', []));
 
             return;
         }
 
-        $this->clientsStorage->add($conn, $userData);
-        $conn->send(new WebSocketMessage('auth_success', ['userId' => $userData->id]));
+        $this->clientRegistry->register($conn, $identity);
+        $conn->send(new WebSocketMessage('auth_success', ['userId' => $identity->id]));
     }
 }

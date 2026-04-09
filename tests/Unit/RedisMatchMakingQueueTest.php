@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Domain\Shared\DTO\ConnectedUser;
+use App\Domain\Shared\Identity\ClientIdentity;
 use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
@@ -13,23 +13,23 @@ class RedisMatchMakingQueueTest extends TestCase
 
     private array $defaultMatchParams = ['match_type' => 'steps'];
 
-    private ConnectedUser $user1;
+    private ClientIdentity $user1;
 
-    private ConnectedUser $user2;
+    private ClientIdentity $user2;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->queue = new RedisMatchMakingQueue;
 
-        $this->user1 = new ConnectedUser(
+        $this->user1 = new ClientIdentity(
             id: 1,
             name: 'User One',
             email: 'user1@example.com',
             avatar: null,
         );
 
-        $this->user2 = new ConnectedUser(
+        $this->user2 = new ClientIdentity(
             id: 2,
             name: 'User Two',
             email: 'user2@example.com',

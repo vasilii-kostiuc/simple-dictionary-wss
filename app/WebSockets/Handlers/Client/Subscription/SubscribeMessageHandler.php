@@ -5,7 +5,7 @@ namespace App\WebSockets\Handlers\Client\Subscription;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use App\WebSockets\Subscription\SubscriptionChannelPolicy;
 use Ratchet\ConnectionInterface;
@@ -15,7 +15,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
 {
     public function __construct(
         protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
-        protected readonly ClientsStorageInterface $clientsStorage,
+        protected readonly ClientRegistryInterface $clientRegistry,
         protected readonly SubscriptionChannelPolicy $subscriptionChannelPolicy,
     ) {
     }

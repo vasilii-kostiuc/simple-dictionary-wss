@@ -6,7 +6,7 @@ use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\MatchMaking\Events\MatchMakingQueueUpdatedEvent;
 use App\Application\MatchMaking\Exceptions\MatchMakingException;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
-use App\Domain\Shared\DTO\ConnectedUser;
+use App\Domain\Shared\Identity\ClientIdentity;
 
 class ChallengeMatchMakingAction
 {
@@ -19,7 +19,7 @@ class ChallengeMatchMakingAction
     /**
      * @throws MatchMakingException
      */
-    public function execute(ConnectedUser $user, string $opponentId): array
+    public function execute(ClientIdentity $identity, string $opponentId): array
     {
         if (! $this->matchMakingQueue->isUserInQueue($opponentId)) {
             throw new MatchMakingException('opponent_not_in_queue');
@@ -31,9 +31,9 @@ class ChallengeMatchMakingAction
             throw new MatchMakingException('opponent_not_in_queue');
         }
 
-        $currentParticipant = $user->isGuest()
-            ? ['id' => $user->getIdentifier(), 'type' => 'guest', 'name' => $user->name, 'avatar' => $user->avatar]
-            : ['id' => $user->getIdentifier(), 'type' => 'user'];
+        $currentParticipant = $identity->isGuest()
+            ? ['id' => $identity->getIdentifier(), 'type' => 'guest', 'name' => $identity->name, 'avatar' => $identity->avatar]
+            : ['id' => $identity->getIdentifier(), 'type' => 'user'];
 
         $opponentParticipant = ($matchData['guestId'] ?? null)
             ? ['id' => $matchData['guestId'], 'type' => 'guest', 'name' => $matchData['name'], 'avatar' => $matchData['avatar']]
@@ -44,7 +44,7 @@ class ChallengeMatchMakingAction
             $matchData['matchParams']
         );
 
-        $this->matchMakingQueue->remove($user->getIdentifier());
+        $this->matchMakingQueue->remove($identity->getIdentifier());
 
         event(new MatchMakingQueueUpdatedEvent);
 

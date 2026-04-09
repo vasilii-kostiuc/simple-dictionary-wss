@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Shared\DTO;
+namespace App\Domain\Shared\Identity;
 
-class ConnectedUser
+class ClientIdentity
 {
     public function __construct(
         public readonly ?int $id,

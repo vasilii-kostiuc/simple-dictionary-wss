@@ -3,21 +3,20 @@
 namespace App\Infrastructure\ApiClients\Fake;
 
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
-use App\Domain\Shared\DTO\ConnectedUser;
 use Illuminate\Support\Facades\Http;
 
 class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
 {
-    public function getUserByToken(string $token): ?ConnectedUser
+    public function validateToken(string $token): array
     {
         $id = crc32($token);
 
-        return new ConnectedUser(
-            id: $id,
-            name: 'John Doe '.$id,
-            email: 'john.doe'.$id.'@example.com',
-            avatar: 'https://example.com/avatar.jpg',
-        );
+        return [
+            'id' => $id,
+            'name' => 'John Doe '.$id,
+            'email' => 'john.doe'.$id.'@example.com',
+            'avatar' => 'https://example.com/avatar.jpg',
+        ];
     }
 
     public function expire(string|int $trainingId): array
@@ -54,8 +53,6 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
 
     public function createMatch(array $participants, array $matchParams): array
     {
-        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
-
         return [
             'status' => 'success',
             'message' => 'Match created successfully',

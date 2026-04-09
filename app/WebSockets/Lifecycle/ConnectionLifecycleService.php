@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Lifecycle;
 
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
@@ -10,7 +10,7 @@ use Ratchet\ConnectionInterface;
 class ConnectionLifecycleService
 {
     public function __construct(
-        private readonly ClientsStorageInterface $storage,
+        private readonly ClientRegistryInterface $clientRegistry,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
     ) {
     }
@@ -21,7 +21,7 @@ class ConnectionLifecycleService
 
     public function onClose(ConnectionInterface $conn): void
     {
-        $this->storage->remove($conn);
+        $this->clientRegistry->forget($conn);
         $this->subscriptionsStorage->unsubscribeAll($conn);
     }
 

@@ -8,14 +8,14 @@ use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchMaking\MatchMakingJoinSuccessMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class MatchMakingJoinHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage,
+        private readonly ClientRegistryInterface $clientRegistry,
         private readonly JoinMatchMakingAction $joinAction,
         private readonly WebSocketMessageSenderInterface $sender,
     ) {
@@ -24,10 +24,10 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
         $payload = json_decode($msg->getPayload(), true);
-        $user = $this->clientsStorage->getUserData($from);
+        $identity = $this->clientRegistry->getIdentity($from);
 
         try {
-            $result = $this->joinAction->execute($user, $payload['data'] ?? []);
+            $result = $this->joinAction->execute($identity, $payload['data'] ?? []);
             $this->sender->sendToConnection($from, new MatchMakingJoinSuccessMessage($result['matchType'], $result['matchParams']));
         } catch (MatchMakingException $e) {
             $this->sender->sendToConnection($from, new ErrorMessage($e->getErrorCode(), $payload ?? []));

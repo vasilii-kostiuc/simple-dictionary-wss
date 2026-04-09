@@ -2,20 +2,18 @@
 
 namespace App\WebSockets\Handlers\Client;
 
-use App\Domain\Shared\DTO\ConnectedUser;
-use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
+use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
-use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use Illuminate\Support\Str;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class GuestAuthHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private readonly ClientsStorageInterface $clientsStorage,
-        private readonly GuestIdentityGeneratorInterface $identityGenerator,
+        private readonly ClientRegistryInterface $clientRegistry,
+        private readonly GuestIdentityFactoryInterface $guestIdentityFactory,
     ) {
     }
 
@@ -25,32 +23,16 @@ class GuestAuthHandler implements MessageHandlerInterface
         $data = $payload['data'] ?? [];
 
         $guestId = $data['guest_id'] ?? null;
-        $name = trim($data['name'] ?? '');
-
         if ($guestId !== null && ! preg_match('/^[0-9a-f\-]{36}$/i', $guestId)) {
             $conn->send(new ErrorMessage('invalid_guest_id', []));
 
             return;
         }
 
-        if (! $guestId) {
-            $guestId = (string) Str::uuid();
-        }
+        $identity = $this->guestIdentityFactory->create($guestId);
 
+        $this->clientRegistry->register($conn, $identity);
 
-        $name = $this->identityGenerator->generateName();
-        $avatar = $this->identityGenerator->generateAvatar($guestId);
-
-        $userData = new ConnectedUser(
-            id: null,
-            name: $name,
-            email: '',
-            avatar: $avatar,
-            guestId: $guestId,
-        );
-
-        $this->clientsStorage->add($conn, $userData);
-
-        $conn->send(new WebSocketMessage('guest_auth_success', $userData->toArray()));
+        $conn->send(new WebSocketMessage('guest_auth_success', $identity->toArray()));
     }
 }

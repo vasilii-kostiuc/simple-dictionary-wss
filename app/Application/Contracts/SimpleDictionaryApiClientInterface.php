@@ -2,11 +2,9 @@
 
 namespace App\Application\Contracts;
 
-use App\Domain\Shared\DTO\ConnectedUser;
-
 interface SimpleDictionaryApiClientInterface
 {
-    public function getUserByToken(string $token): ?ConnectedUser;
+    public function validateToken(string $token): array;
 
     public function expire(string|int $trainingId): array;
 
