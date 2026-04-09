@@ -8,6 +8,7 @@ use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
+use App\WebSockets\Subscription\SubscriptionChannelPolicy;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
@@ -16,10 +17,11 @@ class MatchMakingSubscribeHandler extends SubscribeMessageHandler
     public function __construct(
         SubscriptionsStorageInterface $subscriptionsStorage,
         ClientsStorageInterface $clientsStorage,
+        SubscriptionChannelPolicy $subscriptionChannelPolicy,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly WebSocketMessageSenderInterface $sender,
     ) {
-        parent::__construct($subscriptionsStorage, $clientsStorage);
+        parent::__construct($subscriptionsStorage, $clientsStorage, $subscriptionChannelPolicy);
     }
 
     public function handle(ConnectionInterface $conn, MessageInterface $message): void

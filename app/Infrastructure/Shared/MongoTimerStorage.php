@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Training;
+namespace App\Infrastructure\Shared;
 
 use App\Domain\Shared\Contracts\TimerStorageInterface;
 

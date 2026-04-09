@@ -71,7 +71,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(\App\Domain\Shared\Contracts\TimerStorageInterface::class, function () {
-            return new \App\Infrastructure\Training\MongoTimerStorage;
+            return new \App\Infrastructure\Shared\MongoTimerStorage;
         });
 
         $this->app->singleton(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface::class, function () {

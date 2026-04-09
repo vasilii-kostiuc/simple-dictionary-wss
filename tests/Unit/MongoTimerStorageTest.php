@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Domain\Shared\Enums\TimerType;
-use App\Infrastructure\Training\MongoTimerStorage;
+use App\Infrastructure\Shared\MongoTimerStorage;
 use Carbon\Carbon;
 use Tests\TestCase;
 

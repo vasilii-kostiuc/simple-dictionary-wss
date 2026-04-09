@@ -6,21 +6,16 @@ use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
+use App\WebSockets\Subscription\SubscriptionChannelPolicy;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class UnsubscribeMessageHandler implements MessageHandlerInterface
 {
-    protected SubscriptionsStorageInterface $subscriptionsStorage;
-
-    protected array $allowedChannels = [
-        'training',
-        'matchmaking.queue',
-    ];
-
-    public function __construct(SubscriptionsStorageInterface $subscriptionsStorage)
-    {
-        $this->subscriptionsStorage = $subscriptionsStorage;
+    public function __construct(
+        protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
+        protected readonly SubscriptionChannelPolicy $subscriptionChannelPolicy,
+    ) {
     }
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
@@ -37,7 +32,7 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
             return;
         }
 
-        if (! $this->isAllowedChannel($channel)) {
+        if (! $this->subscriptionChannelPolicy->canUnsubscribe($channel)) {
             $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
 
             return;
@@ -45,13 +40,5 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
 
         $this->subscriptionsStorage->unsubscribe($from, $channel);
         $from->send(new UnsubscribeSuccessMessage($channel));
-    }
-
-    protected function isAllowedChannel(string $channel): bool
-    {
-        $parts = explode('.', $channel, 2);
-        $channelType = $parts[0] ?? '';
-
-        return in_array($channelType, $this->allowedChannels, true);
     }
 }

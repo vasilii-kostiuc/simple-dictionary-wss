@@ -7,20 +7,16 @@ use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
+use App\WebSockets\Subscription\SubscriptionChannelPolicy;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class SubscribeMessageHandler implements MessageHandlerInterface
 {
-    protected array $allowedChannels = [
-        'training.*',
-        'match.*',
-        'matchmaking.queue',
-    ];
-
     public function __construct(
         protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
-        protected readonly ClientsStorageInterface $clientsStorage
+        protected readonly ClientsStorageInterface $clientsStorage,
+        protected readonly SubscriptionChannelPolicy $subscriptionChannelPolicy,
     ) {
     }
 
@@ -38,7 +34,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
             return;
         }
 
-        if (!$this->isAllowedChannel($channel)) {
+        if (! $this->subscriptionChannelPolicy->canSubscribe($channel)) {
             $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
 
             return;
@@ -47,21 +43,5 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         $this->subscriptionsStorage->subscribe($from, $channel);
 
         $from->send(new SubscribeSuccessMessage($channel));
-    }
-
-    protected function isAllowedChannel(string $channel): bool
-    {
-        foreach ($this->allowedChannels as $pattern) {
-            if (str_ends_with($pattern, '.*')) {
-                $prefix = substr($pattern, 0, -2);
-                if ($channel === $prefix || str_starts_with($channel, $prefix . '.')) {
-                    return true;
-                }
-            } elseif ($channel === $pattern) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
