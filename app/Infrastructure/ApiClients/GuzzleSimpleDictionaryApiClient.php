@@ -6,6 +6,7 @@ use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Domain\Shared\DTO\ConnectedUser;
 use App\Domain\MatchMaking\Enums\MatchType;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 
 class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
 {
@@ -28,8 +29,6 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         if (empty($response)) {
             return null;
         }
-
-        info('Profile response: '.json_encode($response));
 
         return new ConnectedUser(
             id: $response['id'],
@@ -55,7 +54,6 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     protected function call(string $method, string $uri, array $options = []): array
     {
-        info("API Call: {$method} {$uri} with options: ".json_encode($options));
         try {
             $options['headers'] = array_merge(
                 $options['headers'] ?? [],
@@ -64,8 +62,6 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
             $response = $this->client->request($method, $uri, $options);
 
-            info("API Response ({$uri}): Status {$response->getStatusCode()}, Body: ".(string) $response->getBody());
-
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
 
                 $body = json_decode((string) $response->getBody(), true);
@@ -73,7 +69,11 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
                 return $body['data'] ?? $body ?? [];
             }
         } catch (GuzzleException $e) {
-            info("API Error ({$uri}): ".$e->getMessage());
+            Log::warning('External API request failed', [
+                'method' => $method,
+                'uri' => $uri,
+                'message' => $e->getMessage(),
+            ]);
         }
 
         return [];
@@ -91,9 +91,6 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         ];
 
         $response = $this->call('POST', 'matches', ['json' => $matchCreateData]);
-
-        info(__METHOD__.' Match creation response: '.json_encode($response));
-
         return $response;
     }
 }

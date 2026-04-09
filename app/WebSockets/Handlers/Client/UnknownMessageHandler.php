@@ -10,9 +10,6 @@ class UnknownMessageHandler implements MessageHandlerInterface
 {
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        info(__METHOD__);
-        info($msg);
-
         $from->send(new ErrorMessage('unknown_message', $msg->getPayload()));
     }
 }

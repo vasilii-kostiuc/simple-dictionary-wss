@@ -58,13 +58,6 @@ class MongoTimerStorage implements TimerStorageInterface
             ['upsert' => true]
         );
 
-        Log::info('Timer added to MongoDB', [
-            'timer_key' => $timerKey,
-            'type' => $type,
-            'entity_id' => $id,
-            'duration' => $durationSeconds,
-            'expires_at' => date('Y-m-d H:i:s', time() + $durationSeconds),
-        ]);
     }
 
     public function removeTimer(string $type, string $id): void
@@ -80,13 +73,6 @@ class MongoTimerStorage implements TimerStorageInterface
                 ],
             ]
         );
-
-        Log::info('Timer marked as expired in MongoDB', [
-            'timer_key' => $timerKey,
-            'type' => $type,
-            'entity_id' => $id,
-            'modified_count' => $result->getModifiedCount(),
-        ]);
     }
 
     public function getExpiredTimers(): array

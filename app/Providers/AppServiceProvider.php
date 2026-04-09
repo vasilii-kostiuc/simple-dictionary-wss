@@ -79,7 +79,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(SimpleDictionaryApiClientInterface::class, function (Application $app) {
-            info('Environment: '.$app->environment().'');
             if ($app->environment('testing')) {
                 return new FakeSimpleDictionaryApiClient;
             }

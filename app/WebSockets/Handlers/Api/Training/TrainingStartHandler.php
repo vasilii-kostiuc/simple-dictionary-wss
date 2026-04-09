@@ -17,7 +17,6 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
 
     public function handle(mixed $payload): void
     {
-        Log::info('Training started', $payload);
         $data = $payload['data'] ?? [];
         $trainingId = $data['training_id'] ?? null;
         $completionType = isset($data['completion_type']) ? TrainingCompletionType::from($data['completion_type']) : null;

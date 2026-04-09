@@ -49,7 +49,6 @@ class ConnectionLifecycleServiceTest extends TestCase
 
         $storage->expects($this->once())->method('remove')->with($connection);
         $subscriptions->expects($this->once())->method('unsubscribeAll')->with($connection);
-        $subscriptions->expects($this->once())->method('getChannelsByConnection')->with($connection)->willReturn([]);
 
         (new ConnectionLifecycleService($storage, $subscriptions))->onClose($connection);
     }

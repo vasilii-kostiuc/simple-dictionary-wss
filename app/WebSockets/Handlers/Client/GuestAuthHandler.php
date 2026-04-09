@@ -7,7 +7,6 @@ use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
@@ -51,8 +50,6 @@ class GuestAuthHandler implements MessageHandlerInterface
         );
 
         $this->clientsStorage->add($conn, $userData);
-
-        Log::info('Guest authorized', ['guestId' => $guestId]);
 
         $conn->send(new WebSocketMessage('guest_auth_success', $userData->toArray()));
     }

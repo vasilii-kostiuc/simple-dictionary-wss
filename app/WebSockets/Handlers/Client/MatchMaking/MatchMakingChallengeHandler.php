@@ -9,7 +9,6 @@ use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchMaking\MatchMakingChallengeSuccessMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
@@ -24,7 +23,6 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        Log::info(__METHOD__.' called');
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
         $user = $this->clientsStorage->getUserData($from);

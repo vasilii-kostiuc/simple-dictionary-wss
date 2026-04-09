@@ -6,7 +6,6 @@ use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
@@ -20,8 +19,6 @@ class AuthMessageHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $conn, MessageInterface $msg): void
     {
-        info(__METHOD__);
-
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
         $token = $data['token'] ?? null;
@@ -41,7 +38,6 @@ class AuthMessageHandler implements MessageHandlerInterface
         }
 
         $this->clientsStorage->add($conn, $userData);
-        Log::info('Client authorized', ['userId' => $userData->id]);
         $conn->send(new WebSocketMessage('auth_success', ['userId' => $userData->id]));
     }
 }

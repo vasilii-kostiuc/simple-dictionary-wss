@@ -22,8 +22,6 @@ class SubscribeMessageHandler implements MessageHandlerInterface
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
-        info(__METHOD__);
-        info($msg);
         $payload = json_decode($msg->getPayload(), true);
         $data = $payload['data'] ?? [];
         $channel = $data['channel'] ?? '';

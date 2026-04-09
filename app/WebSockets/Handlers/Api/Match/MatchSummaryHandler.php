@@ -16,7 +16,6 @@ class MatchSummaryHandler implements ApiMessageHandlerInterface
 
     public function handle(mixed $payload): void
     {
-        info(__METHOD__.' Match summary received ', $payload);
         $data = $payload['data'] ?? [];
 
         $participants = $data['participants'] ?? [];
@@ -34,12 +33,10 @@ class MatchSummaryHandler implements ApiMessageHandlerInterface
             $guestId = $participant['guest_id'] ?? null;
 
             if ($userId) {
-                Log::info('Sending match_summary to user', ['user_id' => $userId]);
                 $this->sender->sendToIdentifier((string) $userId, $message);
             }
 
             if ($guestId) {
-                Log::info('Sending match_summary to guest', ['guest_id' => $guestId]);
                 $this->sender->sendToIdentifier($guestId, $message);
             }
         }

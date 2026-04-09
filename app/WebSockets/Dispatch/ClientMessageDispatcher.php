@@ -17,9 +17,6 @@ class ClientMessageDispatcher
 
     public function dispatch(ConnectionInterface $conn, MessageInterface $msg): void
     {
-        Log::info(__METHOD__.' '.$msg);
-        Log::info(get_class($msg));
-
         $payload = json_decode($msg->getPayload(), false);
 
         if ($payload === null) {

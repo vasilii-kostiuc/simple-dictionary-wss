@@ -20,7 +20,6 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
 
     public function handle(mixed $payload): void
     {
-        info(__METHOD__.' Match started ', $payload);
         $data = $payload['data'] ?? [];
         $matchId = $data['id'] ?? null;
 
@@ -36,13 +35,11 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
         foreach ($participants as $participant) {
             $userId = $participant['user_id'] ?? null;
             if ($userId) {
-                Log::info('Sending match started message to user', ['user_id' => $userId]);
                 $this->sender->sendToIdentifier((string) $userId, $message);
             }
 
             $guestId = $participant['guest_id'] ?? null;
             if ($guestId) {
-                Log::info('Sending match started message to guest', ['guest_id' => $guestId]);
                 $this->sender->sendToIdentifier($guestId, $message);
             }
         }
