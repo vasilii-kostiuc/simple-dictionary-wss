@@ -39,6 +39,6 @@ class AuthMessageHandler implements MessageHandlerInterface
         }
 
         $this->clientRegistry->register($conn, $identity);
-        $conn->send(new WebSocketMessage('auth_success', ['userId' => $identity->id]));
+        $conn->send(new WebSocketMessage('auth_success', $identity->toArray()));
     }
 }
