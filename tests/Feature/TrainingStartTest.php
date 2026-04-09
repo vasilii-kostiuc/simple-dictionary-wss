@@ -22,7 +22,7 @@ class TrainingStartTest extends WebSocketTestCase
                 'data' => [
                     'training_id' => '121',
                     'started_at' => now()->toIso8601String(),
-                    'completion_type' => \App\WebSockets\Enums\TrainingCompletionType::Time->value,
+                    'completion_type' => \App\Domain\Training\Enums\TrainingCompletionType::Time->value,
                     'completion_type_params' => (object) ['duration' => '0.5'],
                 ],
             ]);

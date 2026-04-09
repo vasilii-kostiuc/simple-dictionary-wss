@@ -6,7 +6,7 @@ use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
-use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
+use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;

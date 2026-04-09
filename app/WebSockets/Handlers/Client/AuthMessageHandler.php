@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Handlers\Client;
 
-use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
@@ -15,7 +15,8 @@ class AuthMessageHandler implements MessageHandlerInterface
     public function __construct(
         private readonly SimpleDictionaryApiClientInterface $apiClient,
         private readonly ClientsStorageInterface $clientsStorage,
-    ) {}
+    ) {
+    }
 
     public function handle(ConnectionInterface $conn, MessageInterface $msg): void
     {

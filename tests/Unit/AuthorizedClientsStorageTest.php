@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\WebSockets\DTO\UserData;
+use App\Domain\Shared\DTO\ConnectedUser;
 use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
 use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
@@ -25,9 +25,9 @@ class AuthorizedClientsStorageTest extends TestCase
         return $conn;
     }
 
-    private function makeUserData(int $id = 123): UserData
+    private function makeUserData(int $id = 123): ConnectedUser
     {
-        return new UserData(
+        return new ConnectedUser(
             id: $id,
             name: 'User '.$id,
             email: 'user'.$id.'@example.com',
@@ -125,7 +125,7 @@ class AuthorizedClientsStorageTest extends TestCase
     public function test_get_user_data_returns_correct_user_data(): void
     {
         $conn = $this->createMockConnection(1);
-        $userData = new UserData(id: 42, name: 'Test', email: 'test@test.com', avatar: 'http://example.com/img.jpg');
+        $userData = new ConnectedUser(id: 42, name: 'Test', email: 'test@test.com', avatar: 'http://example.com/img.jpg');
 
         $this->storage->add($conn, $userData);
 

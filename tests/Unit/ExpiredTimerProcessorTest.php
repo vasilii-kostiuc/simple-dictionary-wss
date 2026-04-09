@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
-use App\ApiClients\SimpleDictionaryApiClientInterface;
-use App\WebSockets\Storage\Timers\TimerStorageInterface;
-use App\WebSockets\Timers\ExpiredTimerProcessor;
+use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Application\Training\Actions\ProcessExpiredTimersAction;
+use App\Domain\Shared\Contracts\TimerStorageInterface;
 use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
@@ -19,11 +19,17 @@ class ExpiredTimerProcessorTest extends TestCase
         $container = new Container;
         $container->instance('log', new class
         {
-            public function info(...$args): void {}
+            public function info(...$args): void
+            {
+            }
 
-            public function warning(...$args): void {}
+            public function warning(...$args): void
+            {
+            }
 
-            public function error(...$args): void {}
+            public function error(...$args): void
+            {
+            }
         });
 
         Container::setInstance($container);
@@ -67,7 +73,7 @@ class ExpiredTimerProcessorTest extends TestCase
             ->method('removeTimer')
             ->with($this->callback(fn ($type): bool => in_array($type, ['training', 'match'], true)), $this->callback(fn ($id): bool => in_array($id, ['training-1', 'match-2'], true)));
 
-        (new ExpiredTimerProcessor($timerStorage, $apiClient))->process();
+        (new ProcessExpiredTimersAction($timerStorage, $apiClient))->execute();
     }
 
     public function test_process_does_nothing_when_no_timers_are_expired(): void
@@ -79,6 +85,6 @@ class ExpiredTimerProcessorTest extends TestCase
         $apiClient->expects($this->never())->method('expire');
         $timerStorage->expects($this->never())->method('removeTimer');
 
-        (new ExpiredTimerProcessor($timerStorage, $apiClient))->process();
+        (new ProcessExpiredTimersAction($timerStorage, $apiClient))->execute();
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\ApiClients\Fake\FakeSimpleDictionaryApiClient;
-use App\ApiClients\SimpleDictionaryApiClientInterface;
+use App\Infrastructure\ApiClients\Fake\FakeSimpleDictionaryApiClient;
+use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
 use App\WebSockets\Identity\RandomGuestIdentityGenerator;
 use App\WebSockets\Sender\WebSocketMessageSender;
@@ -12,8 +12,8 @@ use App\WebSockets\Storage\Clients\AuthorizedClientsStorage;
 use App\WebSockets\Storage\Clients\ClientsStorageInterface;
 use App\WebSockets\Storage\Clients\CompositeClientsStorage;
 use App\WebSockets\Storage\Clients\GuestClientsStorage;
-use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
-use App\WebSockets\Storage\MatchMaking\RedisMatchMakingQueue;
+use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
+use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
@@ -70,8 +70,8 @@ class AppServiceProvider extends ServiceProvider
             return new RandomGuestIdentityGenerator;
         });
 
-        $this->app->singleton(\App\WebSockets\Storage\Timers\TimerStorageInterface::class, function () {
-            return new \App\WebSockets\Storage\Timers\MongoTimerStorage;
+        $this->app->singleton(\App\Domain\Shared\Contracts\TimerStorageInterface::class, function () {
+            return new \App\Infrastructure\Training\MongoTimerStorage;
         });
 
         $this->app->singleton(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface::class, function () {
@@ -86,7 +86,7 @@ class AppServiceProvider extends ServiceProvider
 
             $defaultConfig['headers']['Authorization'] = 'Bearer '.config('services.api.wss_token');
 
-            return new \App\ApiClients\GuzzleSimpleDictionaryApiClient(
+            return new \App\Infrastructure\ApiClients\GuzzleSimpleDictionaryApiClient(
                 $app->make(\GuzzleHttp\Client::class, $defaultConfig), config('services.api.wss_token')
             );
         });
@@ -98,17 +98,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app['events']->listen(
-            \App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent::class,
+            \App\Application\MatchMaking\Events\MatchMakingJoinedEvent::class,
             \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingJoinedListener::class
         );
 
         $this->app['events']->listen(
-            \App\WebSockets\Events\MatchMaking\MatchMakingLeaveEvent::class,
+            \App\Application\MatchMaking\Events\MatchMakingLeaveEvent::class,
             \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingLeaveListener::class
         );
 
         $this->app['events']->listen(
-            \App\WebSockets\Events\MatchMaking\MatchMakingQueueUpdatedEvent::class,
+            \App\Application\MatchMaking\Events\MatchMakingQueueUpdatedEvent::class,
             \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingQueueUpdatedListener::class
         );
     }

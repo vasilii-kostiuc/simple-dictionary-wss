@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\WebSockets\Enums\TimerType;
-use App\WebSockets\Storage\Timers\MongoTimerStorage;
+use App\Domain\Shared\Enums\TimerType;
+use App\Infrastructure\Training\MongoTimerStorage;
 use Carbon\Carbon;
 use Tests\TestCase;
 

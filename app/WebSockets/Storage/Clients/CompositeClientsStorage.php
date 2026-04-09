@@ -2,18 +2,18 @@
 
 namespace App\WebSockets\Storage\Clients;
 
-use App\WebSockets\DTO\UserData;
+use App\Domain\Shared\DTO\ConnectedUser;
 use Ratchet\ConnectionInterface;
 
 class CompositeClientsStorage implements ClientsStorageInterface
 {
     public function __construct(
         private readonly AuthorizedClientsStorage $authorized,
-        private readonly GuestClientsStorage      $guests,
+        private readonly GuestClientsStorage $guests,
     ) {
     }
 
-    public function add(ConnectionInterface $conn, UserData $userData): void
+    public function add(ConnectionInterface $conn, ConnectedUser $userData): void
     {
         if ($userData->isGuest()) {
             $this->guests->add($conn, $userData);
@@ -28,7 +28,7 @@ class CompositeClientsStorage implements ClientsStorageInterface
             ?? $this->guests->getIdentifierByConnection($conn);
     }
 
-    public function getUserData(ConnectionInterface $conn): ?UserData
+    public function getUserData(ConnectionInterface $conn): ?ConnectedUser
     {
         return $this->authorized->getUserData($conn)
             ?? $this->guests->getUserData($conn);

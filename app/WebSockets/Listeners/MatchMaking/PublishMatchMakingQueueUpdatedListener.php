@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Listeners\MatchMaking;
 
-use App\WebSockets\Events\MatchMaking\MatchMakingQueueUpdatedEvent;
+use App\Application\MatchMaking\Events\MatchMakingQueueUpdatedEvent;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
 
 class PublishMatchMakingQueueUpdatedListener

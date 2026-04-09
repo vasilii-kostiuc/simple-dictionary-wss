@@ -3,7 +3,7 @@
 namespace App\WebSockets\Handlers\Internal\MatchMaking;
 
 use App\WebSockets\Handlers\Internal\BaseInternalMatchMakingHandler;
-use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
+use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
 

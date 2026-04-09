@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Listeners\MatchMaking;
 
-use App\WebSockets\Events\MatchMaking\MatchMakingJoinedEvent;
+use App\Application\MatchMaking\Events\MatchMakingJoinedEvent;
 use Illuminate\Support\Facades\Redis;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
 

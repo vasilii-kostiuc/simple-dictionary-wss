@@ -3,7 +3,7 @@
 namespace App\WebSockets\Handlers\Internal;
 
 use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
-use App\WebSockets\Storage\MatchMaking\MatchMakingQueueInterface;
+use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 
 abstract class BaseInternalMatchMakingHandler implements InternalMessageHandlerInterface
@@ -11,7 +11,8 @@ abstract class BaseInternalMatchMakingHandler implements InternalMessageHandlerI
     public function __construct(
         protected MatchMakingQueueInterface $matchMakingQueue,
         protected SubscriptionsStorageInterface $subscriptionsStorage
-    ) {}
+    ) {
+    }
 
     protected function broadcastQueueUpdated(): void
     {

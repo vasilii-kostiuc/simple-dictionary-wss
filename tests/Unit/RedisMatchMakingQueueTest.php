@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\WebSockets\DTO\UserData;
-use App\WebSockets\Storage\MatchMaking\RedisMatchMakingQueue;
+use App\Domain\Shared\DTO\ConnectedUser;
+use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
@@ -13,23 +13,23 @@ class RedisMatchMakingQueueTest extends TestCase
 
     private array $defaultMatchParams = ['match_type' => 'steps'];
 
-    private UserData $user1;
+    private ConnectedUser $user1;
 
-    private UserData $user2;
+    private ConnectedUser $user2;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->queue = new RedisMatchMakingQueue;
 
-        $this->user1 = new UserData(
+        $this->user1 = new ConnectedUser(
             id: 1,
             name: 'User One',
             email: 'user1@example.com',
             avatar: null,
         );
 
-        $this->user2 = new UserData(
+        $this->user2 = new ConnectedUser(
             id: 2,
             name: 'User Two',
             email: 'user2@example.com',

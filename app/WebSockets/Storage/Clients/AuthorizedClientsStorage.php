@@ -2,14 +2,14 @@
 
 namespace App\WebSockets\Storage\Clients;
 
-use App\WebSockets\DTO\UserData;
+use App\Domain\Shared\DTO\ConnectedUser;
 use Ratchet\ConnectionInterface;
 
 class AuthorizedClientsStorage implements ClientsStorageInterface
 {
     private array $clients = [];
 
-    public function add(ConnectionInterface $conn, UserData $userData): void
+    public function add(ConnectionInterface $conn, ConnectedUser $userData): void
     {
         $this->clients[$conn->resourceId] = [
             'connection' => $conn,
@@ -24,7 +24,7 @@ class AuthorizedClientsStorage implements ClientsStorageInterface
         return $userData !== null ? $userData->getIdentifier() : null;
     }
 
-    public function getUserData(ConnectionInterface $conn): ?UserData
+    public function getUserData(ConnectionInterface $conn): ?ConnectedUser
     {
         return $this->clients[$conn->resourceId]['userData'] ?? null;
     }

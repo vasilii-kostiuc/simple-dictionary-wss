@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Messages\MatchMaking;
 
-use App\WebSockets\Enums\MatchType;
+use App\Domain\MatchMaking\Enums\MatchType;
 use App\WebSockets\Messages\WebSocketMessage;
 
 class MatchMakingJoinSuccessMessage extends WebSocketMessage

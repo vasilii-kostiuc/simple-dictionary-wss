@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Handlers\Client;
 
-use App\WebSockets\DTO\UserData;
+use App\Domain\Shared\DTO\ConnectedUser;
 use App\WebSockets\Identity\GuestIdentityGeneratorInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
@@ -42,7 +42,7 @@ class GuestAuthHandler implements MessageHandlerInterface
         $name = $this->identityGenerator->generateName();
         $avatar = $this->identityGenerator->generateAvatar($guestId);
 
-        $userData = new UserData(
+        $userData = new ConnectedUser(
             id: null,
             name: $name,
             email: '',
