@@ -2,7 +2,8 @@
 
 namespace App\WebSockets\Handlers\Client;
 
-use App\Domain\Shared\Identity\UserIdentityResolverInterface;
+use App\Application\Auth\Actions\AuthenticateUserAction;
+use App\Application\Auth\Exceptions\AuthException;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
@@ -12,7 +13,7 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 class AuthMessageHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private readonly UserIdentityResolverInterface $userIdentityResolver,
+        private readonly AuthenticateUserAction $authenticateUserAction,
         private readonly ClientRegistryInterface $clientRegistry,
     ) {
     }
@@ -29,10 +30,10 @@ class AuthMessageHandler implements MessageHandlerInterface
             return;
         }
 
-        $identity = $this->userIdentityResolver->resolveByToken($token);
-
-        if (! $identity) {
-            $conn->send(new ErrorMessage('invalid_token', []));
+        try {
+            $identity = $this->authenticateUserAction->execute($token);
+        } catch (AuthException $e) {
+            $conn->send(new ErrorMessage($e->getErrorCode(), []));
 
             return;
         }

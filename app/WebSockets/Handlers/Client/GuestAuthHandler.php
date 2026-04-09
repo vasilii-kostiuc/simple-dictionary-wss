@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Handlers\Client;
 
-use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
+use App\Application\Auth\Actions\AuthenticateGuestAction;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
@@ -13,7 +13,7 @@ class GuestAuthHandler implements MessageHandlerInterface
 {
     public function __construct(
         private readonly ClientRegistryInterface $clientRegistry,
-        private readonly GuestIdentityFactoryInterface $guestIdentityFactory,
+        private readonly AuthenticateGuestAction $authenticateGuestAction,
     ) {
     }
 
@@ -29,7 +29,7 @@ class GuestAuthHandler implements MessageHandlerInterface
             return;
         }
 
-        $identity = $this->guestIdentityFactory->create($guestId);
+        $identity = $this->authenticateGuestAction->execute($guestId);
 
         $this->clientRegistry->register($conn, $identity);
 

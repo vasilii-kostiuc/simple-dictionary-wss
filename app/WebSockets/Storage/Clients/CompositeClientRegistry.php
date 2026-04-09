@@ -34,6 +34,12 @@ class CompositeClientRegistry implements ClientRegistryInterface
             ?? $this->guestRegistry->getIdentity($conn);
     }
 
+    public function getIdentityByIdentifier(string $identifier): ?ClientIdentity
+    {
+        return $this->authorizedRegistry->getIdentityByIdentifier($identifier)
+            ?? $this->guestRegistry->getIdentityByIdentifier($identifier);
+    }
+
     public function getConnectionsByIdentifier(string $identifier): array
     {
         $connections = $this->authorizedRegistry->getConnectionsByIdentifier($identifier);

@@ -29,6 +29,17 @@ class AuthorizedClientRegistry implements ClientRegistryInterface
         return $this->clients[$conn->resourceId]['identity'] ?? null;
     }
 
+    public function getIdentityByIdentifier(string $identifier): ?ClientIdentity
+    {
+        foreach ($this->clients as $client) {
+            if ($client['identity']->getIdentifier() === $identifier) {
+                return $client['identity'];
+            }
+        }
+
+        return null;
+    }
+
     public function getConnectionsByIdentifier(string $identifier): array
     {
         $connections = [];

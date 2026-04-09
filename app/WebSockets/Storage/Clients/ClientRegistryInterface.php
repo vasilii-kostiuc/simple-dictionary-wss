@@ -13,6 +13,8 @@ interface ClientRegistryInterface
 
     public function getIdentity(ConnectionInterface $conn): ?ClientIdentity;
 
+    public function getIdentityByIdentifier(string $identifier): ?ClientIdentity;
+
     public function getConnectionsByIdentifier(string $identifier): array;
 
     public function forget(ConnectionInterface $conn): void;
