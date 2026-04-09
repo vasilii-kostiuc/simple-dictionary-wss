@@ -39,3 +39,17 @@ services:
     networks:
       - simple_dictionary_network
 
+  mongo_express:
+    image: mongo-express:latest
+    container_name: wss_mongo_express
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    networks:
+      - simple_dictionary_network
