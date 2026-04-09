@@ -96,14 +96,14 @@ class AuthorizedClientRegistryTest extends TestCase
         $this->assertSame([$conn], $this->clientRegistry->getConnectionsByIdentifier('123'));
     }
 
-    public function test_get_identity_by_identifier_returns_identity(): void
+    public function test_find_by_identifier_returns_identity(): void
     {
         $conn = $this->createMockConnection(1);
         $identity = $this->makeIdentity(123);
 
         $this->clientRegistry->register($conn, $identity);
 
-        $this->assertSame($identity, $this->clientRegistry->getIdentityByIdentifier('123'));
+        $this->assertSame($identity, $this->clientRegistry->findByIdentifier('123'));
     }
 
     public function test_get_connection_by_identifier_returns_empty_for_unknown(): void

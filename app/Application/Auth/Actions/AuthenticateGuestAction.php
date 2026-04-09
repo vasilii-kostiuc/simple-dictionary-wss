@@ -3,13 +3,13 @@
 namespace App\Application\Auth\Actions;
 
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
-use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 
 class AuthenticateGuestAction
 {
     public function __construct(
-        private readonly ClientRegistryInterface $clientRegistry,
+        private readonly ClientIdentityLookupInterface $clientIdentityLookup,
         private readonly GuestIdentityFactoryInterface $guestIdentityFactory,
     ) {
     }
@@ -17,7 +17,7 @@ class AuthenticateGuestAction
     public function execute(?string $guestId): ClientIdentity
     {
         if ($guestId !== null) {
-            $existingIdentity = $this->clientRegistry->getIdentityByIdentifier($guestId);
+            $existingIdentity = $this->clientIdentityLookup->findByIdentifier($guestId);
 
             if ($existingIdentity !== null) {
                 return $existingIdentity;

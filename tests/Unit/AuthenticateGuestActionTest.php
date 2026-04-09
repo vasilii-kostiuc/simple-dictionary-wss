@@ -4,8 +4,8 @@ namespace Tests\Unit;
 
 use App\Application\Auth\Actions\AuthenticateGuestAction;
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
-use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use PHPUnit\Framework\TestCase;
 
 class AuthenticateGuestActionTest extends TestCase
@@ -20,17 +20,17 @@ class AuthenticateGuestActionTest extends TestCase
             guestId: '11111111-1111-1111-1111-111111111111',
         );
 
-        $clientRegistry = $this->createMock(ClientRegistryInterface::class);
+        $clientIdentityLookup = $this->createMock(ClientIdentityLookupInterface::class);
         $guestIdentityFactory = $this->createMock(GuestIdentityFactoryInterface::class);
 
-        $clientRegistry->expects($this->once())
-            ->method('getIdentityByIdentifier')
+        $clientIdentityLookup->expects($this->once())
+            ->method('findByIdentifier')
             ->with('11111111-1111-1111-1111-111111111111')
             ->willReturn($existingIdentity);
 
         $guestIdentityFactory->expects($this->never())->method('create');
 
-        $action = new AuthenticateGuestAction($clientRegistry, $guestIdentityFactory);
+        $action = new AuthenticateGuestAction($clientIdentityLookup, $guestIdentityFactory);
 
         $this->assertSame($existingIdentity, $action->execute('11111111-1111-1111-1111-111111111111'));
     }
@@ -45,11 +45,11 @@ class AuthenticateGuestActionTest extends TestCase
             guestId: '22222222-2222-2222-2222-222222222222',
         );
 
-        $clientRegistry = $this->createMock(ClientRegistryInterface::class);
+        $clientIdentityLookup = $this->createMock(ClientIdentityLookupInterface::class);
         $guestIdentityFactory = $this->createMock(GuestIdentityFactoryInterface::class);
 
-        $clientRegistry->expects($this->once())
-            ->method('getIdentityByIdentifier')
+        $clientIdentityLookup->expects($this->once())
+            ->method('findByIdentifier')
             ->with('22222222-2222-2222-2222-222222222222')
             ->willReturn(null);
 
@@ -58,7 +58,7 @@ class AuthenticateGuestActionTest extends TestCase
             ->with('22222222-2222-2222-2222-222222222222')
             ->willReturn($newIdentity);
 
-        $action = new AuthenticateGuestAction($clientRegistry, $guestIdentityFactory);
+        $action = new AuthenticateGuestAction($clientIdentityLookup, $guestIdentityFactory);
 
         $this->assertSame($newIdentity, $action->execute('22222222-2222-2222-2222-222222222222'));
     }

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Infrastructure\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
 use App\Domain\Shared\Identity\UserIdentityResolverInterface;
 use App\Infrastructure\Identity\RandomGuestIdentityFactory;
@@ -50,6 +51,10 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(AuthorizedClientRegistry::class),
                 $app->make(GuestClientRegistry::class),
             );
+        });
+
+        $this->app->singleton(ClientIdentityLookupInterface::class, function (Application $app) {
+            return $app->make(ClientRegistryInterface::class);
         });
 
         $this->app->singleton(WebSocketMessageSenderInterface::class, function (Application $app) {

@@ -3,9 +3,10 @@
 namespace App\WebSockets\Storage\Clients;
 
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use Ratchet\ConnectionInterface;
 
-class GuestClientRegistry implements ClientRegistryInterface
+class GuestClientRegistry implements ClientRegistryInterface, ClientIdentityLookupInterface
 {
     private array $clients = [];
 
@@ -27,7 +28,7 @@ class GuestClientRegistry implements ClientRegistryInterface
         return $this->clients[$conn->resourceId]['identity'] ?? null;
     }
 
-    public function getIdentityByIdentifier(string $identifier): ?ClientIdentity
+    public function findByIdentifier(string $identifier): ?ClientIdentity
     {
         foreach ($this->clients as $client) {
             if ($client['identity']->guestId === $identifier) {

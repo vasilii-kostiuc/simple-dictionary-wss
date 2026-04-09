@@ -3,9 +3,10 @@
 namespace App\WebSockets\Storage\Clients;
 
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use Ratchet\ConnectionInterface;
 
-class CompositeClientRegistry implements ClientRegistryInterface
+class CompositeClientRegistry implements ClientRegistryInterface, ClientIdentityLookupInterface
 {
     public function __construct(
         private readonly AuthorizedClientRegistry $authorizedRegistry,
@@ -34,10 +35,10 @@ class CompositeClientRegistry implements ClientRegistryInterface
             ?? $this->guestRegistry->getIdentity($conn);
     }
 
-    public function getIdentityByIdentifier(string $identifier): ?ClientIdentity
+    public function findByIdentifier(string $identifier): ?ClientIdentity
     {
-        return $this->authorizedRegistry->getIdentityByIdentifier($identifier)
-            ?? $this->guestRegistry->getIdentityByIdentifier($identifier);
+        return $this->authorizedRegistry->findByIdentifier($identifier)
+            ?? $this->guestRegistry->findByIdentifier($identifier);
     }
 
     public function getConnectionsByIdentifier(string $identifier): array
