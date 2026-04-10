@@ -17,6 +17,8 @@ use App\WebSockets\Storage\Clients\CompositeClientRegistry;
 use App\WebSockets\Storage\Clients\GuestClientRegistry;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
+use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
+use App\Infrastructure\LinkMatchRoom\RedisLinkMatchRoomRepository;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
@@ -81,6 +83,10 @@ class AppServiceProvider extends ServiceProvider
             return new SimpleDictionaryApiUserIdentityResolver(
                 $app->make(SimpleDictionaryApiClientInterface::class),
             );
+        });
+
+        $this->app->singleton(LinkMatchRoomRepositoryInterface::class, function () {
+            return new RedisLinkMatchRoomRepository;
         });
 
         $this->app->singleton(\App\Domain\Shared\Contracts\TimerStorageInterface::class, function () {

@@ -3,6 +3,8 @@
 namespace App\Infrastructure\ApiClients;
 
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Domain\LinkMatch\LinkMatch;
+use App\Domain\LinkMatch\LinkMatchStatus;
 use App\Domain\MatchMaking\Enums\MatchType;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -80,5 +82,23 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
         $response = $this->call('POST', 'matches', ['json' => $matchCreateData]);
         return $response;
+    }
+
+    public function getLinkMatch(string $token): ?LinkMatch
+    {
+        $data = $this->call('GET', "match-links/{$token}");
+
+        if (empty($data)) {
+            return null;
+        }
+
+        return new LinkMatch(
+            id: $data['token'],
+            token: $data['token'],
+            participantsLimit: $data['participants_limit'],
+            status: LinkMatchStatus::tryFrom($data['status']) ?? LinkMatchStatus::Pending,
+            payload: $data['payload'] ?? [],
+            matchId: $data['match_id'] ?? null,
+        );
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Infrastructure\ApiClients\Fake;
 
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Domain\LinkMatch\LinkMatch;
+use App\Domain\LinkMatch\LinkMatchStatus;
 use Illuminate\Support\Facades\Http;
 
 class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
@@ -62,5 +64,17 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
                 'match_params' => $matchParams,
             ],
         ];
+    }
+
+    public function getLinkMatch(string $token): ?LinkMatch
+    {
+        return new LinkMatch(
+            id: $token,
+            token: $token,
+            participantsLimit: 2,
+            status: LinkMatchStatus::Pending,
+            payload: [],
+            matchId: null,
+        );
     }
 }
