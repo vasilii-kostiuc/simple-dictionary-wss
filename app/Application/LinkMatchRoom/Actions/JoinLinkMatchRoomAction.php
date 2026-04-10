@@ -5,6 +5,7 @@ namespace App\Application\LinkMatchRoom\Actions;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
+use App\Application\Contracts\EventDispatcherInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
 
 class JoinLinkMatchRoomAction
@@ -12,6 +13,7 @@ class JoinLinkMatchRoomAction
     public function __construct(
         private readonly SimpleDictionaryApiClientInterface $apiClient,
         private readonly LinkMatchRoomRepositoryInterface $roomRepository,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -38,6 +40,10 @@ class JoinLinkMatchRoomAction
         }
 
         $this->roomRepository->update($room);
+
+        foreach ($room->pullEvents() as $event) {
+            $this->eventDispatcher->dispatch($event);
+        }
 
         return ['room' => $room];
     }

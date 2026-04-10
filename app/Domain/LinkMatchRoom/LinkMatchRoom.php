@@ -3,13 +3,19 @@
 namespace App\Domain\LinkMatchRoom;
 
 use App\Domain\LinkMatch\LinkMatch;
+use App\Domain\LinkMatchRoom\Events\ParticipantJoinedEvent;
+use App\Domain\LinkMatchRoom\Events\ParticipantLeftEvent;
+use App\Domain\LinkMatchRoom\Events\RoomBecameFullEvent;
+use App\Domain\Shared\AggregateRoot;
 use App\Domain\Shared\Identity\ClientIdentity;
 use Carbon\Carbon;
 
-class LinkMatchRoom
+class LinkMatchRoom extends AggregateRoot
 {
     private array $participants = [];
+
     private LinkMatchRoomStatus $status = LinkMatchRoomStatus::WaitingForPlayers;
+
     private ?int $matchId = null;
 
     private readonly Carbon $createdAt;
@@ -38,8 +44,11 @@ class LinkMatchRoom
             $this->participants[] = $identifier;
         }
 
+        $this->recordEvent(new ParticipantJoinedEvent($this->linkMatchId, $identifier, $this->participants));
+
         if ($this->isFull()) {
             $this->status = LinkMatchRoomStatus::Full;
+            $this->recordEvent(new RoomBecameFullEvent($this->linkMatchId, $this->participants));
         }
     }
 
@@ -52,7 +61,9 @@ class LinkMatchRoom
         $identifier = $clientIdentity->getIdentifier();
         $this->participants = array_filter($this->participants, fn ($id) => $id !== $identifier);
 
-        if ($this->status == LinkMatchRoomStatus::Full) {
+        $this->recordEvent(new ParticipantLeftEvent($this->linkMatchId, $identifier, array_values($this->participants)));
+
+        if ($this->status === LinkMatchRoomStatus::Full) {
             $this->status = LinkMatchRoomStatus::WaitingForPlayers;
         }
     }
@@ -142,5 +153,4 @@ class LinkMatchRoom
 
         return $room;
     }
-
 }

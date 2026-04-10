@@ -2,23 +2,25 @@
 
 namespace App\Providers;
 
-use App\Infrastructure\ApiClients\Fake\FakeSimpleDictionaryApiClient;
+use App\Application\Contracts\EventDispatcherInterface;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
+use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use App\Domain\Shared\Identity\GuestIdentityFactoryInterface;
 use App\Domain\Shared\Identity\UserIdentityResolverInterface;
+use App\Infrastructure\ApiClients\Fake\FakeSimpleDictionaryApiClient;
 use App\Infrastructure\Identity\RandomGuestIdentityFactory;
 use App\Infrastructure\Identity\SimpleDictionaryApiUserIdentityResolver;
+use App\Infrastructure\LinkMatchRoom\RedisLinkMatchRoomRepository;
+use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
+use App\Infrastructure\Shared\LaravelEventDispatcher;
 use App\WebSockets\Sender\WebSocketMessageSender;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\AuthorizedClientRegistry;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Clients\CompositeClientRegistry;
 use App\WebSockets\Storage\Clients\GuestClientRegistry;
-use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
-use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
-use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
-use App\Infrastructure\LinkMatchRoom\RedisLinkMatchRoomRepository;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use GuzzleHttp\Client;
@@ -88,6 +90,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(LinkMatchRoomRepositoryInterface::class, function () {
             return new RedisLinkMatchRoomRepository;
         });
+
+        $this->app->bind(EventDispatcherInterface::class, LaravelEventDispatcher::class);
 
         $this->app->singleton(\App\Domain\Shared\Contracts\TimerStorageInterface::class, function () {
             return new \App\Infrastructure\Shared\MongoTimerStorage;
