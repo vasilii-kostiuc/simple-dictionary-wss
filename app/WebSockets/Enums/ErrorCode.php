@@ -21,5 +21,10 @@ enum ErrorCode: string
     case ChannelIsNotAllowed = 'channel_is_not_allowed';
 
     case UnknownMessage = 'unknown_message';
+
+    case LinkNotFound = 'link_not_found';
+    case LinkMatchRoomNotFound = 'link_match_room_not_found';
+    case LinkMatchRoomFull = 'link_match_room_full';
+    case NotInRoom = 'not_in_room';
 }
 

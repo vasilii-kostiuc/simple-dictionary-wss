@@ -2,9 +2,11 @@
 
 namespace App\Domain\LinkMatchRoom;
 
+use App\Domain\LinkMatch\LinkMatch;
+
 interface LinkMatchRoomRepositoryInterface
 {
-    public function create(LinkMatchRoom $room): void;
+    public function getOrCreate(LinkMatch $linkMatch): LinkMatchRoom;
 
     public function update(LinkMatchRoom $room): void;
 

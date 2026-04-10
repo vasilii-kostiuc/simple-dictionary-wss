@@ -15,6 +15,10 @@ enum ServerEventType: string
     case SubscribeSuccess = 'subscribe_success';
     case UnsubscribeSuccess = 'unsubscribe_success';
 
+    // LinkMatchRoom
+    case LinkMatchRoomJoinSuccess = 'link_match_room_join_success';
+    case LinkMatchRoomLeaveSuccess = 'link_match_room_leave_success';
+
     // Matchmaking
     case MatchmakingJoinSuccess = 'matchmaking_join_success';
     case MatchmakingLeaveSuccess = 'matchmaking_leave_success';

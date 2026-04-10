@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\LinkMatchRoom;
 
+use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatchRoom\LinkMatchRoom;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
 use App\Domain\LinkMatchRoom\LinkMatchRoomStatus;
@@ -14,25 +15,21 @@ class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
 
     private const TTL = 86400; // 24 hours
 
-    public function create(LinkMatchRoom $room): void
+    public function getOrCreate(LinkMatch $linkMatch): LinkMatchRoom
     {
-        Redis::setex(
-            $this->key($room->getId()),
-            self::TTL,
-            json_encode($room->toArray()),
-        );
+        $existing = $this->findByLinkMatchId($linkMatch->id);
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $room = LinkMatchRoom::create($linkMatch);
+        Redis::setex($this->key($room->getId()), self::TTL, json_encode($room->toArray()));
+
+        return $room;
     }
 
     public function update(LinkMatchRoom $room): void
-    {
-        Redis::setex(
-            $this->key($room->getId()),
-            self::TTL,
-            json_encode($room->toArray()),
-        );
-    }
-
-    public function save(LinkMatchRoom $room): void
     {
         Redis::setex(
             $this->key($room->getId()),

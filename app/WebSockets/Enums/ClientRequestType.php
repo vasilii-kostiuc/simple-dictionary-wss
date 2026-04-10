@@ -13,5 +13,8 @@ enum ClientRequestType: string
     case MatchmakingJoin = 'matchmaking.join';
     case MatchmakingLeave = 'matchmaking.leave';
     case MatchmakingChallenge = 'matchmaking.challenge';
+
+    case LinkMatchRoomJoin = 'link_match_room.join';
+    case LinkMatchRoomLeave = 'link_match_room.leave';
 }
 
