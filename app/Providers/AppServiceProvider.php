@@ -133,5 +133,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Application\MatchMaking\Events\MatchMakingQueueUpdatedEvent::class,
             \App\WebSockets\Listeners\MatchMaking\PublishMatchMakingQueueUpdatedListener::class
         );
+
+        $this->app['events']->listen(
+            \App\Domain\LinkMatchRoom\Events\RoomBecameFullEvent::class,
+            \App\Application\LinkMatchRoom\Listeners\CreateMatchOnRoomFullListener::class
+        );
     }
 }

@@ -12,7 +12,10 @@ use Carbon\Carbon;
 
 class LinkMatchRoom extends AggregateRoot
 {
+    /** @var array<string, ClientIdentity> */
     private array $participants = [];
+
+    private array $matchParams = [];
 
     private LinkMatchRoomStatus $status = LinkMatchRoomStatus::WaitingForPlayers;
 
@@ -40,15 +43,15 @@ class LinkMatchRoom extends AggregateRoot
 
         $identifier = $clientIdentity->getIdentifier();
 
-        if (! in_array($identifier, $this->participants)) {
-            $this->participants[] = $identifier;
+        if (! isset($this->participants[$identifier])) {
+            $this->participants[$identifier] = $clientIdentity;
         }
 
-        $this->recordEvent(new ParticipantJoinedEvent($this->linkMatchId, $identifier, $this->participants));
+        $this->recordEvent(new ParticipantJoinedEvent($this->linkMatchId, $identifier, $this->getParticipants()));
 
         if ($this->isFull()) {
             $this->status = LinkMatchRoomStatus::Full;
-            $this->recordEvent(new RoomBecameFullEvent($this->linkMatchId, $this->participants));
+            $this->recordEvent(new RoomBecameFullEvent($this->linkMatchId, array_values($this->participants), $this->matchParams));
         }
     }
 
@@ -59,9 +62,9 @@ class LinkMatchRoom extends AggregateRoot
         }
 
         $identifier = $clientIdentity->getIdentifier();
-        $this->participants = array_filter($this->participants, fn ($id) => $id !== $identifier);
+        unset($this->participants[$identifier]);
 
-        $this->recordEvent(new ParticipantLeftEvent($this->linkMatchId, $identifier, array_values($this->participants)));
+        $this->recordEvent(new ParticipantLeftEvent($this->linkMatchId, $identifier, $this->getParticipants()));
 
         if ($this->status === LinkMatchRoomStatus::Full) {
             $this->status = LinkMatchRoomStatus::WaitingForPlayers;
@@ -80,7 +83,10 @@ class LinkMatchRoom extends AggregateRoot
 
     public static function create(LinkMatch $linkMatch): self
     {
-        return new self($linkMatch->id, $linkMatch->participantsLimit);
+        $room = new self($linkMatch->id, $linkMatch->participantsLimit);
+        $room->matchParams = $linkMatch->payload;
+
+        return $room;
     }
 
     public function setMatchCreating(): void
@@ -109,7 +115,12 @@ class LinkMatchRoom extends AggregateRoot
 
     public function getParticipants(): array
     {
-        return $this->participants;
+        return array_values(array_map(fn (ClientIdentity $identity) => $identity->getIdentifier(), $this->participants));
+    }
+
+    public function getParticipantIdentities(): array
+    {
+        return array_values($this->participants);
     }
 
     public function getParticipantsLimit(): int
@@ -137,17 +148,42 @@ class LinkMatchRoom extends AggregateRoot
         return [
             'link_match_id' => $this->linkMatchId,
             'participants_limit' => $this->participantsLimit,
-            'participants' => $this->participants,
+            'participants' => array_values(array_map(
+                fn (ClientIdentity $identity) => [
+                    'id' => $identity->id,
+                    'name' => $identity->name,
+                    'email' => $identity->email,
+                    'avatar' => $identity->avatar,
+                    'guest_id' => $identity->guestId,
+                ],
+                $this->participants,
+            )),
+            'match_params' => $this->matchParams,
             'status' => $this->status->value,
             'match_id' => $this->matchId,
             'created_at' => $this->createdAt->toIso8601String(),
         ];
     }
 
-    public static function reconstitute(string $linkMatchId, int $participantsLimit, array $participants, LinkMatchRoomStatus $status, ?int $matchId, Carbon $createdAt): self
-    {
+    /**
+     * @param  ClientIdentity[]  $participants
+     */
+    public static function reconstitute(
+        string $linkMatchId,
+        int $participantsLimit,
+        array $participants,
+        LinkMatchRoomStatus $status,
+        ?int $matchId,
+        Carbon $createdAt,
+        array $matchParams = [],
+    ): self {
         $room = new self($linkMatchId, $participantsLimit, $createdAt);
-        $room->participants = $participants;
+
+        foreach ($participants as $identity) {
+            $room->participants[$identity->getIdentifier()] = $identity;
+        }
+
+        $room->matchParams = $matchParams;
         $room->status = $status;
         $room->matchId = $matchId;
 

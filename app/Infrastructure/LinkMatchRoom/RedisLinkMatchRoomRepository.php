@@ -48,13 +48,25 @@ class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
 
         $d = json_decode($data, true);
 
+        $participants = array_map(
+            fn (array $p) => new ClientIdentity(
+                id: $p['id'],
+                name: $p['name'],
+                email: $p['email'],
+                avatar: $p['avatar'],
+                guestId: $p['guest_id'] ?? null,
+            ),
+            $d['participants'],
+        );
+
         return LinkMatchRoom::reconstitute(
             linkMatchId: $d['link_match_id'],
             participantsLimit: $d['participants_limit'],
-            participants: $d['participants'],
+            participants: $participants,
             status: LinkMatchRoomStatus::from($d['status']),
             matchId: $d['match_id'],
             createdAt: Carbon::parse($d['created_at']),
+            matchParams: $d['match_params'] ?? [],
         );
     }
 
