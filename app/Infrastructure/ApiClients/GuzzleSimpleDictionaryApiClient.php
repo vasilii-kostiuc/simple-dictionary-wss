@@ -46,6 +46,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
     {
         try {
             $options['headers'] = array_merge(
+                ['Accept' => 'application/json'],
                 $options['headers'] ?? [],
                 ['Authorization' => 'Bearer '.$this->token]
             );
@@ -81,6 +82,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         ];
 
         $response = $this->call('POST', 'matches', ['json' => $matchCreateData]);
+
         return $response;
     }
 

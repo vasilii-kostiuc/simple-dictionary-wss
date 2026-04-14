@@ -20,6 +20,11 @@ class CreateMatchOnRoomFullListener
             $event->participants,
         );
 
+        info('Creating match for full link match room', [
+            'room_id' => $event->roomId,
+            'participants' => array_map(fn ($p) => $p->toArray(), $participants),
+            'match_params' => $event->matchParams,
+        ]);
         $this->createMatchAction->execute($participants, $event->matchParams);
     }
 }
