@@ -2,10 +2,10 @@
 
 namespace App\Application\LinkMatchRoom\Actions;
 
+use App\Application\Contracts\EventDispatcherInterface;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
-use App\Application\Contracts\EventDispatcherInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
 
 class LeaveLinkMatchRoomAction
@@ -14,13 +14,12 @@ class LeaveLinkMatchRoomAction
         private readonly SimpleDictionaryApiClientInterface $apiClient,
         private readonly LinkMatchRoomRepositoryInterface $roomRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws LinkMatchRoomException
      */
-    public function execute(ClientIdentity $identity, array $data): void
+    public function execute(ClientIdentity $identity, array $data): array
     {
         $token = $data['link_token'] ?? null;
 
@@ -51,5 +50,7 @@ class LeaveLinkMatchRoomAction
         foreach ($room->pullEvents() as $event) {
             $this->eventDispatcher->dispatch($event);
         }
+
+        return ['room' => $room];
     }
 }

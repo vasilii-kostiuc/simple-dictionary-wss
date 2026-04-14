@@ -28,6 +28,7 @@ use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
 use App\WebSockets\Handlers\Client\UnknownMessageHandler;
 use App\WebSockets\Handlers\Internal\InternalMessageHandlerFactory;
+use App\WebSockets\Handlers\Internal\LinkMatchRoom\LinkMatchRoomParticipantsUpdatedHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingJoinedHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingLeftHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingMatchedHandler;
@@ -73,6 +74,8 @@ class WebSocketHandlersServiceProvider extends ServiceProvider
                     'wss.matchmaking.leaved' => $app->make(MatchMakingLeftHandler::class),
                     'wss.matchmaking.matched' => $app->make(MatchMakingMatchedHandler::class),
                     'wss.matchmaking.queue.updated' => $app->make(MatchMakingQueueUpdatedHandler::class),
+                    'wss.link_match_room.joined' => $app->make(LinkMatchRoomParticipantsUpdatedHandler::class),
+                    'wss.link_match_room.left' => $app->make(LinkMatchRoomParticipantsUpdatedHandler::class),
                 ],
                 unknownHandler: $app->make(UnknownInternalMessageHandler::class),
             );

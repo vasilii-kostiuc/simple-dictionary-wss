@@ -138,5 +138,15 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\LinkMatchRoom\Events\RoomBecameFullEvent::class,
             \App\Application\LinkMatchRoom\Listeners\CreateMatchOnRoomFullListener::class
         );
+
+        $this->app['events']->listen(
+            \App\Domain\LinkMatchRoom\Events\ParticipantJoinedEvent::class,
+            \App\WebSockets\Listeners\LinkMatchRoom\PublishLinkMatchRoomJoinedListener::class
+        );
+
+        $this->app['events']->listen(
+            \App\Domain\LinkMatchRoom\Events\ParticipantLeftEvent::class,
+            \App\WebSockets\Listeners\LinkMatchRoom\PublishLinkMatchRoomLeftListener::class
+        );
     }
 }

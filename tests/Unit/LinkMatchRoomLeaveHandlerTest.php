@@ -7,9 +7,10 @@ use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\Shared\Identity\ClientIdentity;
 use App\WebSockets\Handlers\Client\LinkMatchRoom\LinkMatchRoomLeaveHandler;
 use App\WebSockets\Messages\ErrorMessage;
-use App\WebSockets\Messages\LinkMatchRoom\LinkMatchRoomLeaveSuccessMessage;
+use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
+use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
@@ -17,11 +18,18 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 class LinkMatchRoomLeaveHandlerTest extends TestCase
 {
     private ConnectionInterface $connection;
+
     private MessageInterface $message;
+
     private ClientRegistryInterface $clientRegistry;
+
     private LeaveLinkMatchRoomAction $leaveAction;
+
     private WebSocketMessageSenderInterface $sender;
+
     private ClientIdentity $identity;
+
+    private SubscriptionsStorageInterface $subscriptionsStorage;
 
     protected function setUp(): void
     {
@@ -35,11 +43,21 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
 
         $this->identity = new ClientIdentity(1, 'Alice', 'alice@example.com', null);
         $this->clientRegistry->method('getIdentity')->willReturn($this->identity);
+        $this->subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
     }
 
     private function handler(): LinkMatchRoomLeaveHandler
     {
-        return new LinkMatchRoomLeaveHandler($this->clientRegistry, $this->leaveAction, $this->sender);
+        return new LinkMatchRoomLeaveHandler($this->clientRegistry, $this->leaveAction, $this->sender, $this->subscriptionsStorage);
+    }
+
+    private function makeRoomMock(string $id, array $participantIdentities = []): \App\Domain\LinkMatchRoom\LinkMatchRoom
+    {
+        $room = $this->createMock(\App\Domain\LinkMatchRoom\LinkMatchRoom::class);
+        $room->method('getId')->willReturn($id);
+        $room->method('getParticipantIdentities')->willReturn($participantIdentities);
+
+        return $room;
     }
 
     public function test_sends_leave_success_message_on_valid_leave(): void
@@ -49,15 +67,18 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             'data' => ['link_token' => 'tok_abc'],
         ]));
 
+        $room = $this->makeRoomMock('tok_abc', []);
+
         $this->leaveAction->expects($this->once())
             ->method('execute')
-            ->with($this->identity, ['link_token' => 'tok_abc']);
+            ->with($this->identity, ['link_token' => 'tok_abc'])
+            ->willReturn(['room' => $room]);
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')
             ->with($this->connection, $this->callback(function ($msg): bool {
-                return $msg instanceof LinkMatchRoomLeaveSuccessMessage
-                    && $msg->type === 'link_match_room_leave_success';
+                return $msg instanceof MatchRoomChangedMessage
+                    && $msg->type === 'match_room.changed';
             }));
 
         $this->handler()->handle($this->connection, $this->message);

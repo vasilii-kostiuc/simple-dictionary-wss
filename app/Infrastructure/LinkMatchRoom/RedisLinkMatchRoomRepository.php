@@ -6,6 +6,7 @@ use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatchRoom\LinkMatchRoom;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
 use App\Domain\LinkMatchRoom\LinkMatchRoomStatus;
+use App\Domain\Shared\Identity\ClientIdentity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
 

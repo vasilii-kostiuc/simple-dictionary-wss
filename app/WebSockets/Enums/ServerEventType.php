@@ -16,7 +16,6 @@ enum ServerEventType: string
     case UnsubscribeSuccess = 'unsubscribe_success';
 
     // LinkMatchRoom
-    case LinkMatchRoomJoinSuccess = 'link_match_room_join_success';
     case LinkMatchRoomLeaveSuccess = 'link_match_room_leave_success';
 
     // Matchmaking
@@ -34,4 +33,3 @@ enum ServerEventType: string
     case MatchSummary = 'match_summary';
     case MatchCompleted = 'match_completed';
 }
-

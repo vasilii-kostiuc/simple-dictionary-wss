@@ -7,4 +7,5 @@ enum SubscriptionChannelPattern: string
     case Training = 'training.*';
     case Match = 'match.*';
     case MatchmakingQueue = 'matchmaking.queue';
+    case LinkMatchRoom = 'link_match_room.*';
 }
