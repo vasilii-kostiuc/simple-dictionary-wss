@@ -18,8 +18,7 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
         private readonly ClientRegistryInterface $clientRegistry,
         private readonly JoinMatchMakingAction $joinAction,
         private readonly WebSocketMessageSenderInterface $sender,
-    ) {
-    }
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
@@ -28,7 +27,7 @@ class MatchMakingJoinHandler implements MessageHandlerInterface
 
         try {
             $result = $this->joinAction->execute($identity, $payload['data'] ?? []);
-            $this->sender->sendToConnection($from, new MatchMakingJoinSuccessMessage($result['matchType'], $result['matchParams']));
+            $this->sender->sendToConnection($from, new MatchMakingJoinSuccessMessage($result['matchParams']));
         } catch (MatchMakingException $e) {
             $this->sender->sendToConnection($from, new ErrorMessage($e->getErrorCode(), $payload ?? []));
         }

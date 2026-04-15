@@ -3,6 +3,7 @@
 namespace App\Application\Contracts;
 
 use App\Domain\LinkMatch\LinkMatch;
+use App\Domain\Match\MatchParams;
 
 interface SimpleDictionaryApiClientInterface
 {
@@ -12,7 +13,7 @@ interface SimpleDictionaryApiClientInterface
 
     public function expireMatch(string|int $matchId): array;
 
-    public function createMatch(array $participants, array $matchParams): array;
+    public function createMatch(array $participants, MatchParams $matchParams): array;
 
     public function getLinkMatch(string $token): ?LinkMatch;
 }

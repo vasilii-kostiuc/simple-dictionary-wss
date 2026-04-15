@@ -6,6 +6,8 @@ use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatchRoom\Events\ParticipantJoinedEvent;
 use App\Domain\LinkMatchRoom\Events\ParticipantLeftEvent;
 use App\Domain\LinkMatchRoom\Events\RoomBecameFullEvent;
+use App\Domain\Match\MatchParams;
+use App\Domain\MatchMaking\Enums\MatchType;
 use App\Domain\Shared\AggregateRoot;
 use App\Domain\Shared\Identity\ClientIdentity;
 use Carbon\Carbon;
@@ -15,7 +17,7 @@ class LinkMatchRoom extends AggregateRoot
     /** @var array<string, ClientIdentity> */
     private array $participants = [];
 
-    private array $matchParams = [];
+    private MatchParams $matchParams;
 
     private LinkMatchRoomStatus $status = LinkMatchRoomStatus::WaitingForPlayers;
 
@@ -53,6 +55,7 @@ class LinkMatchRoom extends AggregateRoot
             $this->status = LinkMatchRoomStatus::Full;
             $this->recordEvent(new RoomBecameFullEvent($this->linkMatchId, array_values($this->participants), $this->matchParams));
         }
+
     }
 
     public function leaveParticipant(ClientIdentity $clientIdentity): void
@@ -84,7 +87,13 @@ class LinkMatchRoom extends AggregateRoot
     public static function create(LinkMatch $linkMatch): self
     {
         $room = new self($linkMatch->id, $linkMatch->participantsLimit);
-        $room->matchParams = $linkMatch->payload;
+        $payload = $linkMatch->payload;
+        $room->matchParams = new MatchParams(
+            matchType: MatchType::tryFrom($payload['match_type'] ?? '') ?? MatchType::Steps,
+            languageFromId: $payload['language_from_id'] ?? 2,
+            languageToId: $payload['language_to_id'] ?? 1,
+            matchTypeParams: $payload['match_type_params'] ?? [],
+        );
 
         return $room;
     }
@@ -158,7 +167,7 @@ class LinkMatchRoom extends AggregateRoot
                 ],
                 $this->participants,
             )),
-            'match_params' => $this->matchParams,
+            'match_params' => $this->matchParams->toArray(),
             'status' => $this->status->value,
             'match_id' => $this->matchId,
             'created_at' => $this->createdAt->toIso8601String(),
@@ -175,7 +184,7 @@ class LinkMatchRoom extends AggregateRoot
         LinkMatchRoomStatus $status,
         ?int $matchId,
         Carbon $createdAt,
-        array $matchParams = [],
+        ?MatchParams $matchParams = null,
     ): self {
         $room = new self($linkMatchId, $participantsLimit, $createdAt);
 
@@ -183,7 +192,7 @@ class LinkMatchRoom extends AggregateRoot
             $room->participants[$identity->getIdentifier()] = $identity;
         }
 
-        $room->matchParams = $matchParams;
+        $room->matchParams = $matchParams ?? new MatchParams(MatchType::Steps, 2, 1, []);
         $room->status = $status;
         $room->matchId = $matchId;
 

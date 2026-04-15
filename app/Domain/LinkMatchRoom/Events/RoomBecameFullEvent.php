@@ -2,6 +2,7 @@
 
 namespace App\Domain\LinkMatchRoom\Events;
 
+use App\Domain\Match\MatchParams;
 use App\Domain\Shared\DomainEvent;
 use App\Domain\Shared\Identity\ClientIdentity;
 
@@ -13,6 +14,7 @@ final class RoomBecameFullEvent implements DomainEvent
     public function __construct(
         public readonly string $roomId,
         public readonly array $participants,
-        public readonly array $matchParams = [],
-    ) {}
+        public readonly MatchParams $matchParams,
+    ) {
+    }
 }

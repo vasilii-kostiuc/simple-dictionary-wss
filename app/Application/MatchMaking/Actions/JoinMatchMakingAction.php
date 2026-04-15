@@ -4,9 +4,10 @@ namespace App\Application\MatchMaking\Actions;
 
 use App\Application\MatchMaking\Events\MatchMakingJoinedEvent;
 use App\Application\MatchMaking\Exceptions\MatchMakingException;
+use App\Domain\Match\MatchParams;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
-use App\Domain\Shared\Identity\ClientIdentity;
 use App\Domain\MatchMaking\Enums\MatchType;
+use App\Domain\Shared\Identity\ClientIdentity;
 
 class JoinMatchMakingAction
 {
@@ -16,7 +17,8 @@ class JoinMatchMakingAction
     }
 
     /**
-     * @return array{matchType: MatchType, matchParams: array}
+     * @return array{matchType: MatchType, matchParams: MatchParams}
+     *
      * @throws MatchMakingException
      */
     public function execute(ClientIdentity $identity, array $data): array
@@ -27,8 +29,12 @@ class JoinMatchMakingAction
             throw new MatchMakingException('invalid_match_type');
         }
 
-        $matchParams = ['match_type' => $matchType->value];
-        $matchParams = array_merge($matchParams, $data['match_params'] ?? []);
+        $matchParams = new MatchParams(
+            matchType: $matchType,
+            languageFromId: $data['language_from_id'] ?? 2,
+            languageToId: $data['language_to_id'] ?? 1,
+            matchTypeParams: $data['match_params'] ?? [],
+        );
 
         $this->matchMakingQueue->add($identity, $matchParams);
 

@@ -6,6 +6,7 @@ use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatchRoom\LinkMatchRoom;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
 use App\Domain\LinkMatchRoom\LinkMatchRoomStatus;
+use App\Domain\Match\MatchParams;
 use App\Domain\Shared\Identity\ClientIdentity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
@@ -67,7 +68,7 @@ class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
             status: LinkMatchRoomStatus::from($d['status']),
             matchId: $d['match_id'],
             createdAt: Carbon::parse($d['created_at']),
-            matchParams: $d['match_params'] ?? [],
+            matchParams: ! empty($d['match_params']) ? MatchParams::fromArray($d['match_params']) : null,
         );
     }
 

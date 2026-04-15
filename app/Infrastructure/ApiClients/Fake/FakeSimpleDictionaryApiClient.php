@@ -5,6 +5,7 @@ namespace App\Infrastructure\ApiClients\Fake;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatch\LinkMatchStatus;
+use App\Domain\Match\MatchParams;
 use Illuminate\Support\Facades\Http;
 
 class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
@@ -53,7 +54,7 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
         return [];
     }
 
-    public function createMatch(array $participants, array $matchParams): array
+    public function createMatch(array $participants, MatchParams $matchParams): array
     {
         return [
             'status' => 'success',
@@ -61,7 +62,7 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
             'data' => [
                 'match_id' => rand(1000, 9999),
                 'participants' => $participants,
-                'match_params' => $matchParams,
+                'match_params' => $matchParams->toArray(),
             ],
         ];
     }

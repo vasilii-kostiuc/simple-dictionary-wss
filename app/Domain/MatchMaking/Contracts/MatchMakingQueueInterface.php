@@ -2,23 +2,24 @@
 
 namespace App\Domain\MatchMaking\Contracts;
 
+use App\Domain\Match\MatchParams;
 use App\Domain\Shared\Identity\ClientIdentity;
 
 interface MatchMakingQueueInterface
 {
-    public function add(ClientIdentity $identity, array $matchParams): void;
+    public function add(ClientIdentity $identity, MatchParams $matchParams): void;
 
-    public function remove(string $identifier, array $matchParams = []): void;
+    public function remove(string $identifier): void;
 
-    public function all(array $matchParams): array;
+    public function all(MatchParams $matchParams): array;
 
     public function allQueues(): array;
 
-    public function findMatch(string $identifier, array $matchParams): ?string;
+    public function findMatch(string $identifier, MatchParams $matchParams): ?string;
 
-    public function clear(array $matchParams): void;
+    public function clear(MatchParams $matchParams): void;
 
-    public function count(array $matchParams): int;
+    public function count(MatchParams $matchParams): int;
 
     public function isUserInQueue(string $identifier): bool;
 

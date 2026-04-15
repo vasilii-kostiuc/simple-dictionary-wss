@@ -5,7 +5,7 @@ namespace App\Infrastructure\ApiClients;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatch\LinkMatchStatus;
-use App\Domain\MatchMaking\Enums\MatchType;
+use App\Domain\Match\MatchParams;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
@@ -44,6 +44,11 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     protected function call(string $method, string $uri, array $options = []): array
     {
+        info('Making API call', [
+            'method' => $method,
+            'uri' => $uri,
+            'options' => $options,
+        ]);
         try {
             $options['headers'] = array_merge(
                 ['Accept' => 'application/json'],
@@ -52,10 +57,20 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
             );
 
             $response = $this->client->request($method, $uri, $options);
-
+            info('API call completed', [
+                'method' => $method,
+                'uri' => $uri,
+                'status_code' => $response->getStatusCode(),
+            ]);
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
 
                 $body = json_decode((string) $response->getBody(), true);
+
+                info('API call successful', [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'response_body' => $body,
+                ]);
 
                 return $body['data'] ?? $body ?? [];
             }
@@ -70,20 +85,13 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
         return [];
     }
 
-    public function createMatch(array $participants, array $matchParams): array
+    public function createMatch(array $participants, MatchParams $matchParams): array
     {
-        $matchCreateData = [
-            'language_from_id' => $matchParams['language_from_id'] ?? 2, // English by default
-            'language_to_id' => $matchParams['language_to_id'] ?? 1, // Russian by default
-            'match_type' => $matchParams['match_type'] ?? MatchType::Time->value,
-            'match_type_params' => $matchParams,
+        $matchCreateData = array_merge($matchParams->toArray(), [
             'participants' => $participants,
-            'match_params' => $matchParams,
-        ];
+        ]);
 
-        $response = $this->call('POST', 'matches', ['json' => $matchCreateData]);
-
-        return $response;
+        return $this->call('POST', 'matches', ['json' => $matchCreateData]);
     }
 
     public function getLinkMatch(string $token): ?LinkMatch

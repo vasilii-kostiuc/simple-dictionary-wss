@@ -5,7 +5,9 @@ namespace Tests\Unit;
 use App\Application\LinkMatchRoom\Listeners\CreateMatchOnRoomFullListener;
 use App\Application\Match\Actions\CreateMatchAction;
 use App\Domain\LinkMatchRoom\Events\RoomBecameFullEvent;
+use App\Domain\Match\MatchParams;
 use App\Domain\Match\MatchParticipant;
+use App\Domain\MatchMaking\Enums\MatchType;
 use App\Domain\Shared\Identity\ClientIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -52,11 +54,12 @@ class CreateMatchOnRoomFullListenerTest extends TestCase
     {
         $user = $this->makeUser(1, 'Alice');
         $guest = $this->makeGuest('guest-abc', 'Bob', 'http://avatar.test/bob.png');
+        $matchParams = new MatchParams(MatchType::Steps, 2, 1, ['wordPack' => 'basic']);
 
         $event = new RoomBecameFullEvent(
             roomId: 'lm-1',
             participants: [$user, $guest],
-            matchParams: ['wordPack' => 'basic'],
+            matchParams: $matchParams,
         );
 
         $capturedParticipants = null;
@@ -65,7 +68,7 @@ class CreateMatchOnRoomFullListenerTest extends TestCase
         $this->createMatchAction
             ->expects($this->once())
             ->method('execute')
-            ->willReturnCallback(function (array $participants, array $params) use (&$capturedParticipants, &$capturedParams) {
+            ->willReturnCallback(function (array $participants, MatchParams $params) use (&$capturedParticipants, &$capturedParams) {
                 $capturedParticipants = $participants;
                 $capturedParams = $params;
 
@@ -88,37 +91,42 @@ class CreateMatchOnRoomFullListenerTest extends TestCase
         $this->assertSame('Bob', $capturedParticipants[1]->name);
         $this->assertSame('http://avatar.test/bob.png', $capturedParticipants[1]->avatar);
 
-        $this->assertSame(['wordPack' => 'basic'], $capturedParams);
+        $this->assertEquals($matchParams, $capturedParams);
     }
 
     public function test_passes_match_params_from_event(): void
     {
+        $matchParams = new MatchParams(MatchType::Steps, 2, 1, ['difficulty' => 'hard', 'rounds' => 5]);
+
         $event = new RoomBecameFullEvent(
             roomId: 'lm-2',
             participants: [$this->makeUser(10), $this->makeUser(20)],
-            matchParams: ['difficulty' => 'hard', 'rounds' => 5],
+            matchParams: $matchParams,
         );
 
         $this->createMatchAction
             ->expects($this->once())
             ->method('execute')
-            ->with($this->anything(), ['difficulty' => 'hard', 'rounds' => 5])
+            ->with($this->anything(), $matchParams)
             ->willReturn([]);
 
         $this->listener()->handle($event);
     }
 
-    public function test_passes_empty_match_params_when_not_set(): void
+    public function test_passes_default_match_params(): void
     {
+        $matchParams = new MatchParams(MatchType::Steps, 2, 1, []);
+
         $event = new RoomBecameFullEvent(
             roomId: 'lm-3',
             participants: [$this->makeUser(1), $this->makeUser(2)],
+            matchParams: $matchParams,
         );
 
         $this->createMatchAction
             ->expects($this->once())
             ->method('execute')
-            ->with($this->anything(), [])
+            ->with($this->anything(), $matchParams)
             ->willReturn([]);
 
         $this->listener()->handle($event);
@@ -135,7 +143,7 @@ class CreateMatchOnRoomFullListenerTest extends TestCase
         $event = new RoomBecameFullEvent(
             roomId: 'lm-4',
             participants: $participants,
-            matchParams: [],
+            matchParams: new MatchParams(MatchType::Steps, 2, 1, []),
         );
 
         $capturedParticipants = null;
@@ -171,7 +179,7 @@ class CreateMatchOnRoomFullListenerTest extends TestCase
         $event = new RoomBecameFullEvent(
             roomId: 'lm-5',
             participants: [$user, $this->makeUser(100)],
-            matchParams: [],
+            matchParams: new MatchParams(MatchType::Steps, 2, 1, []),
         );
 
         $capturedParticipants = null;
@@ -199,7 +207,7 @@ class CreateMatchOnRoomFullListenerTest extends TestCase
         $event = new RoomBecameFullEvent(
             roomId: 'lm-6',
             participants: [$this->makeUser(1), $guest],
-            matchParams: [],
+            matchParams: new MatchParams(MatchType::Steps, 2, 1, []),
         );
 
         $capturedParticipants = null;

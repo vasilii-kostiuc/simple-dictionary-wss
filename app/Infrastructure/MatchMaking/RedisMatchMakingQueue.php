@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\MatchMaking;
 
+use App\Domain\Match\MatchParams;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
 use Illuminate\Support\Facades\Redis;
@@ -14,10 +15,10 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
 
     private const QUEUE_TTL = 3600; // 1 час
 
-    public function add(ClientIdentity $identity, array $matchParams): void
+    public function add(ClientIdentity $identity, MatchParams $matchParams): void
     {
         $identifier = $identity->getIdentifier();
-        $this->remove($identifier, $matchParams);
+        $this->remove($identifier);
 
         $queueKey = $this->getQueueKey($matchParams);
         $userDataKey = $this->getUserDataKey($identifier);
@@ -29,7 +30,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
             'name' => $identity->name,
             'email' => $identity->email,
             'avatar' => $identity->avatar,
-            'matchParams' => $matchParams,
+            'matchParams' => $matchParams->toArray(),
             'timestamp' => time(),
         ];
 
@@ -38,20 +39,20 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         Redis::expire($queueKey, self::QUEUE_TTL);
     }
 
-    public function remove(string $identifier, array $matchParams = []): void
+    public function remove(string $identifier): void
     {
         $userDataKey = $this->getUserDataKey($identifier);
         $identity = json_decode(Redis::get($userDataKey), true);
 
         if ($identity !== null) {
-            $queueKey = $this->getQueueKey($identity['matchParams']);
+            $queueKey = $this->getQueueKey(MatchParams::fromArray($identity['matchParams']));
             Redis::zrem($queueKey, $identifier);
         }
 
         Redis::del($userDataKey);
     }
 
-    public function all(array $matchParams): array
+    public function all(MatchParams $matchParams): array
     {
         $queueKey = $this->getQueueKey($matchParams);
         $identifiers = Redis::zrange($queueKey, 0, -1);
@@ -101,7 +102,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         return $result;
     }
 
-    public function findMatch(string $identifier, array $matchParams): ?string
+    public function findMatch(string $identifier, MatchParams $matchParams): ?string
     {
         $queueKey = $this->getQueueKey($matchParams);
         $members = Redis::zrange($queueKey, 0, -1);
@@ -119,7 +120,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         return null;
     }
 
-    public function clear(array $matchParams): void
+    public function clear(MatchParams $matchParams): void
     {
         $queueKey = $this->getQueueKey($matchParams);
         $identifiers = Redis::zrange($queueKey, 0, -1);
@@ -131,7 +132,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         Redis::del($queueKey);
     }
 
-    public function count(array $matchParams): int
+    public function count(MatchParams $matchParams): int
     {
         return (int) Redis::zcard($this->getQueueKey($matchParams));
     }
@@ -159,15 +160,16 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
             'name' => $identity['name'],
             'email' => $identity['email'],
             'avatar' => $identity['avatar'],
-            'matchParams' => $identity['matchParams'],
+            'matchParams' => MatchParams::fromArray($identity['matchParams']),
         ];
     }
 
-    private function getQueueKey(array $matchParams): string
+    private function getQueueKey(MatchParams $matchParams): string
     {
-        ksort($matchParams);
+        $key = $matchParams->toArray();
+        ksort($key);
 
-        return self::QUEUE_PREFIX.md5(json_encode($matchParams));
+        return self::QUEUE_PREFIX.md5(json_encode($key));
     }
 
     private function getUserDataKey(string $identifier): string

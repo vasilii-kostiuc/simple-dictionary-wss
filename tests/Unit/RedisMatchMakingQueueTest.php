@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Domain\Match\MatchParams;
+use App\Domain\MatchMaking\Enums\MatchType;
 use App\Domain\Shared\Identity\ClientIdentity;
 use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
 use Illuminate\Support\Facades\Redis;
@@ -11,7 +13,7 @@ class RedisMatchMakingQueueTest extends TestCase
 {
     private RedisMatchMakingQueue $queue;
 
-    private array $defaultMatchParams = ['match_type' => 'steps'];
+    private MatchParams $defaultMatchParams;
 
     private ClientIdentity $user1;
 
@@ -21,6 +23,8 @@ class RedisMatchMakingQueueTest extends TestCase
     {
         parent::setUp();
         $this->queue = new RedisMatchMakingQueue;
+
+        $this->defaultMatchParams = new MatchParams(MatchType::Steps, 2, 1, []);
 
         $this->user1 = new ClientIdentity(
             id: 1,
@@ -114,8 +118,8 @@ class RedisMatchMakingQueueTest extends TestCase
 
     public function test_all_queues_returns_users_from_all_queues(): void
     {
-        $params1 = ['match_type' => 'steps'];
-        $params2 = ['match_type' => 'time'];
+        $params1 = new MatchParams(MatchType::Steps, 2, 1, []);
+        $params2 = new MatchParams(MatchType::Time, 2, 1, []);
 
         $this->queue->add($this->user1, $params1);
         $this->queue->add($this->user2, $params2);
@@ -216,8 +220,8 @@ class RedisMatchMakingQueueTest extends TestCase
 
     public function test_different_match_params_create_separate_queues(): void
     {
-        $params1 = ['match_type' => 'steps'];
-        $params2 = ['match_type' => 'time'];
+        $params1 = new MatchParams(MatchType::Steps, 2, 1, []);
+        $params2 = new MatchParams(MatchType::Time, 2, 1, []);
 
         $this->queue->add($this->user1, $params1);
         $this->queue->add($this->user2, $params2);

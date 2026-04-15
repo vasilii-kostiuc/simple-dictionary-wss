@@ -21,7 +21,7 @@ class PublishMatchMakingJoinedListener
             'type' => 'wss.matchmaking.joined',
             'data' => [
                 'user_id' => $event->userId,
-                'match_params' => $event->matchParams,
+                'match_params' => $event->matchParams->toArray(),
             ],
         ]));
 
