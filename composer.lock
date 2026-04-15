@@ -7039,16 +7039,16 @@
         },
         {
             "name": "vasilii-kostiuc/laravel-messaging-library",
-            "version": "1.3.0",
+            "version": "1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vasilii-kostiuc/laravel-messaging-library.git",
-                "reference": "5cc99986749047dbe2d2e87c24b2929199b6b733"
+                "reference": "ee433a0b0d6b491b20e42b7a3c626fe67fe97cd9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vasilii-kostiuc/laravel-messaging-library/zipball/5cc99986749047dbe2d2e87c24b2929199b6b733",
-                "reference": "5cc99986749047dbe2d2e87c24b2929199b6b733",
+                "url": "https://api.github.com/repos/vasilii-kostiuc/laravel-messaging-library/zipball/ee433a0b0d6b491b20e42b7a3c626fe67fe97cd9",
+                "reference": "ee433a0b0d6b491b20e42b7a3c626fe67fe97cd9",
                 "shasum": ""
             },
             "require": {
@@ -7075,10 +7075,10 @@
             ],
             "description": "A messaging library for handling message brokers initialy developed for dictionary project",
             "support": {
-                "source": "https://github.com/vasilii-kostiuc/laravel-messaging-library/tree/1.3.0",
+                "source": "https://github.com/vasilii-kostiuc/laravel-messaging-library/tree/1.3.1",
                 "issues": "https://github.com/vasilii-kostiuc/laravel-messaging-library/issues"
             },
-            "time": "2026-03-12T10:12:00+00:00"
+            "time": "2026-04-15T10:23:45+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
