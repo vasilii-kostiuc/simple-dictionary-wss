@@ -4,6 +4,7 @@ namespace App\Infrastructure\MatchMaking;
 
 use App\Domain\Match\MatchParams;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
+use App\Domain\MatchMaking\QueueEntry;
 use App\Domain\Shared\Identity\ClientIdentity;
 use Illuminate\Support\Facades\Redis;
 
@@ -61,14 +62,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         foreach ($identifiers as $identifier) {
             $raw = json_decode(Redis::get($this->getUserDataKey($identifier)), true);
             if ($raw !== null) {
-                $result[] = [
-                    'userId' => $raw['userId'],
-                    'guestId' => $raw['guestId'] ?? null,
-                    'identifier' => $raw['identifier'],
-                    'name' => $raw['name'],
-                    'email' => $raw['email'],
-                    'avatar' => $raw['avatar'],
-                ];
+                $result[] = $this->rawToQueueEntry($raw);
             }
         }
 
@@ -86,15 +80,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
             foreach ($identifiers as $identifier) {
                 $raw = json_decode(Redis::get($this->getUserDataKey($identifier)), true);
                 if ($raw !== null) {
-                    $result[] = [
-                        'userId' => $raw['userId'],
-                        'guestId' => $raw['guestId'] ?? null,
-                        'identifier' => $raw['identifier'],
-                        'name' => $raw['name'],
-                        'email' => $raw['email'],
-                        'avatar' => $raw['avatar'],
-                        'matchParams' => $raw['matchParams'],
-                    ];
+                    $result[] = $this->rawToQueueEntry($raw);
                 }
             }
         }
@@ -142,26 +128,32 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
         return Redis::exists($this->getUserDataKey($identifier)) > 0;
     }
 
-    public function extract(string $identifier): ?array
+    public function extract(string $identifier): ?QueueEntry
     {
         $userDataKey = $this->getUserDataKey($identifier);
-        $identity = json_decode(Redis::get($userDataKey), true);
+        $raw = json_decode(Redis::get($userDataKey), true);
 
-        if ($identity === null) {
+        if ($raw === null) {
             return null;
         }
 
         $this->remove($identifier);
 
-        return [
-            'userId' => $identity['userId'],
-            'guestId' => $identity['guestId'] ?? null,
-            'identifier' => $identity['identifier'],
-            'name' => $identity['name'],
-            'email' => $identity['email'],
-            'avatar' => $identity['avatar'],
-            'matchParams' => MatchParams::fromArray($identity['matchParams']),
-        ];
+        return $this->rawToQueueEntry($raw);
+    }
+
+    private function rawToQueueEntry(array $raw): QueueEntry
+    {
+        return new QueueEntry(
+            identity: new ClientIdentity(
+                id: $raw['userId'],
+                name: $raw['name'],
+                email: $raw['email'],
+                avatar: $raw['avatar'],
+                guestId: $raw['guestId'] ?? null,
+            ),
+            matchParams: MatchParams::fromArray($raw['matchParams']),
+        );
     }
 
     private function getQueueKey(MatchParams $matchParams): string

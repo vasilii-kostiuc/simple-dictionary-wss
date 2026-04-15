@@ -14,7 +14,8 @@ class ChallengeMatchMakingAction
     public function __construct(
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly CreateMatchAction $createMatchAction,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws MatchMakingException
@@ -25,18 +26,18 @@ class ChallengeMatchMakingAction
             throw new MatchMakingException('opponent_not_in_queue');
         }
 
-        $matchData = $this->matchMakingQueue->extract($opponentId);
+        $queueEntry = $this->matchMakingQueue->extract($opponentId);
 
-        if ($matchData === null) {
+        if ($queueEntry === null) {
             throw new MatchMakingException('opponent_not_in_queue');
         }
 
         $createResult = $this->createMatchAction->execute(
             [
                 MatchParticipant::fromIdentity($identity),
-                MatchParticipant::fromQueueData($matchData),
+                MatchParticipant::fromIdentity($queueEntry->identity),
             ],
-            $matchData['matchParams'],
+            $queueEntry->matchParams,
         );
 
         $this->matchMakingQueue->remove($identity->getIdentifier());

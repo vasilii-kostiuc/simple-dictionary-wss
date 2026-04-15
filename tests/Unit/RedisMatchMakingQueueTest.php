@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Domain\Match\MatchParams;
 use App\Domain\MatchMaking\Enums\MatchType;
+use App\Domain\MatchMaking\QueueEntry;
 use App\Domain\Shared\Identity\ClientIdentity;
 use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
 use Illuminate\Support\Facades\Redis;
@@ -104,7 +105,8 @@ class RedisMatchMakingQueueTest extends TestCase
         $result = $this->queue->all($this->defaultMatchParams);
 
         $this->assertCount(2, $result);
-        $userIds = array_column($result, 'userId');
+        $this->assertContainsOnlyInstancesOf(QueueEntry::class, $result);
+        $userIds = array_map(fn (QueueEntry $e) => $e->identity->id, $result);
         $this->assertContains($this->user1->id, $userIds);
         $this->assertContains($this->user2->id, $userIds);
     }
@@ -127,7 +129,8 @@ class RedisMatchMakingQueueTest extends TestCase
         $result = $this->queue->allQueues();
 
         $this->assertCount(2, $result);
-        $userIds = array_column($result, 'userId');
+        $this->assertContainsOnlyInstancesOf(QueueEntry::class, $result);
+        $userIds = array_map(fn (QueueEntry $e) => $e->identity->id, $result);
         $this->assertContains($this->user1->id, $userIds);
         $this->assertContains($this->user2->id, $userIds);
     }
@@ -204,10 +207,11 @@ class RedisMatchMakingQueueTest extends TestCase
         $extracted = $this->queue->extract($this->user1->id);
 
         $this->assertNotNull($extracted);
-        $this->assertEquals($this->user1->id, $extracted['userId']);
-        $this->assertEquals($this->user1->name, $extracted['name']);
-        $this->assertEquals($this->user1->email, $extracted['email']);
-        $this->assertEquals($this->defaultMatchParams, $extracted['matchParams']);
+        $this->assertInstanceOf(QueueEntry::class, $extracted);
+        $this->assertEquals($this->user1->id, $extracted->identity->id);
+        $this->assertEquals($this->user1->name, $extracted->identity->name);
+        $this->assertEquals($this->user1->email, $extracted->identity->email);
+        $this->assertEquals($this->defaultMatchParams, $extracted->matchParams);
         $this->assertFalse($this->queue->isUserInQueue($this->user1->id));
     }
 

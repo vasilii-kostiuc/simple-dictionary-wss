@@ -11,7 +11,8 @@ final class MatchParticipant
         public readonly string $type,
         public readonly ?string $name = null,
         public readonly ?string $avatar = null,
-    ) {}
+    ) {
+    }
 
     public static function fromIdentity(ClientIdentity $identity): self
     {
@@ -20,23 +21,6 @@ final class MatchParticipant
             type: $identity->isGuest() ? 'guest' : 'user',
             name: $identity->isGuest() ? $identity->name : null,
             avatar: $identity->isGuest() ? $identity->avatar : null,
-        );
-    }
-
-    public static function fromQueueData(array $data): self
-    {
-        if ($guestId = $data['guestId'] ?? null) {
-            return new self(
-                id: $guestId,
-                type: 'guest',
-                name: $data['name'] ?? null,
-                avatar: $data['avatar'] ?? null,
-            );
-        }
-
-        return new self(
-            id: (string) $data['userId'],
-            type: 'user',
         );
     }
 

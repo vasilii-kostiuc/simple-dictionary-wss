@@ -3,6 +3,7 @@
 namespace App\Domain\MatchMaking\Contracts;
 
 use App\Domain\Match\MatchParams;
+use App\Domain\MatchMaking\QueueEntry;
 use App\Domain\Shared\Identity\ClientIdentity;
 
 interface MatchMakingQueueInterface
@@ -11,8 +12,10 @@ interface MatchMakingQueueInterface
 
     public function remove(string $identifier): void;
 
+    /** @return QueueEntry[] */
     public function all(MatchParams $matchParams): array;
 
+    /** @return QueueEntry[] */
     public function allQueues(): array;
 
     public function findMatch(string $identifier, MatchParams $matchParams): ?string;
@@ -23,5 +26,5 @@ interface MatchMakingQueueInterface
 
     public function isUserInQueue(string $identifier): bool;
 
-    public function extract(string $identifier): ?array;
+    public function extract(string $identifier): ?QueueEntry;
 }

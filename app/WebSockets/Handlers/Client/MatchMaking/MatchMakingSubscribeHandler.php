@@ -2,11 +2,11 @@
 
 namespace App\WebSockets\Handlers\Client\MatchMaking;
 
+use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
-use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use App\WebSockets\Subscription\SubscriptionChannelPolicy;
 use Ratchet\ConnectionInterface;
@@ -29,7 +29,7 @@ class MatchMakingSubscribeHandler extends SubscribeMessageHandler
         parent::handle($conn, $message);
 
         $this->sender->sendToConnection($conn, new MatchMakingQueueUpdatedMessage(
-            $this->matchMakingQueue->allQueues()
+            array_map(fn ($entry) => $entry->toArray(), $this->matchMakingQueue->allQueues())
         ));
     }
 }
