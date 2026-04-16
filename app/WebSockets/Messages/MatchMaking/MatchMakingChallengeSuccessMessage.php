@@ -11,4 +11,3 @@ class MatchMakingChallengeSuccessMessage extends WebSocketMessage
         parent::__construct('matchmaking_challenge_success', $matchMakingChallengeData);
     }
 }
-

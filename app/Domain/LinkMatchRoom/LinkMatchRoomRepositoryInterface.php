@@ -13,12 +13,4 @@ interface LinkMatchRoomRepositoryInterface
     public function findByLinkMatchId(string $linkMatchId): ?LinkMatchRoom;
 
     public function deleteByLinkMatchId(string $linkMatchId): void;
-
-    /**
-     * @template T
-     *
-     * @param  callable(): T  $callback
-     * @return T
-     */
-    public function executeInLock(string $roomId, callable $callback): mixed;
 }

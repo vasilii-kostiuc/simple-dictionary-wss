@@ -18,8 +18,7 @@ class MatchMakingChallengeHandler implements MessageHandlerInterface
         private readonly ClientRegistryInterface $clientRegistry,
         private readonly ChallengeMatchMakingAction $challengeAction,
         private readonly WebSocketMessageSenderInterface $sender,
-    ) {
-    }
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {

@@ -12,8 +12,7 @@ class PeriodicTimerScheduler
     public function __construct(
         private readonly LoopInterface $loop,
         private readonly ExpiredTimerProcessor $expiredTimerProcessor,
-    ) {
-    }
+    ) {}
 
     public function start(): void
     {

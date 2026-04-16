@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Application\Contracts\EventDispatcherInterface;
+use App\Application\Contracts\LockManagerInterface;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\LinkMatchRoom\Actions\JoinLinkMatchRoomAction;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
@@ -23,6 +24,8 @@ class LinkMatchRoomJoinHandlerTest extends TestCase
 
     private EventDispatcherInterface $eventDispatcher;
 
+    private LockManagerInterface $lockManager;
+
     private ClientIdentity $identity;
 
     private LinkMatch $linkMatch;
@@ -37,13 +40,14 @@ class LinkMatchRoomJoinHandlerTest extends TestCase
         $this->identity = new ClientIdentity(1, 'Alice', 'alice@example.com', null);
         $this->linkMatch = new LinkMatch('lm-1', 'tok_abc', 2, LinkMatchStatus::Pending);
 
-        $this->roomRepository->method('executeInLock')
-            ->willReturnCallback(fn (string $roomId, callable $callback) => $callback());
+        $this->lockManager = $this->createMock(LockManagerInterface::class);
+        $this->lockManager->method('execute')
+            ->willReturnCallback(fn (string $key, callable $callback) => $callback());
     }
 
     private function action(): JoinLinkMatchRoomAction
     {
-        return new JoinLinkMatchRoomAction($this->apiClient, $this->roomRepository, $this->eventDispatcher);
+        return new JoinLinkMatchRoomAction($this->apiClient, $this->roomRepository, $this->eventDispatcher, $this->lockManager);
     }
 
     private function makeRoom(): LinkMatchRoom

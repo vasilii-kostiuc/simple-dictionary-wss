@@ -2,10 +2,11 @@
 
 namespace App\Application\LinkMatchRoom\Actions;
 
+use App\Application\Contracts\EventDispatcherInterface;
+use App\Application\Contracts\LockManagerInterface;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
-use App\Application\Contracts\EventDispatcherInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
 
 class JoinLinkMatchRoomAction
@@ -14,8 +15,8 @@ class JoinLinkMatchRoomAction
         private readonly SimpleDictionaryApiClientInterface $apiClient,
         private readonly LinkMatchRoomRepositoryInterface $roomRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
-    ) {
-    }
+        private readonly LockManagerInterface $lockManager,
+    ) {}
 
     public function execute(ClientIdentity $identity, array $data): array
     {
@@ -31,7 +32,7 @@ class JoinLinkMatchRoomAction
             throw new LinkMatchRoomException('link_not_found', 'Link not found or inactive');
         }
 
-        return $this->roomRepository->executeInLock($linkMatch->id, function () use ($linkMatch, $identity) {
+        return $this->lockManager->execute('link_match_room:'.$linkMatch->id, function () use ($linkMatch, $identity) {
             $room = $this->roomRepository->getOrCreate($linkMatch);
 
             try {

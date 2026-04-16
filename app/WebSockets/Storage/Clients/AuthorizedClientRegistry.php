@@ -6,7 +6,7 @@ use App\Domain\Shared\Identity\ClientIdentity;
 use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use Ratchet\ConnectionInterface;
 
-class AuthorizedClientRegistry implements ClientRegistryInterface, ClientIdentityLookupInterface
+class AuthorizedClientRegistry implements ClientIdentityLookupInterface, ClientRegistryInterface
 {
     private array $clients = [];
 

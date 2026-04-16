@@ -99,6 +99,10 @@ class AppServiceProvider extends ServiceProvider
             return new RedisLinkMatchRoomRepository;
         });
 
+        $this->app->singleton(\App\Application\Contracts\LockManagerInterface::class, function (Application $app) {
+            return new \App\Infrastructure\Shared\CacheLockManager($app->make(\Illuminate\Contracts\Cache\Factory::class));
+        });
+
         $this->app->bind(EventDispatcherInterface::class, LaravelEventDispatcher::class);
 
         $this->app->singleton(\App\Domain\Shared\Contracts\TimerStorageInterface::class, function () {

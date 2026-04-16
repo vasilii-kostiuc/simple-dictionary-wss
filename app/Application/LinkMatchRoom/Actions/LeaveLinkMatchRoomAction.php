@@ -3,6 +3,7 @@
 namespace App\Application\LinkMatchRoom\Actions;
 
 use App\Application\Contracts\EventDispatcherInterface;
+use App\Application\Contracts\LockManagerInterface;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
@@ -14,8 +15,8 @@ class LeaveLinkMatchRoomAction
         private readonly SimpleDictionaryApiClientInterface $apiClient,
         private readonly LinkMatchRoomRepositoryInterface $roomRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
-    ) {
-    }
+        private readonly LockManagerInterface $lockManager,
+    ) {}
 
     /**
      * @throws LinkMatchRoomException
@@ -34,7 +35,7 @@ class LeaveLinkMatchRoomAction
             throw new LinkMatchRoomException('link_not_found', 'Link not found');
         }
 
-        return $this->roomRepository->executeInLock($linkMatch->id, function () use ($linkMatch, $identity) {
+        return $this->lockManager->execute('link_match_room:'.$linkMatch->id, function () use ($linkMatch, $identity) {
             $room = $this->roomRepository->findByLinkMatchId($linkMatch->id);
 
             if ($room === null) {

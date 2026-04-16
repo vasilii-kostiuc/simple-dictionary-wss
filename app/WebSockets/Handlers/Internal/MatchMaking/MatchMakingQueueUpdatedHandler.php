@@ -2,8 +2,8 @@
 
 namespace App\WebSockets\Handlers\Internal\MatchMaking;
 
-use App\WebSockets\Handlers\Internal\BaseInternalMatchMakingHandler;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
+use App\WebSockets\Handlers\Internal\BaseInternalMatchMakingHandler;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 
 class MatchMakingQueueUpdatedHandler extends BaseInternalMatchMakingHandler implements \App\WebSockets\Handlers\Internal\InternalMessageHandlerInterface
