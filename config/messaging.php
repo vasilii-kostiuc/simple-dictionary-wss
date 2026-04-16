@@ -3,7 +3,7 @@
 return [
     'default' => env('MESSAGING_BROKER', 'redis'),
     'redis' => [
-        'host' => env('REDIS_HOST', '127.0.0.1'),
-        'port' => env('REDIS_PORT', 6379),
+        'host' => env('MESSAGING_REDIS_HOST'),
+        'port' => env('MESSAGING_REDIS_PORT'),
     ],
 ];

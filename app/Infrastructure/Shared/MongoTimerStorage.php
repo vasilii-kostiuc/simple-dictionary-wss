@@ -16,11 +16,12 @@ class MongoTimerStorage implements TimerStorageInterface
 
     public function __construct()
     {
-        $mongoHost = env('MONGODB_HOST', 'wss_mongo');
-        $mongoPort = env('MONGODB_PORT', 27017);
+        $mongoHost = (string) config('database.mongodb.host', '127.0.0.1');
+        $mongoPort = (int) config('database.mongodb.port', 27017);
+        $database = (string) config('database.mongodb.database', 'wss_db');
         $client = new Client("mongodb://{$mongoHost}:{$mongoPort}");
 
-        $this->collection = $client->selectDatabase(env('MONGODB_DATABASE', 'wss_db'))
+        $this->collection = $client->selectDatabase($database)
             ->selectCollection('timers');
 
         try {
