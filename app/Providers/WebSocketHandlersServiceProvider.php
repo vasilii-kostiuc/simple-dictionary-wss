@@ -33,6 +33,7 @@ use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingJoinedHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingLeftHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingMatchedHandler;
 use App\WebSockets\Handlers\Internal\MatchMaking\MatchMakingQueueUpdatedHandler;
+use App\WebSockets\Handlers\Internal\RelayMessageHandler;
 use App\WebSockets\Handlers\Internal\UnknownInternalMessageHandler;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Illuminate\Contracts\Foundation\Application;
@@ -76,6 +77,7 @@ class WebSocketHandlersServiceProvider extends ServiceProvider
                     'wss.matchmaking.queue.updated' => $app->make(MatchMakingQueueUpdatedHandler::class),
                     'wss.link_match_room.joined' => $app->make(LinkMatchRoomParticipantsUpdatedHandler::class),
                     'wss.link_match_room.left' => $app->make(LinkMatchRoomParticipantsUpdatedHandler::class),
+                    'wss.relay.send' => $app->make(RelayMessageHandler::class),
                 ],
                 unknownHandler: $app->make(UnknownInternalMessageHandler::class),
             );

@@ -67,7 +67,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(WebSocketMessageSenderInterface::class, function (Application $app) {
-            return new WebSocketMessageSender($app->make(ClientRegistryInterface::class));
+            return new WebSocketMessageSender(
+                $app->make(ClientRegistryInterface::class),
+                $app->make(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface::class),
+            );
         });
 
         $this->app->singleton(SubscriptionsStorageInterface::class, function () {

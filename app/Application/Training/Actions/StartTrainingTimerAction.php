@@ -14,15 +14,14 @@ class StartTrainingTimerAction
         private readonly LoopInterface $loop,
         private readonly TimerStorageInterface $timerStorage,
         private readonly SimpleDictionaryApiClientInterface $apiClient,
-    ) {
-    }
+    ) {}
 
     public function execute(string $trainingId, Carbon $startedAt, int $durationSeconds): void
     {
         $this->timerStorage->addTimer(TimerType::Training->value, $trainingId, $startedAt, $durationSeconds);
 
         $this->loop->addTimer($durationSeconds, function () use ($trainingId) {
-            if ($this->timerStorage->hasTimer(TimerType::Training->value, $trainingId)) {
+            if ($this->timerStorage->claimTimer(TimerType::Training->value, $trainingId)) {
                 $this->apiClient->expire($trainingId);
                 $this->timerStorage->removeTimer(TimerType::Training->value, $trainingId);
             }

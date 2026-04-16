@@ -36,6 +36,9 @@ class LinkMatchRoomJoinHandlerTest extends TestCase
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->identity = new ClientIdentity(1, 'Alice', 'alice@example.com', null);
         $this->linkMatch = new LinkMatch('lm-1', 'tok_abc', 2, LinkMatchStatus::Pending);
+
+        $this->roomRepository->method('executeInLock')
+            ->willReturnCallback(fn (string $roomId, callable $callback) => $callback());
     }
 
     private function action(): JoinLinkMatchRoomAction

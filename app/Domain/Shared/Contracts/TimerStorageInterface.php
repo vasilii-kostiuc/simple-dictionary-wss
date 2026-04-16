@@ -15,4 +15,8 @@ interface TimerStorageInterface
     public function hasTimer(string $type, string $id): bool;
 
     public function getTimer(string $type, string $id): ?array;
+
+    public function claimExpiredTimer(): ?array;
+
+    public function claimTimer(string $type, string $id): bool;
 }

@@ -31,20 +31,22 @@ class JoinLinkMatchRoomAction
             throw new LinkMatchRoomException('link_not_found', 'Link not found or inactive');
         }
 
-        $room = $this->roomRepository->getOrCreate($linkMatch);
+        return $this->roomRepository->executeInLock($linkMatch->id, function () use ($linkMatch, $identity) {
+            $room = $this->roomRepository->getOrCreate($linkMatch);
 
-        try {
-            $room->joinParticipant($identity);
-        } catch (\DomainException $e) {
-            throw new LinkMatchRoomException('link_match_room_full', $e->getMessage());
-        }
+            try {
+                $room->joinParticipant($identity);
+            } catch (\DomainException $e) {
+                throw new LinkMatchRoomException('link_match_room_full', $e->getMessage());
+            }
 
-        $this->roomRepository->update($room);
+            $this->roomRepository->update($room);
 
-        foreach ($room->pullEvents() as $event) {
-            $this->eventDispatcher->dispatch($event);
-        }
+            foreach ($room->pullEvents() as $event) {
+                $this->eventDispatcher->dispatch($event);
+            }
 
-        return ['room' => $room];
+            return ['room' => $room];
+        });
     }
 }

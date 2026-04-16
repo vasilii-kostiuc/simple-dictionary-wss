@@ -10,4 +10,6 @@ interface WebSocketMessageSenderInterface
     public function sendToIdentifier(string $identifier, WebSocketMessage $message): void;
 
     public function sendToConnection(ConnectionInterface $conn, WebSocketMessage $message): void;
+
+    public function relayToIdentifier(string $identifier, WebSocketMessage $message): void;
 }

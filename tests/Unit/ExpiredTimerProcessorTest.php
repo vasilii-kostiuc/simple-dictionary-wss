@@ -50,20 +50,20 @@ class ExpiredTimerProcessorTest extends TestCase
         $timerStorage = $this->createMock(TimerStorageInterface::class);
         $apiClient = $this->createMock(SimpleDictionaryApiClientInterface::class);
 
-        $expiredTimers = [
-            [
-                'type' => 'training',
-                'entity_id' => 'training-1',
-                'expires_at' => Carbon::parse('2026-01-01 10:00:00'),
-            ],
-            [
-                'type' => 'match',
-                'entity_id' => 'match-2',
-                'expires_at' => Carbon::parse('2026-01-01 10:05:00'),
-            ],
+        $timer1 = [
+            'type' => 'training',
+            'entity_id' => 'training-1',
+            'expires_at' => Carbon::parse('2026-01-01 10:00:00'),
+        ];
+        $timer2 = [
+            'type' => 'match',
+            'entity_id' => 'match-2',
+            'expires_at' => Carbon::parse('2026-01-01 10:05:00'),
         ];
 
-        $timerStorage->expects($this->once())->method('getExpiredTimers')->willReturn($expiredTimers);
+        $timerStorage->expects($this->exactly(3))
+            ->method('claimExpiredTimer')
+            ->willReturnOnConsecutiveCalls($timer1, $timer2, null);
 
         $apiClient->expects($this->exactly(2))
             ->method('expire')
@@ -81,7 +81,7 @@ class ExpiredTimerProcessorTest extends TestCase
         $timerStorage = $this->createMock(TimerStorageInterface::class);
         $apiClient = $this->createMock(SimpleDictionaryApiClientInterface::class);
 
-        $timerStorage->expects($this->once())->method('getExpiredTimers')->willReturn([]);
+        $timerStorage->expects($this->once())->method('claimExpiredTimer')->willReturn(null);
         $apiClient->expects($this->never())->method('expire');
         $timerStorage->expects($this->never())->method('removeTimer');
 

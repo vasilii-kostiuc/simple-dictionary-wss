@@ -10,18 +10,11 @@ class ProcessExpiredTimersAction
     public function __construct(
         private readonly TimerStorageInterface $timerStorage,
         private readonly SimpleDictionaryApiClientInterface $apiClient,
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {
-        $expiredTimers = $this->timerStorage->getExpiredTimers();
-
-        if (empty($expiredTimers)) {
-            return;
-        }
-
-        foreach ($expiredTimers as $timer) {
+        while ($timer = $this->timerStorage->claimExpiredTimer()) {
             $type = $timer['type'];
             $entityId = $timer['entity_id'];
 

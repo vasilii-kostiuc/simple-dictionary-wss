@@ -7,12 +7,15 @@ use App\WebSockets\Sender\WebSocketMessageSender;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
+use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
 
 class WebSocketMessageSenderTest extends TestCase
 {
     private function makeSender(ClientRegistryInterface $clientRegistry): WebSocketMessageSender
     {
-        return new WebSocketMessageSender($clientRegistry);
+        $messageBroker = $this->createMock(MessageBrokerInterface::class);
+
+        return new WebSocketMessageSender($clientRegistry, $messageBroker);
     }
 
     private function makeMessage(): WebSocketMessage

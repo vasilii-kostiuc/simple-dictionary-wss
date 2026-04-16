@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Shared;
 
 use App\Domain\Shared\Contracts\TimerStorageInterface;
-
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use MongoDB\BSON\UTCDateTime;
@@ -131,5 +130,59 @@ class MongoTimerStorage implements TimerStorageInterface
             'expires_at' => $document['expires_at']->toDateTime(),
             'duration_seconds' => $document['duration_seconds'],
         ];
+    }
+
+    public function claimExpiredTimer(): ?array
+    {
+        $now = new UTCDateTime(time() * 1000);
+
+        $document = $this->collection->findOneAndUpdate(
+            [
+                'expires_at' => ['$lte' => $now],
+                'status' => 'active',
+            ],
+            [
+                '$set' => [
+                    'status' => 'processing',
+                    'claimed_at' => new UTCDateTime(time() * 1000),
+                ],
+            ],
+            [
+                'returnDocument' => \MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+            ]
+        );
+
+        if (! $document) {
+            return null;
+        }
+
+        return [
+            'type' => $document['type'],
+            'entity_id' => $document['entity_id'],
+            'timer_key' => $document['timer_key'],
+            'started_at' => $document['started_at']->toDateTime(),
+            'expires_at' => $document['expires_at']->toDateTime(),
+            'duration_seconds' => $document['duration_seconds'],
+        ];
+    }
+
+    public function claimTimer(string $type, string $id): bool
+    {
+        $timerKey = $this->getTimerKey($type, $id);
+
+        $document = $this->collection->findOneAndUpdate(
+            [
+                'timer_key' => $timerKey,
+                'status' => 'active',
+            ],
+            [
+                '$set' => [
+                    'status' => 'processing',
+                    'claimed_at' => new UTCDateTime(time() * 1000),
+                ],
+            ]
+        );
+
+        return $document !== null;
     }
 }

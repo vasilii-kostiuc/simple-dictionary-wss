@@ -32,6 +32,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
             'email' => $identity->email,
             'avatar' => $identity->avatar,
             'matchParams' => $matchParams->toArray(),
+            'queueKey' => $queueKey,
             'timestamp' => time(),
         ];
 
@@ -91,19 +92,38 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     public function findMatch(string $identifier, MatchParams $matchParams): ?string
     {
         $queueKey = $this->getQueueKey($matchParams);
-        $members = Redis::zrange($queueKey, 0, -1);
 
-        foreach ($members as $candidateIdentifier) {
-            if ($candidateIdentifier !== $identifier) {
-                Redis::zrem($queueKey, $identifier, $candidateIdentifier);
-                Redis::del($this->getUserDataKey($identifier));
-                Redis::del($this->getUserDataKey($candidateIdentifier));
+        $result = Redis::connection()->eval(<<<'LUA'
+local queueKey = KEYS[1]
+local currentId = ARGV[1]
+local userKeyPrefix = ARGV[2]
 
-                return $candidateIdentifier;
-            }
+local members = redis.call('ZRANGE', queueKey, 0, -1)
+
+for _, candidateIdentifier in ipairs(members) do
+    if candidateIdentifier ~= currentId then
+        local candidateUserData = redis.call('GET', userKeyPrefix .. candidateIdentifier)
+
+        if candidateUserData then
+            redis.call('ZREM', queueKey, currentId, candidateIdentifier)
+            redis.call('DEL', userKeyPrefix .. currentId)
+            redis.call('DEL', userKeyPrefix .. candidateIdentifier)
+
+            return candidateIdentifier
+        end
+
+        redis.call('ZREM', queueKey, candidateIdentifier)
+    end
+end
+
+return false
+LUA, 1, $queueKey, $identifier, self::USER_DATA_PREFIX);
+
+        if ($result === false || $result === null) {
+            return null;
         }
 
-        return null;
+        return (string) $result;
     }
 
     public function clear(MatchParams $matchParams): void
@@ -131,15 +151,32 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     public function extract(string $identifier): ?QueueEntry
     {
         $userDataKey = $this->getUserDataKey($identifier);
-        $raw = json_decode(Redis::get($userDataKey), true);
 
-        if ($raw === null) {
+        $raw = Redis::connection()->eval(<<<'LUA'
+local userDataKey = KEYS[1]
+local identifier = ARGV[1]
+local queuePrefix = ARGV[2]
+
+local raw = redis.call('GET', userDataKey)
+
+if not raw then
+    return false
+end
+
+local decoded = cjson.decode(raw)
+local queueKey = decoded['queueKey']
+
+redis.call('ZREM', queueKey, identifier)
+redis.call('DEL', userDataKey)
+
+return raw
+LUA, 1, $userDataKey, $identifier, self::QUEUE_PREFIX);
+
+        if ($raw === false || $raw === null) {
             return null;
         }
 
-        $this->remove($identifier);
-
-        return $this->rawToQueueEntry($raw);
+        return $this->rawToQueueEntry(json_decode($raw, true));
     }
 
     private function rawToQueueEntry(array $raw): QueueEntry

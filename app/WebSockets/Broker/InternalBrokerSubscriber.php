@@ -28,5 +28,6 @@ class InternalBrokerSubscriber
         $messageBroker->subscribe('wss.matchmaking.queue.updated', $subscribeCallback);
         $messageBroker->subscribe('wss.link_match_room.joined', $subscribeCallback);
         $messageBroker->subscribe('wss.link_match_room.left', $subscribeCallback);
+        $messageBroker->subscribe('wss.relay.send', $subscribeCallback);
     }
 }

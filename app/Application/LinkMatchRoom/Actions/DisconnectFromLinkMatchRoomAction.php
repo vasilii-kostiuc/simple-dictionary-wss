@@ -15,26 +15,28 @@ class DisconnectFromLinkMatchRoomAction
 
     public function execute(ClientIdentity $identity, string $roomId): void
     {
-        $room = $this->roomRepository->findByLinkMatchId($roomId);
+        $this->roomRepository->executeInLock($roomId, function () use ($identity, $roomId) {
+            $room = $this->roomRepository->findByLinkMatchId($roomId);
 
-        if ($room === null) {
-            return;
-        }
+            if ($room === null) {
+                return;
+            }
 
-        try {
-            $room->leaveParticipant($identity);
-        } catch (\DomainException) {
-            return; // MatchCreating or MatchCreated — leave not allowed
-        }
+            try {
+                $room->leaveParticipant($identity);
+            } catch (\DomainException) {
+                return; // MatchCreating or MatchCreated — leave not allowed
+            }
 
-        if ($room->isEmpty()) {
-            $this->roomRepository->deleteByLinkMatchId($room->getId());
-        } else {
-            $this->roomRepository->update($room);
-        }
+            if ($room->isEmpty()) {
+                $this->roomRepository->deleteByLinkMatchId($room->getId());
+            } else {
+                $this->roomRepository->update($room);
+            }
 
-        foreach ($room->pullEvents() as $event) {
-            $this->eventDispatcher->dispatch($event);
-        }
+            foreach ($room->pullEvents() as $event) {
+                $this->eventDispatcher->dispatch($event);
+            }
+        });
     }
 }
