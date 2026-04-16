@@ -44,11 +44,6 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     protected function call(string $method, string $uri, array $options = []): array
     {
-        info('Making API call', [
-            'method' => $method,
-            'uri' => $uri,
-            'options' => $options,
-        ]);
         try {
             $options['headers'] = array_merge(
                 ['Accept' => 'application/json'],
@@ -57,20 +52,10 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
             );
 
             $response = $this->client->request($method, $uri, $options);
-            info('API call completed', [
-                'method' => $method,
-                'uri' => $uri,
-                'status_code' => $response->getStatusCode(),
-            ]);
+
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
 
                 $body = json_decode((string) $response->getBody(), true);
-
-                info('API call successful', [
-                    'method' => $method,
-                    'uri' => $uri,
-                    'response_body' => $body,
-                ]);
 
                 return $body['data'] ?? $body ?? [];
             }

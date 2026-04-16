@@ -12,20 +12,34 @@ use Ratchet\ConnectionInterface;
 
 class ConnectionLifecycleService
 {
+    private string $nodeId;
+
     public function __construct(
         private readonly ClientRegistryInterface $clientRegistry,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
         private readonly DisconnectFromLinkMatchRoomAction $disconnectFromRoomAction,
         private readonly LeaveMatchMakingAction $leaveMatchMakingAction,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
-    ) {}
+    ) {
+        $this->nodeId = env('WSS_NODE_ID', gethostname());
+    }
 
-    public function onOpen(ConnectionInterface $conn): void {}
+    public function onOpen(ConnectionInterface $conn): void
+    {
+        Log::info('[{node}] Connection opened', ['node' => $this->nodeId, 'conn_id' => $conn->resourceId]);
+    }
 
     public function onClose(ConnectionInterface $conn): void
     {
         $identity = $this->clientRegistry->getIdentity($conn);
         $channels = $this->subscriptionsStorage->getChannelsByConnection($conn);
+
+        Log::info('[{node}] Connection closed', [
+            'node' => $this->nodeId,
+            'conn_id' => $conn->resourceId,
+            'identifier' => $identity?->getIdentifier(),
+            'channels' => $channels,
+        ]);
 
         if ($identity !== null) {
             foreach ($channels as $channel) {
@@ -46,6 +60,11 @@ class ConnectionLifecycleService
 
     public function onError(ConnectionInterface $conn, \Throwable $e): void
     {
-        Log::error(__METHOD__.' '.$e->getMessage().PHP_EOL.$e->getTraceAsString());
+        Log::error('[{node}] Connection error', [
+            'node' => $this->nodeId,
+            'conn_id' => $conn->resourceId,
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
     }
 }

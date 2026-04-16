@@ -32,6 +32,9 @@ class WebsocketServerRunCommand extends Command
      */
     public function handle(): int
     {
+        $nodeId = env('WSS_NODE_ID', gethostname());
+        $this->info("[{$nodeId}] WebSocket server starting on 0.0.0.0:8080");
+
         $this->trainingWsRuntime->run();
 
         return self::SUCCESS;

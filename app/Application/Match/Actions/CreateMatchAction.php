@@ -17,16 +17,10 @@ class CreateMatchAction
      */
     public function execute(array $participants, MatchParams $matchParams): array
     {
-        info('Creating match', [
-            'participants' => array_map(fn ($p) => $p->toArray(), $participants),
-            'match_params' => $matchParams->toArray(),
-        ]);
         $match = $this->apiClient->createMatch(
             array_map(fn (MatchParticipant $p) => $p->toArray(), $participants),
             $matchParams,
         ) ?? [];
-
-        info('Match created', ['match' => $match]);
 
         return $match;
     }

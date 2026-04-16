@@ -18,8 +18,7 @@ class TrainingWsRuntime
         private readonly PeriodicTimerScheduler $periodicTimerScheduler,
         private readonly MessageBrokerFactory $messageBrokerFactory,
         private readonly LoopInterface $loop,
-    ) {
-    }
+    ) {}
 
     public function bootstrap(): void
     {
@@ -38,6 +37,10 @@ class TrainingWsRuntime
         $this->bootstrap();
 
         $this->createIoServer($address);
+
+        $nodeId = env('WSS_NODE_ID', gethostname());
+        echo "[{$nodeId}] WebSocket server listening on {$address}".PHP_EOL;
+
         $this->loop->run();
     }
 
