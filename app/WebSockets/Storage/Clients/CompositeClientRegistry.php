@@ -6,13 +6,12 @@ use App\Domain\Shared\Identity\ClientIdentity;
 use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use Ratchet\ConnectionInterface;
 
-class CompositeClientRegistry implements ClientRegistryInterface, ClientIdentityLookupInterface
+class CompositeClientRegistry implements ClientIdentityLookupInterface, ClientRegistryInterface
 {
     public function __construct(
         private readonly AuthorizedClientRegistry $authorizedRegistry,
         private readonly GuestClientRegistry $guestRegistry,
-    ) {
-    }
+    ) {}
 
     public function register(ConnectionInterface $conn, ClientIdentity $identity): void
     {

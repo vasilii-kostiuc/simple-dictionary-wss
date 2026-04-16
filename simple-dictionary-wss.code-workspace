@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../simple-dictionary"
+		},
+		{
+			"path": "../Vue-Simple-Dictionary"
+		}
+	],
+	"settings": {
+		"editor.formatOnSave": true,
+		"[php]": {
+			"editor.defaultFormatter": "open-southeners.laravel-pint"
+		},
+		"laravel-pint.enable": true
+	}
+}

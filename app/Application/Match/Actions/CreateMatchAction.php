@@ -10,8 +10,7 @@ class CreateMatchAction
 {
     public function __construct(
         private readonly SimpleDictionaryApiClientInterface $apiClient,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  MatchParticipant[]  $participants

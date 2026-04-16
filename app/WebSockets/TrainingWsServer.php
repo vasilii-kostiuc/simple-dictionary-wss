@@ -13,8 +13,7 @@ class TrainingWsServer implements MessageComponentInterface
     public function __construct(
         protected readonly ConnectionLifecycleService $connectionLifecycleService,
         protected readonly ClientMessageDispatcher $clientMessageDispatcher,
-    ) {
-    }
+    ) {}
 
     /**
      * {@inheritDoc}

@@ -15,8 +15,7 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
     public function __construct(
         protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
         protected readonly SubscriptionChannelPolicy $subscriptionChannelPolicy,
-    ) {
-    }
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {

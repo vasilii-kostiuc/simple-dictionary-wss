@@ -11,8 +11,7 @@ class PublishLinkMatchRoomLeftListener
     public function __construct(
         private readonly MessageBrokerInterface $messageBroker,
         private readonly LinkMatchRoomRepositoryInterface $roomRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(ParticipantLeftEvent $event): void
     {

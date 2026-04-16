@@ -12,8 +12,7 @@ class ClientMessageDispatcher
 {
     public function __construct(
         private readonly MessageHandlerFactory $messageHandlerFactory,
-    ) {
-    }
+    ) {}
 
     public function dispatch(ConnectionInterface $conn, MessageInterface $msg): void
     {

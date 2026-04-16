@@ -20,8 +20,7 @@ class LinkMatchRoomLeaveHandler implements MessageHandlerInterface
         private readonly LeaveLinkMatchRoomAction $leaveAction,
         private readonly WebSocketMessageSenderInterface $sender,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
-    ) {
-    }
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
