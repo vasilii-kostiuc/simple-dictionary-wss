@@ -1,0 +1,144 @@
+networks:
+  simple_dictionary_network:
+    external: true
+
+# Replaces docker-compose.yml for multi-node local testing.
+# Usage:
+#   docker compose down                                  # stop single-node first
+#   docker compose -f docker-compose.multinode.yml up -d
+#
+# Vue (.env) stays unchanged: VITE_WEBSOCKET_URL=ws://localhost:8080 → nginx
+
+services:
+  wss_nginx:
+    image: nginx:1.27-alpine
+    container_name: wss_nginx
+    depends_on:
+      - wss_app_1
+      - wss_app_2
+      - wss_app_3
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./_docker/nginx/wss-multinode.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      simple_dictionary_network:
+        aliases:
+          - wss_app # API nginx proxies /ws/ → wss_app:8080 in both single and multi-node mode
+
+  wss_app_1:
+    build:
+      context: .
+      dockerfile: _docker/wss_app/Dockerfile
+    container_name: wss_app_1
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./_docker/wss_app/entrypoint.sh:/usr/local/bin/entrypoint.sh
+    environment:
+      APP_ENV: local
+      WSS_NODE_ID: wss_app_1
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGODB_HOST: mongo
+      MONGODB_PORT: 27017
+      MESSAGING_BROKER: redis
+      MESSAGING_REDIS_HOST: redis
+      MESSAGING_REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - mongo
+    expose:
+      - "8080"
+    command: [ "php", "artisan", "websocket:serve" ]
+    networks:
+      - simple_dictionary_network
+
+  wss_app_2:
+    build:
+      context: .
+      dockerfile: _docker/wss_app/Dockerfile
+    container_name: wss_app_2
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./_docker/wss_app/entrypoint.sh:/usr/local/bin/entrypoint.sh
+    environment:
+      APP_ENV: local
+      WSS_NODE_ID: wss_app_2
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGODB_HOST: mongo
+      MONGODB_PORT: 27017
+      MESSAGING_BROKER: redis
+      MESSAGING_REDIS_HOST: redis
+      MESSAGING_REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - mongo
+    expose:
+      - "8080"
+    command: [ "php", "artisan", "websocket:serve" ]
+    networks:
+      - simple_dictionary_network
+
+  wss_app_3:
+    build:
+      context: .
+      dockerfile: _docker/wss_app/Dockerfile
+    container_name: wss_app_3
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./_docker/wss_app/entrypoint.sh:/usr/local/bin/entrypoint.sh
+    environment:
+      APP_ENV: local
+      WSS_NODE_ID: wss_app_3
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGODB_HOST: mongo
+      MONGODB_PORT: 27017
+      MESSAGING_BROKER: redis
+      MESSAGING_REDIS_HOST: redis
+      MESSAGING_REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - mongo
+    expose:
+      - "8080"
+    command: [ "php", "artisan", "websocket:serve" ]
+    networks:
+      - simple_dictionary_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: wss_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - simple_dictionary_network
+
+  mongo:
+    image: mongo:8.0.15
+    container_name: wss_mongo
+    volumes:
+      - ./tmp/mongo:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - simple_dictionary_network
+
+  mongo_express:
+    image: mongo-express:latest
+    container_name: wss_mongo_express
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    networks:
+      - simple_dictionary_network

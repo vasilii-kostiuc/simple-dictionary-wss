@@ -1,11 +1,15 @@
 #!/bin/bash
 set -e
 
+NODE_LABEL="${WSS_NODE_ID:-$(hostname)}"
+echo "[${NODE_LABEL}] Starting up..."
+
 # Ждём Redis и Mongo перед стартом
-echo "Waiting for Redis and Mongo..."
+echo "[${NODE_LABEL}] Waiting for Redis and Mongo..."
 until nc -z redis 6379 && nc -z mongo 27017; do
   sleep 1
 done
+echo "[${NODE_LABEL}] Redis and Mongo are ready."
 
 # Create storage directories
 mkdir -p storage/framework/{sessions,views,cache} storage/logs
