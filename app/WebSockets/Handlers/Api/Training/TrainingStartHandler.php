@@ -6,14 +6,12 @@ use App\Application\Training\Actions\StartTrainingTimerAction;
 use App\Domain\Training\Enums\TrainingCompletionType;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class TrainingStartHandler implements ApiMessageHandlerInterface
 {
     public function __construct(
         private readonly StartTrainingTimerAction $startTimerAction,
-    ) {
-    }
+    ) {}
 
     public function handle(mixed $payload): void
     {
@@ -29,7 +27,9 @@ class TrainingStartHandler implements ApiMessageHandlerInterface
 
         if ($completionType === TrainingCompletionType::Time) {
             $startedAt = Carbon::parse($data['started_at']);
-            $this->startTimerAction->execute($trainingId, $startedAt, $data['completion_type_params']['duration'] * 60);
+            $durationSeconds = $data['completion_type_params']['duration'] * 60;
+
+            $this->startTimerAction->execute($trainingId, $startedAt, $durationSeconds);
         }
     }
 }

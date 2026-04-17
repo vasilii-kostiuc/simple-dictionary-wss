@@ -37,8 +37,8 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     public function expireMatch(string|int $matchId): array
     {
-        return $this->call('POST', "matches/{$matchId}/expire", [
-            'json' => ['completed_by' => 'timer'],
+        return $this->call('POST', "matches/{$matchId}/complete", [
+            'json' => ['reason' => 'time_expired'],
         ]);
     }
 
@@ -52,11 +52,9 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
             );
 
             $response = $this->client->request($method, $uri, $options);
+            $body = json_decode((string) $response->getBody(), true);
 
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
-
-                $body = json_decode((string) $response->getBody(), true);
-
                 return $body['data'] ?? $body ?? [];
             }
         } catch (GuzzleException $e) {

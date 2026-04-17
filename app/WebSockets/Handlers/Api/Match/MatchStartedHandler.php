@@ -8,15 +8,13 @@ use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Match\MatchStartedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class MatchStartedHandler implements ApiMessageHandlerInterface
 {
     public function __construct(
         private readonly WebSocketMessageSenderInterface $sender,
         private readonly StartMatchTimerAction $startMatchTimerAction,
-    ) {
-    }
+    ) {}
 
     public function handle(mixed $payload): void
     {
@@ -44,11 +42,14 @@ class MatchStartedHandler implements ApiMessageHandlerInterface
             }
         }
 
-        $completionType = isset($data['completion_type']) ? MatchCompletionType::from($data['completion_type']) : null;
+        $matchTypeValue = $data['match_type'] ?? null;
+        $durationSeconds = $data['match_type_params']['duration'] ?? null;
+        $completionType = $matchTypeValue !== null ? MatchCompletionType::from($matchTypeValue) : null;
 
-        if ($completionType === MatchCompletionType::Time) {
+        if ($completionType === MatchCompletionType::Time && $durationSeconds !== null) {
             $startedAt = Carbon::parse($data['started_at']);
-            $this->startMatchTimerAction->execute($matchId, $startedAt, $data['completion_type_params']['duration'] * 60);
+
+            $this->startMatchTimerAction->execute($matchId, $startedAt, $durationSeconds);
         }
     }
 }

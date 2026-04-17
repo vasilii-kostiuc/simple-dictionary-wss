@@ -14,17 +14,16 @@ class StartMatchTimerAction
         private readonly LoopInterface $loop,
         private readonly TimerStorageInterface $timerStorage,
         private readonly SimpleDictionaryApiClientInterface $apiClient,
-    ) {
-    }
+    ) {}
 
     public function execute(string $matchId, Carbon $startedAt, int $durationSeconds): void
     {
-        $this->timerStorage->addTimer(TimerType::Match ->value, $matchId, $startedAt, $durationSeconds);
+        $this->timerStorage->addTimer(TimerType::Match->value, $matchId, $startedAt, $durationSeconds);
 
         $this->loop->addTimer($durationSeconds, function () use ($matchId) {
-            if ($this->timerStorage->hasTimer(TimerType::Match ->value, $matchId)) {
+            if ($this->timerStorage->hasTimer(TimerType::Match->value, $matchId)) {
                 $this->apiClient->expireMatch($matchId);
-                $this->timerStorage->removeTimer(TimerType::Match ->value, $matchId);
+                $this->timerStorage->removeTimer(TimerType::Match->value, $matchId);
             }
         });
     }

@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Application\Training\Actions\ProcessExpiredTimersAction;
 use App\Domain\Shared\Contracts\TimerStorageInterface;
+use App\Domain\Shared\Enums\TimerType;
 use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
@@ -19,17 +20,11 @@ class ExpiredTimerProcessorTest extends TestCase
         $container = new Container;
         $container->instance('log', new class
         {
-            public function info(...$args): void
-            {
-            }
+            public function info(...$args): void {}
 
-            public function warning(...$args): void
-            {
-            }
+            public function warning(...$args): void {}
 
-            public function error(...$args): void
-            {
-            }
+            public function error(...$args): void {}
         });
 
         Container::setInstance($container);
@@ -51,12 +46,12 @@ class ExpiredTimerProcessorTest extends TestCase
         $apiClient = $this->createMock(SimpleDictionaryApiClientInterface::class);
 
         $timer1 = [
-            'type' => 'training',
+            'type' => TimerType::Training->value,
             'entity_id' => 'training-1',
             'expires_at' => Carbon::parse('2026-01-01 10:00:00'),
         ];
         $timer2 = [
-            'type' => 'match',
+            'type' => TimerType::Match->value,
             'entity_id' => 'match-2',
             'expires_at' => Carbon::parse('2026-01-01 10:05:00'),
         ];
@@ -65,13 +60,20 @@ class ExpiredTimerProcessorTest extends TestCase
             ->method('claimExpiredTimer')
             ->willReturnOnConsecutiveCalls($timer1, $timer2, null);
 
-        $apiClient->expects($this->exactly(2))
+        $apiClient->expects($this->once())
             ->method('expire')
-            ->with($this->callback(fn ($id): bool => in_array($id, ['training-1', 'match-2'], true)));
+            ->with('training-1');
+
+        $apiClient->expects($this->once())
+            ->method('expireMatch')
+            ->with('match-2');
 
         $timerStorage->expects($this->exactly(2))
             ->method('removeTimer')
-            ->with($this->callback(fn ($type): bool => in_array($type, ['training', 'match'], true)), $this->callback(fn ($id): bool => in_array($id, ['training-1', 'match-2'], true)));
+            ->with(
+                $this->callback(fn ($type): bool => in_array($type, [TimerType::Training->value, TimerType::Match->value], true)),
+                $this->callback(fn ($id): bool => in_array($id, ['training-1', 'match-2'], true))
+            );
 
         (new ProcessExpiredTimersAction($timerStorage, $apiClient))->execute();
     }
@@ -83,6 +85,7 @@ class ExpiredTimerProcessorTest extends TestCase
 
         $timerStorage->expects($this->once())->method('claimExpiredTimer')->willReturn(null);
         $apiClient->expects($this->never())->method('expire');
+        $apiClient->expects($this->never())->method('expireMatch');
         $timerStorage->expects($this->never())->method('removeTimer');
 
         (new ProcessExpiredTimersAction($timerStorage, $apiClient))->execute();

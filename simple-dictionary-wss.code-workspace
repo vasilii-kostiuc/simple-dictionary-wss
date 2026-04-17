@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../Vue-Simple-Dictionary"
+		},
+		{
+			"path": "../React-Simple-Dictionary"
 		}
 	],
 	"settings": {

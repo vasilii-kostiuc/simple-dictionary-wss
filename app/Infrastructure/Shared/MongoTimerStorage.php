@@ -57,14 +57,13 @@ class MongoTimerStorage implements TimerStorageInterface
             ],
             ['upsert' => true]
         );
-
     }
 
     public function removeTimer(string $type, string $id): void
     {
         $timerKey = $this->getTimerKey($type, $id);
 
-        $result = $this->collection->updateOne(
+        $this->collection->updateOne(
             ['timer_key' => $timerKey],
             [
                 '$set' => [

@@ -5,14 +5,12 @@ namespace App\WebSockets\Handlers\Api\Match;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Match\MatchCreatedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
-use Illuminate\Support\Facades\Log;
 
 class MatchCreatedHandler implements ApiMessageHandlerInterface
 {
     public function __construct(
         private readonly WebSocketMessageSenderInterface $sender
-    ) {
-    }
+    ) {}
 
     public function handle(mixed $payload): void
     {

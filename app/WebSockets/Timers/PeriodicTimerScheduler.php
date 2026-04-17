@@ -2,7 +2,6 @@
 
 namespace App\WebSockets\Timers;
 
-use Illuminate\Support\Facades\Log;
 use React\EventLoop\LoopInterface;
 
 class PeriodicTimerScheduler
@@ -23,9 +22,6 @@ class PeriodicTimerScheduler
         $this->loop->addPeriodicTimer(5, function (): void {
             $this->expiredTimerProcessor->process();
         });
-
         $this->started = true;
-
-        Log::info('Expired timers checker started (interval: 5s)');
     }
 }
