@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchmakingJoinSuccessPayload",
+  "type": "object",
+  "required": [
+    "match_type",
+    "match_params"
+  ],
+  "properties": {
+    "match_type": {
+      "$ref": "../common.schema.json#/$defs/matchType"
+    },
+    "match_params": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

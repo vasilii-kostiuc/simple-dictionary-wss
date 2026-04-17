@@ -1,105 +1,61 @@
 {
-    "$schema": "http://json-schema.org/draft/2020-12/schema#",
-    "title": "MatchRoomChanged",
-    "description": "Schema for the payload of the `match_room.changed` WebSocket message.",
-    "type": "object",
-    "required": [
-        "room_id",
-        "participants"
-    ],
-    "properties": {
-        "room_id": {
-            "type": "string"
-        },
-        "participants": {
-            "type": "array",
-            "description": "Array of participants. Each item is either a participant identifier (string) or a full participant object.",
-            "items": {
-                "oneOf": [
-                    {
-                        "type": "string",
-                        "description": "Participant identifier (e.g. '1' or 'guest-bob')."
-                    },
-                    {
-                        "type": "object",
-                        "description": "Full participant object serialized from ClientIdentity.",
-                        "required": [
-                            "id"
-                        ],
-                        "properties": {
-                            "id": {
-                                "type": "string",
-                                "description": "Internal participant id or guest id string."
-                            },
-                            "name": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ],
-                                "nullable": true
-                            },
-                            "email": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ],
-                                "nullable": true
-                            },
-                            "avatar": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ],
-                                "nullable": true
-                            },
-                            "guest_id": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ],
-                                "nullable": true
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                ]
-            }
-        },
-        "match_params": {
-            "type": "object",
-            "description": "Optional match parameters (copied from LinkMatch payload)."
-        }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MatchRoomChanged",
+  "description": "Payload schema for the `match_room.changed` WebSocket message.",
+  "type": "object",
+  "required": [
+    "room_id",
+    "participants"
+  ],
+  "properties": {
+    "room_id": {
+      "type": "string"
     },
-    "additionalProperties": true,
-    "examples": [
+    "participants": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/clientIdentity"
+          },
+          {
+            "$ref": "common.schema.json#/$defs/participantIdentifierObject"
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "room_id": "lm-123",
+      "participants": [
         {
-            "room_id": "abc-123",
-            "participants": [
-                "1",
-                "guest-bob"
-            ]
+          "id": 1,
+          "name": "Alice",
+          "email": "alice@example.com",
+          "avatar": null,
+          "guest_id": null
         },
         {
-            "room_id": "abc-123",
-            "participants": [
-                {
-                    "id": "1",
-                    "name": "Alice",
-                    "email": "alice@example.com",
-                    "avatar": null,
-                    "guest_id": null
-                },
-                {
-                    "id": "guest-bob",
-                    "name": null,
-                    "email": null,
-                    "avatar": null,
-                    "guest_id": "bob"
-                }
-            ],
-            "match_params": {
-                "difficulty": "easy"
-            }
+          "id": null,
+          "name": "Guest Bob",
+          "email": "",
+          "avatar": null,
+          "guest_id": "7aab8cb6-5cd5-4da7-86b6-a639c1b9857b"
         }
-    ]
+      ]
+    },
+    {
+      "room_id": "lm-123",
+      "participants": [
+        {
+          "id": "1"
+        },
+        {
+          "id": "guest-bob"
+        }
+      ]
+    }
+  ]
 }

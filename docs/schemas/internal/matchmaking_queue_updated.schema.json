@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InternalMatchmakingQueueUpdatedPayload",
+  "description": "Current publisher sends an empty object and handlers only react to the event type.",
+  "type": "object",
+  "additionalProperties": false
+}

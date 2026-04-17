@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchStartedPayload",
+  "description": "If `completion_type` is `time`, WSS also expects `started_at` and `completion_type_params.duration` to start a timer.",
+  "type": "object",
+  "required": [
+    "id",
+    "participants"
+  ],
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/$defs/routableMatchParticipant"
+      }
+    },
+    "completion_type": {
+      "$ref": "../common.schema.json#/$defs/matchCompletionType"
+    },
+    "completion_type_params": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": [
+            "integer",
+            "number",
+            "string"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true
+}

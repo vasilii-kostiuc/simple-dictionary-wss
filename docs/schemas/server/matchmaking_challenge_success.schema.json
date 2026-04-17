@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchmakingChallengeSuccessPayload",
+  "description": "WSS forwards the match creation result from the API almost as-is, so the payload stays intentionally permissive.",
+  "type": "object",
+  "additionalProperties": true
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InternalMatchmakingJoinedPayload",
+  "type": "object",
+  "required": [
+    "user_id",
+    "match_params"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "match_params": {
+      "$ref": "../common.schema.json#/$defs/matchParams"
+    }
+  },
+  "additionalProperties": false
+}

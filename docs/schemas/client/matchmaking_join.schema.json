@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClientMatchmakingJoinPayload",
+  "type": "object",
+  "properties": {
+    "match_type": {
+      "$ref": "../common.schema.json#/$defs/matchType"
+    },
+    "language_from_id": {
+      "type": "integer"
+    },
+    "language_to_id": {
+      "type": "integer"
+    },
+    "match_params": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

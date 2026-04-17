@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerLinkMatchRoomLeaveSuccessPayload",
+  "description": "Reserved message shape. The current codebase defines the message class but uses `match_room.changed` for room leave responses.",
+  "type": "object",
+  "additionalProperties": false
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InternalMatchmakingLeavedPayload",
+  "type": "object",
+  "required": [
+    "user_id"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InternalLinkMatchRoomJoinedPayload",
+  "type": "object",
+  "required": [
+    "room_id",
+    "participants"
+  ],
+  "properties": {
+    "room_id": {
+      "type": "string"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "../common.schema.json#/$defs/clientIdentity"
+          },
+          {
+            "$ref": "../common.schema.json#/$defs/participantIdentifierObject"
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

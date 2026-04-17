@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchmakingQueueUpdatedPayload",
+  "type": "object",
+  "required": [
+    "queue"
+  ],
+  "properties": {
+    "queue": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/$defs/queueEntry"
+      }
+    }
+  },
+  "additionalProperties": false
+}

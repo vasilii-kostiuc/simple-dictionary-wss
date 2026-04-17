@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerNextStepGeneratedPayload",
+  "description": "WSS routes this event by `user_id` or `guest_id` and forwards the rest unchanged.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "integer"
+    },
+    "guest_id": {
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "user_id"
+      ]
+    },
+    {
+      "required": [
+        "guest_id"
+      ]
+    }
+  ],
+  "additionalProperties": true
+}

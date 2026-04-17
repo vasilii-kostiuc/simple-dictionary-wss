@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiTrainingStartedPayload",
+  "type": "object",
+  "required": [
+    "training_id"
+  ],
+  "properties": {
+    "training_id": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completion_type": {
+      "$ref": "../common.schema.json#/$defs/trainingCompletionType"
+    },
+    "completion_type_params": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": [
+            "integer",
+            "number",
+            "string"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

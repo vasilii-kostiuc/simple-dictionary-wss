@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InternalLinkMatchRoomLeftPayload",
+  "$ref": "link_match_room_joined.schema.json"
+}

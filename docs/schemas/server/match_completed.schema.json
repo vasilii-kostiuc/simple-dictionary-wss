@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchCompletedPayload",
+  "description": "WSS requires routable participants and forwards the rest of the completion payload unchanged.",
+  "type": "object",
+  "required": [
+    "participants"
+  ],
+  "properties": {
+    "participants": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/$defs/routableMatchParticipant"
+      }
+    }
+  },
+  "additionalProperties": true
+}

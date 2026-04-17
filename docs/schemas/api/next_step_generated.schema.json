@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiNextStepGeneratedPayload",
+  "$ref": "../server/next_step_generated.schema.json"
+}

@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://simple-dictionary.local/docs/schemas/common.schema.json",
+  "title": "WSS Common Definitions",
+  "$defs": {
+    "identifierValue": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "guestId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F-]{36}$"
+    },
+    "subscriptionChannel": {
+      "type": "string",
+      "pattern": "^(matchmaking\\.queue|(training|match|link_match_room)\\.[^.\\s]+)$"
+    },
+    "matchType": {
+      "type": "string",
+      "enum": [
+        "time",
+        "steps"
+      ]
+    },
+    "trainingCompletionType": {
+      "type": "string",
+      "enum": [
+        "time",
+        "steps",
+        "unlimited"
+      ]
+    },
+    "matchCompletionType": {
+      "type": "string",
+      "enum": [
+        "time",
+        "steps"
+      ]
+    },
+    "errorCode": {
+      "type": "string",
+      "enum": [
+        "invalid_json",
+        "not_authorized",
+        "token_required",
+        "invalid_token",
+        "invalid_guest_id",
+        "opponent_id_required",
+        "opponent_not_in_queue",
+        "invalid_match_type",
+        "channel_is_required",
+        "channel_is_not_allowed",
+        "unknown_message",
+        "link_not_found",
+        "link_match_room_not_found",
+        "link_match_room_full",
+        "not_in_room"
+      ]
+    },
+    "clientIdentity": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "email",
+        "avatar",
+        "guest_id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifierValue"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "guest_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "participantIdentifierObject": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifierValue"
+        }
+      },
+      "additionalProperties": false
+    },
+    "matchParams": {
+      "type": "object",
+      "required": [
+        "match_type",
+        "language_from_id",
+        "language_to_id",
+        "match_type_params"
+      ],
+      "properties": {
+        "match_type": {
+          "$ref": "#/$defs/matchType"
+        },
+        "language_from_id": {
+          "type": "integer"
+        },
+        "language_to_id": {
+          "type": "integer"
+        },
+        "match_type_params": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "queueEntry": {
+      "type": "object",
+      "required": [
+        "userId",
+        "guestId",
+        "identifier",
+        "name",
+        "email",
+        "avatar",
+        "matchParams"
+      ],
+      "properties": {
+        "userId": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "guestId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matchParams": {
+          "$ref": "#/$defs/matchParams"
+        }
+      },
+      "additionalProperties": false
+    },
+    "routableMatchParticipant": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer"
+        },
+        "guest_id": {
+          "type": "string"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "user_id"
+          ]
+        },
+        {
+          "required": [
+            "guest_id"
+          ]
+        }
+      ],
+      "additionalProperties": true
+    }
+  }
+}

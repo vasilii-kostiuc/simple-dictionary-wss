@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchCreatedPayload",
+  "description": "WSS requires `id` and routable `participants`, then forwards the rest of the payload to clients.",
+  "type": "object",
+  "required": [
+    "id",
+    "participants"
+  ],
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/$defs/routableMatchParticipant"
+      }
+    }
+  },
+  "additionalProperties": true
+}

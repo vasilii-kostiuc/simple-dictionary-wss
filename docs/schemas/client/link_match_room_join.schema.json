@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClientLinkMatchRoomJoinPayload",
+  "type": "object",
+  "required": [
+    "link_token"
+  ],
+  "properties": {
+    "link_token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "match_params": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InternalRelaySendPayload",
+  "type": "object",
+  "required": [
+    "identifier",
+    "message"
+  ],
+  "properties": {
+    "identifier": {
+      "type": "string"
+    },
+    "message": {
+      "type": "object",
+      "required": [
+        "type",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

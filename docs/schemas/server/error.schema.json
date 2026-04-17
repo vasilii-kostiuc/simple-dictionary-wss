@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerErrorPayload",
+  "type": "object",
+  "required": [
+    "error",
+    "client_payload"
+  ],
+  "properties": {
+    "error": {
+      "$ref": "../common.schema.json#/$defs/errorCode"
+    },
+    "client_payload": {}
+  },
+  "additionalProperties": false
+}

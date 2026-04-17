@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServerMatchSummaryPayload",
+  "description": "WSS requires routable participants and forwards the rest of the summary unchanged.",
+  "type": "object",
+  "required": [
+    "participants"
+  ],
+  "properties": {
+    "participants": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/$defs/routableMatchParticipant"
+      }
+    }
+  },
+  "additionalProperties": true
+}
