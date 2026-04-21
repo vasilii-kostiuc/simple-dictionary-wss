@@ -5,6 +5,7 @@ namespace App\WebSockets\Lifecycle;
 use App\Application\LinkMatchRoom\Actions\DisconnectFromLinkMatchRoomAction;
 use App\Application\MatchMaking\Actions\LeaveMatchMakingAction;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,7 @@ class ConnectionLifecycleService
         private readonly DisconnectFromLinkMatchRoomAction $disconnectFromRoomAction,
         private readonly LeaveMatchMakingAction $leaveMatchMakingAction,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
+        private readonly WsMetrics $metrics,
     ) {
         $this->nodeId = env('WSS_NODE_ID', gethostname());
     }
@@ -52,6 +54,10 @@ class ConnectionLifecycleService
             if ($this->matchMakingQueue->isUserInQueue($identity->getIdentifier())) {
                 $this->leaveMatchMakingAction->execute($identity->getIdentifier());
             }
+        }
+
+        foreach ($channels as $channel) {
+            $this->metrics->unsubscribed($channel);
         }
 
         $this->clientRegistry->forget($conn);

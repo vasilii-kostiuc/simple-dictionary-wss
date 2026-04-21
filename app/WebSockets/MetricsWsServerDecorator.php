@@ -34,10 +34,6 @@ class MetricsWsServerDecorator implements MessageComponentInterface
 
     public function onMessage(ConnectionInterface $conn, MessageInterface $msg): void
     {
-        $payload = json_decode($msg->getPayload(), true);
-        $type = $payload['type'] ?? 'unknown';
-
-        $this->metrics->messageReceived((string) $type);
         $this->inner->onMessage($conn, $msg);
     }
 }

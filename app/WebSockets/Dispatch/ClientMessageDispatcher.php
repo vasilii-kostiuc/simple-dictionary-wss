@@ -2,6 +2,7 @@
 
 namespace App\WebSockets\Dispatch;
 
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Messages\ErrorMessage;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,7 @@ class ClientMessageDispatcher
 
     public function __construct(
         private readonly MessageHandlerFactory $messageHandlerFactory,
+        private readonly WsMetrics $metrics,
     ) {
         $this->nodeId = env('WSS_NODE_ID', gethostname());
     }
@@ -24,12 +26,14 @@ class ClientMessageDispatcher
 
         if ($payload === null) {
             Log::warning('[{node}] Invalid JSON received', ['node' => $this->nodeId, 'conn_id' => $conn->resourceId, 'raw' => $msg->getPayload()]);
+            $this->metrics->invalidJsonReceived();
             $conn->send(new ErrorMessage('invalid_json', $msg->getPayload()));
 
             return;
         }
 
         $type = $payload->type ?? '';
+        $this->metrics->messageReceived((string) $type);
         Log::debug('[{node}] Message received', ['node' => $this->nodeId, 'conn_id' => $conn->resourceId, 'type' => $type]);
 
         $handler = $this->messageHandlerFactory->create($type, $payload);

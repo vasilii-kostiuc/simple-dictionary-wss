@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: wss
+    static_configs:
+      - targets:
+          - wss_app_1:9091
+          - wss_app_2:9091
+          - wss_app_3:9091
+
+  - job_name: redis
+    static_configs:
+      - targets:
+          - redis_exporter:9121

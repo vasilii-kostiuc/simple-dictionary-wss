@@ -25,9 +25,12 @@ services:
       - API_BASE_URI=${API_BASE_URI}
       - WSS_SERVICE_SECRET=${WSS_SERVICE_SECRET}
       - MESSAGING_BROKER=redis
+      - PROMETHEUS_ENABLED=true
+      - PROMETHEUS_HOST=0.0.0.0
+      - PROMETHEUS_PORT=9091
+      - PROMETHEUS_PATH=/metrics
     ports:
       - "8080:8080"
-      - "9091:9091"
     depends_on:
       - mongo
       - redis
@@ -46,6 +49,34 @@ services:
     image: redis:7-alpine
     container_name: wss_redis
     restart: unless-stopped
+    networks:
+      - simple_dictionary_network
+
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: wss_redis_exporter
+    restart: unless-stopped
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - redis
+    expose:
+      - "9121"
+    networks:
+      - simple_dictionary_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: wss_prometheus
+    restart: unless-stopped
+    depends_on:
+      - wss_app
+      - redis_exporter
+    volumes:
+      - ./_docker/prometheus/prometheus.single.yml:/etc/prometheus/prometheus.yml:ro
+    expose:
+      - "9090"
     networks:
       - simple_dictionary_network
 

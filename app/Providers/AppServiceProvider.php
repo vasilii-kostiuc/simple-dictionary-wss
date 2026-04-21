@@ -30,7 +30,7 @@ use GuzzleHttp\Client;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Prometheus\CollectorRegistry;
-use Prometheus\Storage\Redis as PrometheusRedis;
+use Prometheus\Storage\InMemory;
 use Ratchet\WebSocket\MessageComponentInterface;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
@@ -119,18 +119,8 @@ class AppServiceProvider extends ServiceProvider
             return \App::make(\VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory::class)->create();
         });
 
-        $this->app->singleton(PrometheusRedis::class, function () {
-            return new PrometheusRedis([
-                'host' => config('database.redis.default.host', '127.0.0.1'),
-                'port' => (int) config('database.redis.default.port', 6379),
-                'password' => config('database.redis.default.password') ?: null,
-                'timeout' => 0.1,
-                'database' => 1,
-            ]);
-        });
-
-        $this->app->singleton(CollectorRegistry::class, function (Application $app) {
-            return new CollectorRegistry($app->make(PrometheusRedis::class));
+        $this->app->singleton(CollectorRegistry::class, function () {
+            return new CollectorRegistry(new InMemory);
         });
 
         $this->app->singleton(WsMetrics::class);

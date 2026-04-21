@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Application\LinkMatchRoom\Actions\LeaveLinkMatchRoomAction;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Handlers\Client\LinkMatchRoom\LinkMatchRoomLeaveHandler;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
@@ -31,6 +32,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
 
     private SubscriptionsStorageInterface $subscriptionsStorage;
 
+    private WsMetrics $metrics;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -44,11 +47,12 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
         $this->identity = new ClientIdentity(1, 'Alice', 'alice@example.com', null);
         $this->clientRegistry->method('getIdentity')->willReturn($this->identity);
         $this->subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
+        $this->metrics = $this->createMock(WsMetrics::class);
     }
 
     private function handler(): LinkMatchRoomLeaveHandler
     {
-        return new LinkMatchRoomLeaveHandler($this->clientRegistry, $this->leaveAction, $this->sender, $this->subscriptionsStorage);
+        return new LinkMatchRoomLeaveHandler($this->clientRegistry, $this->leaveAction, $this->sender, $this->subscriptionsStorage, $this->metrics);
     }
 
     private function makeRoomMock(string $id, array $participantIdentities = []): \App\Domain\LinkMatchRoom\LinkMatchRoom
@@ -74,6 +78,14 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->with($this->identity, ['link_token' => 'tok_abc'])
             ->willReturn(['room' => $room]);
 
+        $this->subscriptionsStorage->expects($this->once())
+            ->method('unsubscribe')
+            ->with($this->connection, 'link_match_room.tok_abc');
+
+        $this->metrics->expects($this->once())
+            ->method('unsubscribed')
+            ->with('link_match_room.tok_abc');
+
         $this->sender->expects($this->once())
             ->method('sendToConnection')
             ->with($this->connection, $this->callback(function ($msg): bool {
@@ -94,6 +106,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
         $this->leaveAction->expects($this->once())
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('link_not_found'));
+
+        $this->metrics->expects($this->never())->method('unsubscribed');
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')
@@ -117,6 +131,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('link_match_room_not_found'));
 
+        $this->metrics->expects($this->never())->method('unsubscribed');
+
         $this->sender->expects($this->once())
             ->method('sendToConnection')
             ->with($this->connection, $this->callback(function ($msg): bool {
@@ -138,6 +154,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('not_in_room'));
 
+        $this->metrics->expects($this->never())->method('unsubscribed');
+
         $this->sender->expects($this->once())
             ->method('sendToConnection')
             ->with($this->connection, $this->callback(function ($msg): bool {
@@ -158,6 +176,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
         $this->leaveAction->expects($this->once())
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('link_not_found', 'link_token is required'));
+
+        $this->metrics->expects($this->never())->method('unsubscribed');
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')

@@ -3,8 +3,9 @@
 namespace Tests\Unit;
 
 use App\Infrastructure\Metrics\WsMetrics;
-use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
-use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
+use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
+use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
+use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
 use App\WebSockets\Subscription\SubscriptionChannelPolicy;
 use Illuminate\Container\Container;
@@ -13,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
-class UnsubscribeMessageHandlerTest extends TestCase
+class SubscribeMessageHandlerTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -38,36 +39,42 @@ class UnsubscribeMessageHandlerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_allows_unsubscribe_for_match_channel(): void
+    public function test_tracks_metrics_for_valid_subscribe(): void
     {
         $subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
+        $clientRegistry = $this->createMock(ClientRegistryInterface::class);
         $metrics = $this->createMock(WsMetrics::class);
         $connection = $this->createMock(ConnectionInterface::class);
         $message = $this->createMock(MessageInterface::class);
 
         $message->method('getPayload')->willReturn(json_encode([
-            'type' => 'unsubscribe',
+            'type' => 'subscribe',
             'data' => [
-                'channel' => 'match.123',
+                'channel' => 'training.121',
             ],
         ]));
 
         $subscriptionsStorage->expects($this->once())
-            ->method('unsubscribe')
-            ->with($connection, 'match.123');
+            ->method('subscribe')
+            ->with($connection, 'training.121');
 
         $metrics->expects($this->once())
-            ->method('unsubscribed')
-            ->with('match.123');
+            ->method('subscribed')
+            ->with('training.121');
 
         $connection->expects($this->once())
             ->method('send')
             ->with($this->callback(function ($sentMessage): bool {
-                return $sentMessage instanceof UnsubscribeSuccessMessage
-                    && $sentMessage->type === 'unsubscribe_success'
-                    && $sentMessage->data['channel'] === 'match.123';
+                return $sentMessage instanceof SubscribeSuccessMessage
+                    && $sentMessage->type === 'subscribe_success'
+                    && $sentMessage->data['channel'] === 'training.121';
             }));
 
-        (new UnsubscribeMessageHandler($subscriptionsStorage, new SubscriptionChannelPolicy, $metrics))->handle($connection, $message);
+        (new SubscribeMessageHandler(
+            $subscriptionsStorage,
+            $clientRegistry,
+            new SubscriptionChannelPolicy,
+            $metrics,
+        ))->handle($connection, $message);
     }
 }

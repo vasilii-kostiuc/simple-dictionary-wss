@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers\Client\LinkMatchRoom;
 
 use App\Application\LinkMatchRoom\Actions\LeaveLinkMatchRoomAction;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
@@ -20,19 +21,20 @@ class LinkMatchRoomLeaveHandler implements MessageHandlerInterface
         private readonly LeaveLinkMatchRoomAction $leaveAction,
         private readonly WebSocketMessageSenderInterface $sender,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
+        private readonly WsMetrics $metrics,
     ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
         $payload = json_decode($msg->getPayload(), true);
         $identity = $this->clientRegistry->getIdentity($from);
-        $token = $payload['data']['link_token'] ?? null;
 
         try {
             $result = $this->leaveAction->execute($identity, $payload['data'] ?? []);
             $room = $result['room'];
 
             $this->subscriptionsStorage->unsubscribe($from, 'link_match_room.'.$room->getId());
+            $this->metrics->unsubscribed('link_match_room.'.$room->getId());
 
             $this->sender->sendToConnection($from, new MatchRoomChangedMessage($room->getId(), [
                 'participants' => array_map(fn ($p) => $p->toArray(), $room->getParticipantIdentities()),

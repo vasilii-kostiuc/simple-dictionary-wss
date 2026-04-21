@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers\Client\LinkMatchRoom;
 
 use App\Application\LinkMatchRoom\Actions\JoinLinkMatchRoomAction;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
@@ -20,6 +21,7 @@ class LinkMatchRoomJoinHandler implements MessageHandlerInterface
         private readonly JoinLinkMatchRoomAction $joinAction,
         private readonly WebSocketMessageSenderInterface $sender,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
+        private readonly WsMetrics $metrics,
     ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
@@ -32,6 +34,7 @@ class LinkMatchRoomJoinHandler implements MessageHandlerInterface
             $room = $result['room'];
 
             $this->subscriptionsStorage->subscribe($from, 'link_match_room.'.$room->getId());
+            $this->metrics->subscribed('link_match_room.'.$room->getId());
 
             $this->sender->sendToConnection($from, new MatchRoomChangedMessage($room->getId(), [
                 'participants' => array_map(fn ($p) => $p->toArray(), $room->getParticipantIdentities()),

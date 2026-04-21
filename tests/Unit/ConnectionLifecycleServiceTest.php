@@ -6,6 +6,7 @@ use App\Application\LinkMatchRoom\Actions\DisconnectFromLinkMatchRoomAction;
 use App\Application\MatchMaking\Actions\LeaveMatchMakingAction;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Lifecycle\ConnectionLifecycleService;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
@@ -25,6 +26,8 @@ class ConnectionLifecycleServiceTest extends TestCase
     private LeaveMatchMakingAction $leaveMatchMakingAction;
 
     private MatchMakingQueueInterface $matchMakingQueue;
+
+    private WsMetrics $metrics;
 
     protected function setUp(): void
     {
@@ -47,6 +50,7 @@ class ConnectionLifecycleServiceTest extends TestCase
         $this->disconnectFromRoomAction = $this->createMock(DisconnectFromLinkMatchRoomAction::class);
         $this->leaveMatchMakingAction = $this->createMock(LeaveMatchMakingAction::class);
         $this->matchMakingQueue = $this->createMock(MatchMakingQueueInterface::class);
+        $this->metrics = $this->createMock(WsMetrics::class);
     }
 
     protected function tearDown(): void
@@ -65,16 +69,37 @@ class ConnectionLifecycleServiceTest extends TestCase
             $this->disconnectFromRoomAction,
             $this->leaveMatchMakingAction,
             $this->matchMakingQueue,
+            $this->metrics,
         );
+    }
+
+    private function makeConnection(int $resourceId = 42): ConnectionInterface
+    {
+        return new #[\AllowDynamicProperties] class($resourceId) implements ConnectionInterface
+        {
+            public int $resourceId;
+
+            public function __construct(int $resourceId)
+            {
+                $this->resourceId = $resourceId;
+            }
+
+            public function send($data)
+            {
+                return $this;
+            }
+
+            public function close(): void {}
+        };
     }
 
     public function test_on_close_when_no_identity_only_forgets_and_unsubscribes(): void
     {
-        $connection = $this->createMock(ConnectionInterface::class);
-        $connection->resourceId = 42;
+        $connection = $this->makeConnection();
 
         $this->clientRegistry->method('getIdentity')->willReturn(null);
         $this->subscriptions->method('getChannelsByConnection')->willReturn([]);
+        $this->metrics->expects($this->never())->method('unsubscribed');
 
         $this->clientRegistry->expects($this->once())->method('forget')->with($connection);
         $this->subscriptions->expects($this->once())->method('unsubscribeAll')->with($connection);
@@ -86,8 +111,7 @@ class ConnectionLifecycleServiceTest extends TestCase
 
     public function test_on_close_disconnects_from_link_match_room(): void
     {
-        $connection = $this->createMock(ConnectionInterface::class);
-        $connection->resourceId = 42;
+        $connection = $this->makeConnection();
 
         $identity = $this->createMock(ClientIdentity::class);
         $identity->method('getIdentifier')->willReturn('user:1');
@@ -96,6 +120,9 @@ class ConnectionLifecycleServiceTest extends TestCase
         $this->subscriptions->method('getChannelsByConnection')
             ->willReturn(['link_match_room.room-abc']);
         $this->matchMakingQueue->method('isUserInQueue')->willReturn(false);
+        $this->metrics->expects($this->once())
+            ->method('unsubscribed')
+            ->with('link_match_room.room-abc');
 
         $this->disconnectFromRoomAction->expects($this->once())
             ->method('execute')
@@ -107,8 +134,7 @@ class ConnectionLifecycleServiceTest extends TestCase
 
     public function test_on_close_leaves_matchmaking_queue(): void
     {
-        $connection = $this->createMock(ConnectionInterface::class);
-        $connection->resourceId = 42;
+        $connection = $this->makeConnection();
 
         $identity = $this->createMock(ClientIdentity::class);
         $identity->method('getIdentifier')->willReturn('user:1');
@@ -116,6 +142,7 @@ class ConnectionLifecycleServiceTest extends TestCase
         $this->clientRegistry->method('getIdentity')->willReturn($identity);
         $this->subscriptions->method('getChannelsByConnection')->willReturn([]);
         $this->matchMakingQueue->method('isUserInQueue')->with('user:1')->willReturn(true);
+        $this->metrics->expects($this->never())->method('unsubscribed');
 
         $this->leaveMatchMakingAction->expects($this->once())
             ->method('execute')
@@ -126,8 +153,7 @@ class ConnectionLifecycleServiceTest extends TestCase
 
     public function test_on_close_handles_both_cleanup_types(): void
     {
-        $connection = $this->createMock(ConnectionInterface::class);
-        $connection->resourceId = 42;
+        $connection = $this->makeConnection();
 
         $identity = $this->createMock(ClientIdentity::class);
         $identity->method('getIdentifier')->willReturn('user:1');
@@ -136,6 +162,9 @@ class ConnectionLifecycleServiceTest extends TestCase
         $this->subscriptions->method('getChannelsByConnection')
             ->willReturn(['link_match_room.room-xyz', 'other_channel']);
         $this->matchMakingQueue->method('isUserInQueue')->willReturn(true);
+        $this->metrics->expects($this->exactly(2))
+            ->method('unsubscribed')
+            ->with($this->callback(fn (string $channel) => in_array($channel, ['link_match_room.room-xyz', 'other_channel'], true)));
 
         $this->disconnectFromRoomAction->expects($this->once())
             ->method('execute')->with($identity, 'room-xyz');

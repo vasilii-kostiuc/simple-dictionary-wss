@@ -17,12 +17,16 @@ class MetricsHttpServer
         private readonly LoopInterface $loop,
     ) {}
 
-    public function start(string $address = '0.0.0.0:9091'): void
+    public function start(string $address = '0.0.0.0:9091', string $path = '/metrics'): void
     {
         $renderer = new RenderTextFormat;
         $registry = $this->registry;
 
-        $http = new HttpServer(function (ServerRequestInterface $request) use ($registry, $renderer): Response {
+        $http = new HttpServer(function (ServerRequestInterface $request) use ($registry, $renderer, $path): Response {
+            if ($request->getMethod() !== 'GET' || $request->getUri()->getPath() !== $path) {
+                return new Response(404, ['Content-Type' => 'text/plain; charset=utf-8'], 'Not Found');
+            }
+
             return new Response(
                 200,
                 ['Content-Type' => RenderTextFormat::MIME_TYPE],

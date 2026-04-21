@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Dispatch\ClientMessageDispatcher;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
@@ -23,6 +24,8 @@ class ClientMessageDispatcherTest extends TestCase
         {
             public function info(...$args): void {}
 
+            public function debug(...$args): void {}
+
             public function warning(...$args): void {}
 
             public function error(...$args): void {}
@@ -41,17 +44,41 @@ class ClientMessageDispatcherTest extends TestCase
         parent::tearDown();
     }
 
+    private function makeConnection(): ConnectionInterface
+    {
+        return new #[\AllowDynamicProperties] class implements ConnectionInterface
+        {
+            public int $resourceId = 42;
+
+            public array $sent = [];
+
+            public function send($data)
+            {
+                $this->sent[] = $data;
+
+                return $this;
+            }
+
+            public function close(): void {}
+        };
+    }
+
     public function test_dispatches_valid_client_message_to_resolved_handler(): void
     {
-        $connection = $this->createMock(ConnectionInterface::class);
+        $connection = $this->makeConnection();
         $message = $this->createMock(MessageInterface::class);
         $handler = $this->createMock(MessageHandlerInterface::class);
         $factory = $this->createMock(MessageHandlerFactory::class);
+        $metrics = $this->createMock(WsMetrics::class);
 
         $message->method('getPayload')->willReturn(json_encode([
             'type' => 'subscribe',
             'data' => ['channel' => 'training.121'],
         ]));
+
+        $metrics->expects($this->once())
+            ->method('messageReceived')
+            ->with('subscribe');
 
         $factory->expects($this->once())
             ->method('create')
@@ -62,29 +89,33 @@ class ClientMessageDispatcherTest extends TestCase
             ->method('handle')
             ->with($connection, $message);
 
-        $connection->expects($this->never())->method('send');
+        (new ClientMessageDispatcher($factory, $metrics))->dispatch($connection, $message);
 
-        (new ClientMessageDispatcher($factory))->dispatch($connection, $message);
+        $this->assertSame([], $connection->sent);
     }
 
     public function test_sends_error_message_for_invalid_json_payload(): void
     {
-        $connection = $this->createMock(ConnectionInterface::class);
+        $connection = $this->makeConnection();
         $message = $this->createMock(MessageInterface::class);
         $factory = $this->createMock(MessageHandlerFactory::class);
+        $metrics = $this->createMock(WsMetrics::class);
 
         $message->method('getPayload')->willReturn('{invalid-json');
 
+        $metrics->expects($this->once())
+            ->method('invalidJsonReceived');
+
+        $metrics->expects($this->never())
+            ->method('messageReceived');
+
         $factory->expects($this->never())->method('create');
 
-        $connection->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function ($sentMessage): bool {
-                return $sentMessage instanceof ErrorMessage
-                    && $sentMessage->type === 'error'
-                    && $sentMessage->data['error'] === 'invalid_json';
-            }));
+        (new ClientMessageDispatcher($factory, $metrics))->dispatch($connection, $message);
 
-        (new ClientMessageDispatcher($factory))->dispatch($connection, $message);
+        $this->assertCount(1, $connection->sent);
+        $this->assertInstanceOf(ErrorMessage::class, $connection->sent[0]);
+        $this->assertSame('error', $connection->sent[0]->type);
+        $this->assertSame('invalid_json', $connection->sent[0]->data['error']);
     }
 }
