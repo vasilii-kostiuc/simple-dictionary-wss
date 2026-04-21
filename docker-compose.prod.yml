@@ -4,7 +4,7 @@ services:
     container_name: wss_app
     restart: unless-stopped
     working_dir: /var/www/html
-    command: ["php", "artisan", "websocket:serve"]
+    command: [ "php", "artisan", "websocket:serve" ]
     volumes:
       - wss_code:/var/www/html
       - storage_data:/var/www/html/storage
@@ -47,11 +47,26 @@ services:
     restart: unless-stopped
     networks:
       - simple_dictionary_network
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: wss_redisinsight
+    restart: unless-stopped
+    depends_on:
+      - redis
+    volumes:
+      - redisinsight_data:/data
+    ports:
+      - "5540:5540"
+    networks:
+      - simple_dictionary_network
 volumes:
   wss_code:
   storage_data:
   cache_data:
   mongo_data:
+  redisinsight_data:
+
 
 networks:
   simple_dictionary_network:

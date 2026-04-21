@@ -19,7 +19,7 @@ services:
       - mongo
     ports:
       - "8080:8080"
-    command: ["tail", "-f", "/dev/null"]
+    command: [ "tail", "-f", "/dev/null" ]
 
   redis:
     image: redis:alpine
@@ -28,6 +28,18 @@ services:
       - simple_dictionary_network
     ports:
       - "6379:6379"
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: wss_redisinsight
+    depends_on:
+      - redis
+    volumes:
+      - redisinsight_data:/data
+    ports:
+      - "5540:5540"
+    networks:
+      - simple_dictionary_network
 
   mongo:
     image: mongo:8.0.15
@@ -53,3 +65,6 @@ services:
       - "8081:8081"
     networks:
       - simple_dictionary_network
+
+volumes:
+  redisinsight_data:

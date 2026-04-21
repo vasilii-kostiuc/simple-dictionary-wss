@@ -118,6 +118,18 @@ services:
     networks:
       - simple_dictionary_network
 
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: wss_redisinsight
+    depends_on:
+      - redis
+    volumes:
+      - redisinsight_data:/data
+    ports:
+      - "5540:5540"
+    networks:
+      - simple_dictionary_network
+
   mongo:
     image: mongo:8.0.15
     container_name: wss_mongo
@@ -142,3 +154,6 @@ services:
       - "8081:8081"
     networks:
       - simple_dictionary_network
+
+volumes:
+  redisinsight_data:
