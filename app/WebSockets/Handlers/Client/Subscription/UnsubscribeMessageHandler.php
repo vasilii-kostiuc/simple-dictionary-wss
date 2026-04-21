@@ -26,19 +26,26 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
         $channel = $data['channel'] ?? '';
 
         if (empty($channel)) {
+            $this->metrics->subscriptionAttempted('other', 'unsubscribe', 'invalid');
             $from->send(new ErrorMessage('channel_is_required', $payload));
 
             return;
         }
 
         if (! $this->subscriptionChannelPolicy->canUnsubscribe($channel)) {
+            $this->metrics->subscriptionAttempted($channel, 'unsubscribe', 'denied');
             $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
 
             return;
         }
 
-        $this->subscriptionsStorage->unsubscribe($from, $channel);
-        $this->metrics->unsubscribed($channel);
+        $changed = $this->subscriptionsStorage->unsubscribe($from, $channel);
+        $this->metrics->subscriptionAttempted($channel, 'unsubscribe', $changed ? 'success' : 'noop');
+
+        if ($changed) {
+            $this->metrics->activeSubscriptionRemoved($channel);
+        }
+
         $from->send(new UnsubscribeSuccessMessage($channel));
     }
 }

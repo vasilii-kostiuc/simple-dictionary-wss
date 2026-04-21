@@ -6,9 +6,9 @@ use Ratchet\ConnectionInterface;
 
 interface SubscriptionsStorageInterface
 {
-    public function subscribe(ConnectionInterface $conn, string $channel);
+    public function subscribe(ConnectionInterface $conn, string $channel): bool;
 
-    public function unsubscribe(ConnectionInterface $conn, string $channel);
+    public function unsubscribe(ConnectionInterface $conn, string $channel): bool;
 
     public function unsubscribeAll(ConnectionInterface $conn): void;
 

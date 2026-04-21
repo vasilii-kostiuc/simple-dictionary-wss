@@ -28,19 +28,26 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         $channel = $data['channel'] ?? '';
 
         if (empty($channel)) {
+            $this->metrics->subscriptionAttempted('other', 'subscribe', 'invalid');
             $from->send(new ErrorMessage('channel_is_required', $payload));
 
             return;
         }
 
         if (! $this->subscriptionChannelPolicy->canSubscribe($channel)) {
+            $this->metrics->subscriptionAttempted($channel, 'subscribe', 'denied');
             $from->send(new ErrorMessage('channel_is_not_allowed', $payload));
 
             return;
         }
 
-        $this->subscriptionsStorage->subscribe($from, $channel);
-        $this->metrics->subscribed($channel);
+        $changed = $this->subscriptionsStorage->subscribe($from, $channel);
+        $this->metrics->subscriptionAttempted($channel, 'subscribe', $changed ? 'success' : 'noop');
+
+        if ($changed) {
+            $this->metrics->activeSubscriptionAdded($channel);
+        }
+
         $from->send(new SubscribeSuccessMessage($channel));
     }
 }

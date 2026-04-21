@@ -34,9 +34,12 @@ class WsMetricsTest extends TestCase
         $registry = new CollectorRegistry(new InMemory);
         $metrics = new WsMetrics($registry);
 
-        $metrics->subscribed('training.121');
-        $metrics->subscribed('link_match_room.room-123');
-        $metrics->unsubscribed('matchmaking.queue');
+        $metrics->subscriptionAttempted('training.121', 'subscribe', 'success');
+        $metrics->activeSubscriptionAdded('training.121');
+        $metrics->subscriptionAttempted('link_match_room.room-123', 'subscribe', 'success');
+        $metrics->activeSubscriptionAdded('link_match_room.room-123');
+        $metrics->subscriptionAttempted('matchmaking.queue', 'unsubscribe', 'success');
+        $metrics->activeSubscriptionRemoved('matchmaking.queue');
 
         $rendered = (new RenderTextFormat)->render($registry->getMetricFamilySamples());
 
@@ -45,6 +48,8 @@ class WsMetricsTest extends TestCase
         $this->assertStringContainsString('channel_group="matchmaking_queue"', $rendered);
         $this->assertStringContainsString('action="subscribe"', $rendered);
         $this->assertStringContainsString('action="unsubscribe"', $rendered);
+        $this->assertStringContainsString('result="success"', $rendered);
+        $this->assertStringContainsString('wss_subscription_attempts_total', $rendered);
         $this->assertStringContainsString('wss_subscriptions_active', $rendered);
     }
 }

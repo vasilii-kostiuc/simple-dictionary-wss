@@ -54,10 +54,15 @@ class UnsubscribeMessageHandlerTest extends TestCase
 
         $subscriptionsStorage->expects($this->once())
             ->method('unsubscribe')
-            ->with($connection, 'match.123');
+            ->with($connection, 'match.123')
+            ->willReturn(true);
 
         $metrics->expects($this->once())
-            ->method('unsubscribed')
+            ->method('subscriptionAttempted')
+            ->with('match.123', 'unsubscribe', 'success');
+
+        $metrics->expects($this->once())
+            ->method('activeSubscriptionRemoved')
             ->with('match.123');
 
         $connection->expects($this->once())

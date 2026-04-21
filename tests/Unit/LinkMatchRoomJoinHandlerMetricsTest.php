@@ -45,10 +45,15 @@ class LinkMatchRoomJoinHandlerMetricsTest extends TestCase
 
         $subscriptionsStorage->expects($this->once())
             ->method('subscribe')
-            ->with($connection, 'link_match_room.room-1');
+            ->with($connection, 'link_match_room.room-1')
+            ->willReturn(true);
 
         $metrics->expects($this->once())
-            ->method('subscribed')
+            ->method('subscriptionAttempted')
+            ->with('link_match_room.room-1', 'subscribe', 'success');
+
+        $metrics->expects($this->once())
+            ->method('activeSubscriptionAdded')
             ->with('link_match_room.room-1');
 
         $sender->expects($this->once())

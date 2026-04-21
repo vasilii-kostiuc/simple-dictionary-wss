@@ -99,7 +99,7 @@ class ConnectionLifecycleServiceTest extends TestCase
 
         $this->clientRegistry->method('getIdentity')->willReturn(null);
         $this->subscriptions->method('getChannelsByConnection')->willReturn([]);
-        $this->metrics->expects($this->never())->method('unsubscribed');
+        $this->metrics->expects($this->never())->method('activeSubscriptionRemoved');
 
         $this->clientRegistry->expects($this->once())->method('forget')->with($connection);
         $this->subscriptions->expects($this->once())->method('unsubscribeAll')->with($connection);
@@ -121,7 +121,7 @@ class ConnectionLifecycleServiceTest extends TestCase
             ->willReturn(['link_match_room.room-abc']);
         $this->matchMakingQueue->method('isUserInQueue')->willReturn(false);
         $this->metrics->expects($this->once())
-            ->method('unsubscribed')
+            ->method('activeSubscriptionRemoved')
             ->with('link_match_room.room-abc');
 
         $this->disconnectFromRoomAction->expects($this->once())
@@ -142,7 +142,7 @@ class ConnectionLifecycleServiceTest extends TestCase
         $this->clientRegistry->method('getIdentity')->willReturn($identity);
         $this->subscriptions->method('getChannelsByConnection')->willReturn([]);
         $this->matchMakingQueue->method('isUserInQueue')->with('user:1')->willReturn(true);
-        $this->metrics->expects($this->never())->method('unsubscribed');
+        $this->metrics->expects($this->never())->method('activeSubscriptionRemoved');
 
         $this->leaveMatchMakingAction->expects($this->once())
             ->method('execute')
@@ -163,7 +163,7 @@ class ConnectionLifecycleServiceTest extends TestCase
             ->willReturn(['link_match_room.room-xyz', 'other_channel']);
         $this->matchMakingQueue->method('isUserInQueue')->willReturn(true);
         $this->metrics->expects($this->exactly(2))
-            ->method('unsubscribed')
+            ->method('activeSubscriptionRemoved')
             ->with($this->callback(fn (string $channel) => in_array($channel, ['link_match_room.room-xyz', 'other_channel'], true)));
 
         $this->disconnectFromRoomAction->expects($this->once())

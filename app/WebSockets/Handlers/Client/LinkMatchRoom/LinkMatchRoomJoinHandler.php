@@ -33,8 +33,13 @@ class LinkMatchRoomJoinHandler implements MessageHandlerInterface
             $result = $this->joinAction->execute($identity, $payload['data'] ?? []);
             $room = $result['room'];
 
-            $this->subscriptionsStorage->subscribe($from, 'link_match_room.'.$room->getId());
-            $this->metrics->subscribed('link_match_room.'.$room->getId());
+            $channel = 'link_match_room.'.$room->getId();
+            $changed = $this->subscriptionsStorage->subscribe($from, $channel);
+            $this->metrics->subscriptionAttempted($channel, 'subscribe', $changed ? 'success' : 'noop');
+
+            if ($changed) {
+                $this->metrics->activeSubscriptionAdded($channel);
+            }
 
             $this->sender->sendToConnection($from, new MatchRoomChangedMessage($room->getId(), [
                 'participants' => array_map(fn ($p) => $p->toArray(), $room->getParticipantIdentities()),

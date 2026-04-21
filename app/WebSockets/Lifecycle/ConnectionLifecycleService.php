@@ -57,7 +57,7 @@ class ConnectionLifecycleService
         }
 
         foreach ($channels as $channel) {
-            $this->metrics->unsubscribed($channel);
+            $this->metrics->activeSubscriptionRemoved($channel);
         }
 
         $this->clientRegistry->forget($conn);

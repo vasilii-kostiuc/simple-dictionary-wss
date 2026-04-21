@@ -33,8 +33,13 @@ class LinkMatchRoomLeaveHandler implements MessageHandlerInterface
             $result = $this->leaveAction->execute($identity, $payload['data'] ?? []);
             $room = $result['room'];
 
-            $this->subscriptionsStorage->unsubscribe($from, 'link_match_room.'.$room->getId());
-            $this->metrics->unsubscribed('link_match_room.'.$room->getId());
+            $channel = 'link_match_room.'.$room->getId();
+            $changed = $this->subscriptionsStorage->unsubscribe($from, $channel);
+            $this->metrics->subscriptionAttempted($channel, 'unsubscribe', $changed ? 'success' : 'noop');
+
+            if ($changed) {
+                $this->metrics->activeSubscriptionRemoved($channel);
+            }
 
             $this->sender->sendToConnection($from, new MatchRoomChangedMessage($room->getId(), [
                 'participants' => array_map(fn ($p) => $p->toArray(), $room->getParticipantIdentities()),

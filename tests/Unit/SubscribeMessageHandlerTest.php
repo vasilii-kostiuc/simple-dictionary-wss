@@ -56,10 +56,15 @@ class SubscribeMessageHandlerTest extends TestCase
 
         $subscriptionsStorage->expects($this->once())
             ->method('subscribe')
-            ->with($connection, 'training.121');
+            ->with($connection, 'training.121')
+            ->willReturn(true);
 
         $metrics->expects($this->once())
-            ->method('subscribed')
+            ->method('subscriptionAttempted')
+            ->with('training.121', 'subscribe', 'success');
+
+        $metrics->expects($this->once())
+            ->method('activeSubscriptionAdded')
             ->with('training.121');
 
         $connection->expects($this->once())

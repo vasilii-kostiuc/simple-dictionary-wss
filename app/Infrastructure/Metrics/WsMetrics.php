@@ -20,7 +20,7 @@ class WsMetrics
 
     private Counter $errorsTotal;
 
-    private Counter $subscriptionsTotal;
+    private Counter $subscriptionAttemptsTotal;
 
     private Gauge $subscriptionsActive;
 
@@ -55,8 +55,8 @@ class WsMetrics
             $ns, 'errors_total', 'Total WebSocket errors', ['node'],
         );
 
-        $this->subscriptionsTotal = $registry->getOrRegisterCounter(
-            $ns, 'subscriptions_total', 'Total channel subscription actions', ['node', 'channel_group', 'action'],
+        $this->subscriptionAttemptsTotal = $registry->getOrRegisterCounter(
+            $ns, 'subscription_attempts_total', 'Total channel subscription attempts', ['node', 'channel_group', 'action', 'result'],
         );
 
         $this->subscriptionsActive = $registry->getOrRegisterGauge(
@@ -93,19 +93,24 @@ class WsMetrics
         $this->errorsTotal->inc([$this->nodeId]);
     }
 
-    public function subscribed(string $channel): void
+    public function subscriptionAttempted(string $channel, string $action, string $result): void
     {
         $channelGroup = $this->normalizeChannelGroup($channel);
 
-        $this->subscriptionsTotal->inc([$this->nodeId, $channelGroup, 'subscribe']);
+        $this->subscriptionAttemptsTotal->inc([$this->nodeId, $channelGroup, $action, $result]);
+    }
+
+    public function activeSubscriptionAdded(string $channel): void
+    {
+        $channelGroup = $this->normalizeChannelGroup($channel);
+
         $this->subscriptionsActive->inc([$this->nodeId, $channelGroup]);
     }
 
-    public function unsubscribed(string $channel): void
+    public function activeSubscriptionRemoved(string $channel): void
     {
         $channelGroup = $this->normalizeChannelGroup($channel);
 
-        $this->subscriptionsTotal->inc([$this->nodeId, $channelGroup, 'unsubscribe']);
         $this->subscriptionsActive->dec([$this->nodeId, $channelGroup]);
     }
 

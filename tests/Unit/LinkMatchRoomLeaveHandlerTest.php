@@ -80,10 +80,15 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
 
         $this->subscriptionsStorage->expects($this->once())
             ->method('unsubscribe')
-            ->with($this->connection, 'link_match_room.tok_abc');
+            ->with($this->connection, 'link_match_room.tok_abc')
+            ->willReturn(true);
 
         $this->metrics->expects($this->once())
-            ->method('unsubscribed')
+            ->method('subscriptionAttempted')
+            ->with('link_match_room.tok_abc', 'unsubscribe', 'success');
+
+        $this->metrics->expects($this->once())
+            ->method('activeSubscriptionRemoved')
             ->with('link_match_room.tok_abc');
 
         $this->sender->expects($this->once())
@@ -107,7 +112,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('link_not_found'));
 
-        $this->metrics->expects($this->never())->method('unsubscribed');
+        $this->metrics->expects($this->never())->method('subscriptionAttempted');
+        $this->metrics->expects($this->never())->method('activeSubscriptionRemoved');
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')
@@ -131,7 +137,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('link_match_room_not_found'));
 
-        $this->metrics->expects($this->never())->method('unsubscribed');
+        $this->metrics->expects($this->never())->method('subscriptionAttempted');
+        $this->metrics->expects($this->never())->method('activeSubscriptionRemoved');
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')
@@ -154,7 +161,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('not_in_room'));
 
-        $this->metrics->expects($this->never())->method('unsubscribed');
+        $this->metrics->expects($this->never())->method('subscriptionAttempted');
+        $this->metrics->expects($this->never())->method('activeSubscriptionRemoved');
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')
@@ -177,7 +185,8 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
             ->method('execute')
             ->willThrowException(new LinkMatchRoomException('link_not_found', 'link_token is required'));
 
-        $this->metrics->expects($this->never())->method('unsubscribed');
+        $this->metrics->expects($this->never())->method('subscriptionAttempted');
+        $this->metrics->expects($this->never())->method('activeSubscriptionRemoved');
 
         $this->sender->expects($this->once())
             ->method('sendToConnection')

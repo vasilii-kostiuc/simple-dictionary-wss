@@ -10,16 +10,22 @@ class SubscriptionsStorage implements SubscriptionsStorageInterface
 
     protected array $connectionChannels = []; // [connId => [channel1, channel2, ...]]
 
-    public function subscribe(ConnectionInterface $conn, string $channel)
+    public function subscribe(ConnectionInterface $conn, string $channel): bool
     {
         $connId = $conn->resourceId;
+        $alreadySubscribed = isset($this->connectionChannels[$connId][$channel]);
+
         $this->channelSubscribers[$channel][$connId] = $conn;
         $this->connectionChannels[$connId][$channel] = true;
+
+        return ! $alreadySubscribed;
     }
 
-    public function unsubscribe(ConnectionInterface $conn, string $channel)
+    public function unsubscribe(ConnectionInterface $conn, string $channel): bool
     {
         $connId = $conn->resourceId;
+        $wasSubscribed = isset($this->connectionChannels[$connId][$channel]);
+
         unset($this->channelSubscribers[$channel][$connId]);
         unset($this->connectionChannels[$connId][$channel]);
 
@@ -30,6 +36,8 @@ class SubscriptionsStorage implements SubscriptionsStorageInterface
         if (empty($this->connectionChannels[$connId])) {
             unset($this->connectionChannels[$connId]);
         }
+
+        return $wasSubscribed;
     }
 
     public function unsubscribeAll(ConnectionInterface $conn): void
