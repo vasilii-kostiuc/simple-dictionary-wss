@@ -4,6 +4,7 @@ namespace App\WebSockets;
 
 use App\WebSockets\Broker\BrokerSubscriptionsBootstrapper;
 use App\WebSockets\Timers\PeriodicTimerScheduler;
+use Ratchet\WebSocket\MessageComponentInterface;
 use React\EventLoop\LoopInterface;
 use React\Socket\SocketServer;
 use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
@@ -13,7 +14,7 @@ class TrainingWsRuntime
     private bool $bootstrapped = false;
 
     public function __construct(
-        private readonly TrainingWsServer $trainingWsServer,
+        private readonly MessageComponentInterface $trainingWsServer,
         private readonly BrokerSubscriptionsBootstrapper $brokerSubscriptionsBootstrapper,
         private readonly PeriodicTimerScheduler $periodicTimerScheduler,
         private readonly MessageBrokerFactory $messageBrokerFactory,

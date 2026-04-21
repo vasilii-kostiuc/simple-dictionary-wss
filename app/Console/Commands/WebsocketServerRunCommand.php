@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\WebSockets\MetricsHttpServer;
 use App\WebSockets\TrainingWsRuntime;
 use Illuminate\Console\Command;
 
@@ -9,6 +10,7 @@ class WebsocketServerRunCommand extends Command
 {
     public function __construct(
         private readonly TrainingWsRuntime $trainingWsRuntime,
+        private readonly MetricsHttpServer $metricsHttpServer,
     ) {
         parent::__construct();
     }
@@ -35,6 +37,7 @@ class WebsocketServerRunCommand extends Command
         $nodeId = env('WSS_NODE_ID', gethostname());
         $this->info("[{$nodeId}] WebSocket server starting on 0.0.0.0:8080");
 
+        $this->metricsHttpServer->start();
         $this->trainingWsRuntime->run();
 
         return self::SUCCESS;

@@ -2,6 +2,7 @@
 
 namespace App\WebSockets\Handlers\Client\Subscription;
 
+use App\Infrastructure\Metrics\WsMetrics;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
@@ -17,8 +18,8 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
         protected readonly ClientRegistryInterface $clientRegistry,
         protected readonly SubscriptionChannelPolicy $subscriptionChannelPolicy,
-    ) {
-    }
+        protected readonly WsMetrics $metrics,
+    ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void
     {
@@ -39,6 +40,7 @@ class SubscribeMessageHandler implements MessageHandlerInterface
         }
 
         $this->subscriptionsStorage->subscribe($from, $channel);
+        $this->metrics->subscribed($channel);
 
         $from->send(new SubscribeSuccessMessage($channel));
     }
