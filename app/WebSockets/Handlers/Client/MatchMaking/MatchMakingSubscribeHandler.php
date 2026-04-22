@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Client\MatchMaking;
 
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Messages\MatchMaking\MatchMakingQueueUpdatedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
@@ -18,10 +19,11 @@ class MatchMakingSubscribeHandler extends SubscribeMessageHandler
         SubscriptionsStorageInterface $subscriptionsStorage,
         ClientRegistryInterface $clientRegistry,
         SubscriptionChannelPolicy $subscriptionChannelPolicy,
+        WsMetricsInterface $metrics,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly WebSocketMessageSenderInterface $sender,
     ) {
-        parent::__construct($subscriptionsStorage, $clientRegistry, $subscriptionChannelPolicy);
+        parent::__construct($subscriptionsStorage, $clientRegistry, $subscriptionChannelPolicy, $metrics);
     }
 
     public function handle(ConnectionInterface $conn, MessageInterface $message): void
