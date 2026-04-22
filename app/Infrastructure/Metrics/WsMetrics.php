@@ -6,7 +6,7 @@ use Prometheus\CollectorRegistry;
 use Prometheus\Counter;
 use Prometheus\Gauge;
 
-class WsMetrics
+class WsMetrics implements WsMetricsInterface
 {
     private Counter $connectionsOpenedTotal;
 

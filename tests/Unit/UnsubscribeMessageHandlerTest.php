@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\Subscription\UnsubscribeMessageHandler;
 use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
@@ -41,7 +41,7 @@ class UnsubscribeMessageHandlerTest extends TestCase
     public function test_allows_unsubscribe_for_match_channel(): void
     {
         $subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
-        $metrics = $this->createMock(WsMetrics::class);
+        $metrics = $this->createMock(WsMetricsInterface::class);
         $connection = $this->createMock(ConnectionInterface::class);
         $message = $this->createMock(MessageInterface::class);
 

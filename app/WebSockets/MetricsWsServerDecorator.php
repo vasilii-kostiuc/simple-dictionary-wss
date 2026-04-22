@@ -2,7 +2,7 @@
 
 namespace App\WebSockets;
 
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
@@ -11,7 +11,7 @@ class MetricsWsServerDecorator implements MessageComponentInterface
 {
     public function __construct(
         private readonly MessageComponentInterface $inner,
-        private readonly WsMetrics $metrics,
+        private readonly WsMetricsInterface $metrics,
     ) {}
 
     public function onOpen(ConnectionInterface $conn): void

@@ -4,7 +4,7 @@ namespace App\WebSockets\Handlers\Client\LinkMatchRoom;
 
 use App\Application\LinkMatchRoom\Actions\LeaveLinkMatchRoomAction;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
@@ -21,7 +21,7 @@ class LinkMatchRoomLeaveHandler implements MessageHandlerInterface
         private readonly LeaveLinkMatchRoomAction $leaveAction,
         private readonly WebSocketMessageSenderInterface $sender,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
-        private readonly WsMetrics $metrics,
+        private readonly WsMetricsInterface $metrics,
     ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void

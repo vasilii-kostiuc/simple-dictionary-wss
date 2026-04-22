@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Dispatch\ClientMessageDispatcher;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
@@ -69,7 +69,7 @@ class ClientMessageDispatcherTest extends TestCase
         $message = $this->createMock(MessageInterface::class);
         $handler = $this->createMock(MessageHandlerInterface::class);
         $factory = $this->createMock(MessageHandlerFactory::class);
-        $metrics = $this->createMock(WsMetrics::class);
+        $metrics = $this->createMock(WsMetricsInterface::class);
 
         $message->method('getPayload')->willReturn(json_encode([
             'type' => 'subscribe',
@@ -99,7 +99,7 @@ class ClientMessageDispatcherTest extends TestCase
         $connection = $this->makeConnection();
         $message = $this->createMock(MessageInterface::class);
         $factory = $this->createMock(MessageHandlerFactory::class);
-        $metrics = $this->createMock(WsMetrics::class);
+        $metrics = $this->createMock(WsMetricsInterface::class);
 
         $message->method('getPayload')->willReturn('{invalid-json');
 

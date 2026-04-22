@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Handlers\Client\Subscription;
 
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\Subscription\UnsubscribeSuccessMessage;
@@ -16,7 +16,7 @@ class UnsubscribeMessageHandler implements MessageHandlerInterface
     public function __construct(
         protected readonly SubscriptionsStorageInterface $subscriptionsStorage,
         protected readonly SubscriptionChannelPolicy $subscriptionChannelPolicy,
-        protected readonly WsMetrics $metrics,
+        protected readonly WsMetricsInterface $metrics,
     ) {}
 
     public function handle(ConnectionInterface $from, MessageInterface $msg): void

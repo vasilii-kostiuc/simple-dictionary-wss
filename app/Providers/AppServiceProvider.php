@@ -14,7 +14,9 @@ use App\Infrastructure\Identity\RandomGuestIdentityFactory;
 use App\Infrastructure\Identity\SimpleDictionaryApiUserIdentityResolver;
 use App\Infrastructure\LinkMatchRoom\RedisLinkMatchRoomRepository;
 use App\Infrastructure\MatchMaking\RedisMatchMakingQueue;
+use App\Infrastructure\Metrics\NullWsMetrics;
 use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\Infrastructure\Shared\LaravelEventDispatcher;
 use App\WebSockets\MetricsWsServerDecorator;
 use App\WebSockets\Sender\WebSocketMessageSender;
@@ -123,12 +125,18 @@ class AppServiceProvider extends ServiceProvider
             return new CollectorRegistry(new InMemory);
         });
 
-        $this->app->singleton(WsMetrics::class);
+        $this->app->singleton(WsMetricsInterface::class, function (Application $app) {
+            if (! config('metrics.enabled', true)) {
+                return new NullWsMetrics;
+            }
+
+            return new WsMetrics($app->make(CollectorRegistry::class));
+        });
 
         $this->app->singleton(MessageComponentInterface::class, function (Application $app) {
             return new MetricsWsServerDecorator(
                 $app->make(TrainingWsServer::class),
-                $app->make(WsMetrics::class),
+                $app->make(WsMetricsInterface::class),
             );
         });
 

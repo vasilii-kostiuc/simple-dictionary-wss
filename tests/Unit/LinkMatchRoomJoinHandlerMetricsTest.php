@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use App\Application\LinkMatchRoom\Actions\JoinLinkMatchRoomAction;
 use App\Domain\Shared\Identity\ClientIdentity;
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\LinkMatchRoom\LinkMatchRoomJoinHandler;
 use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
@@ -24,7 +24,7 @@ class LinkMatchRoomJoinHandlerMetricsTest extends TestCase
         $joinAction = $this->createMock(JoinLinkMatchRoomAction::class);
         $sender = $this->createMock(WebSocketMessageSenderInterface::class);
         $subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
-        $metrics = $this->createMock(WsMetrics::class);
+        $metrics = $this->createMock(WsMetricsInterface::class);
 
         $identity = new ClientIdentity(1, 'Alice', 'alice@example.com', null);
         $room = $this->createMock(\App\Domain\LinkMatchRoom\LinkMatchRoom::class);

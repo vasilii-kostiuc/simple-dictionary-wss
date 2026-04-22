@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\Subscription\SubscribeMessageHandler;
 use App\WebSockets\Messages\Subscription\SubscribeSuccessMessage;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
@@ -43,7 +43,7 @@ class SubscribeMessageHandlerTest extends TestCase
     {
         $subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
         $clientRegistry = $this->createMock(ClientRegistryInterface::class);
-        $metrics = $this->createMock(WsMetrics::class);
+        $metrics = $this->createMock(WsMetricsInterface::class);
         $connection = $this->createMock(ConnectionInterface::class);
         $message = $this->createMock(MessageInterface::class);
 

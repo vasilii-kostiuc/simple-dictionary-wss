@@ -6,7 +6,7 @@ use App\Application\LinkMatchRoom\Actions\DisconnectFromLinkMatchRoomAction;
 use App\Application\MatchMaking\Actions\LeaveMatchMakingAction;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Lifecycle\ConnectionLifecycleService;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
@@ -27,7 +27,7 @@ class ConnectionLifecycleServiceTest extends TestCase
 
     private MatchMakingQueueInterface $matchMakingQueue;
 
-    private WsMetrics $metrics;
+    private WsMetricsInterface $metrics;
 
     protected function setUp(): void
     {
@@ -50,7 +50,7 @@ class ConnectionLifecycleServiceTest extends TestCase
         $this->disconnectFromRoomAction = $this->createMock(DisconnectFromLinkMatchRoomAction::class);
         $this->leaveMatchMakingAction = $this->createMock(LeaveMatchMakingAction::class);
         $this->matchMakingQueue = $this->createMock(MatchMakingQueueInterface::class);
-        $this->metrics = $this->createMock(WsMetrics::class);
+        $this->metrics = $this->createMock(WsMetricsInterface::class);
     }
 
     protected function tearDown(): void

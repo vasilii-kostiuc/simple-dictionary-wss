@@ -2,7 +2,7 @@
 
 namespace App\WebSockets\Dispatch;
 
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
 use App\WebSockets\Messages\ErrorMessage;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +15,7 @@ class ClientMessageDispatcher
 
     public function __construct(
         private readonly MessageHandlerFactory $messageHandlerFactory,
-        private readonly WsMetrics $metrics,
+        private readonly WsMetricsInterface $metrics,
     ) {
         $this->nodeId = env('WSS_NODE_ID', gethostname());
     }

@@ -5,7 +5,7 @@ namespace Tests\Unit;
 use App\Application\LinkMatchRoom\Actions\LeaveLinkMatchRoomAction;
 use App\Application\LinkMatchRoom\Exceptions\LinkMatchRoomException;
 use App\Domain\Shared\Identity\ClientIdentity;
-use App\Infrastructure\Metrics\WsMetrics;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Handlers\Client\LinkMatchRoom\LinkMatchRoomLeaveHandler;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\MatchRoom\MatchRoomChangedMessage;
@@ -32,7 +32,7 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
 
     private SubscriptionsStorageInterface $subscriptionsStorage;
 
-    private WsMetrics $metrics;
+    private WsMetricsInterface $metrics;
 
     protected function setUp(): void
     {
@@ -47,7 +47,7 @@ class LinkMatchRoomLeaveHandlerTest extends TestCase
         $this->identity = new ClientIdentity(1, 'Alice', 'alice@example.com', null);
         $this->clientRegistry->method('getIdentity')->willReturn($this->identity);
         $this->subscriptionsStorage = $this->createMock(SubscriptionsStorageInterface::class);
-        $this->metrics = $this->createMock(WsMetrics::class);
+        $this->metrics = $this->createMock(WsMetricsInterface::class);
     }
 
     private function handler(): LinkMatchRoomLeaveHandler
