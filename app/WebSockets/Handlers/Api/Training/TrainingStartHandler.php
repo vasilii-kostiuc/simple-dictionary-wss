@@ -6,6 +6,7 @@ use App\Application\Training\Actions\StartTrainingTimerAction;
 use App\Domain\Training\Enums\TrainingCompletionType;
 use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class TrainingStartHandler implements ApiMessageHandlerInterface
 {

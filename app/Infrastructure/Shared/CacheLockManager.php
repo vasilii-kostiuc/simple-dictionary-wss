@@ -18,8 +18,10 @@ class CacheLockManager implements LockManagerInterface
         $ttlSeconds = (int) config('locks.ttl_seconds', 5);
         $waitSeconds = (int) config('locks.wait_seconds', 1);
 
-        return $this->cache
-            ->store($store)
+        /** @var \Illuminate\Contracts\Cache\Repository&\Illuminate\Contracts\Cache\LockProvider $store */
+        $store = $this->cache->store($store);
+
+        return $store
             ->lock($prefix.':'.$key, $ttlSeconds)
             ->block($waitSeconds, $callback);
     }

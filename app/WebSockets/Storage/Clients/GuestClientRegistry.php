@@ -6,7 +6,7 @@ use App\Domain\Shared\Identity\ClientIdentity;
 use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
 use Ratchet\ConnectionInterface;
 
-class GuestClientRegistry implements ClientRegistryInterface, ClientIdentityLookupInterface
+class GuestClientRegistry implements ClientIdentityLookupInterface, ClientRegistryInterface
 {
     private array $clients = [];
 
@@ -20,7 +20,7 @@ class GuestClientRegistry implements ClientRegistryInterface, ClientIdentityLook
 
     public function getIdentifierByConnection(ConnectionInterface $conn): ?string
     {
-        return $this->clients[$conn->resourceId]['identity']?->guestId ?? null;
+        return $this->clients[$conn->resourceId]['identity']->guestId ?? null;
     }
 
     public function getIdentity(ConnectionInterface $conn): ?ClientIdentity

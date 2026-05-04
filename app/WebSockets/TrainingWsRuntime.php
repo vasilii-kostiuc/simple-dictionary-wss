@@ -39,7 +39,7 @@ class TrainingWsRuntime
 
         $this->createIoServer($address);
 
-        $nodeId = env('WSS_NODE_ID', gethostname());
+        $nodeId = config('app.node_id');
         echo "[{$nodeId}] WebSocket server listening on {$address}".PHP_EOL;
 
         $this->loop->run();

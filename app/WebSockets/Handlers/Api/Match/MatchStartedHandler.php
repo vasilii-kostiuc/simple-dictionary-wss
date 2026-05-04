@@ -8,6 +8,7 @@ use App\WebSockets\Handlers\Api\ApiMessageHandlerInterface;
 use App\WebSockets\Messages\Match\MatchStartedMessage;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class MatchStartedHandler implements ApiMessageHandlerInterface
 {

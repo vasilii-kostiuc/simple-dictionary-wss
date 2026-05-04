@@ -24,7 +24,7 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
 
     public function expire(string|int $trainingId): array
     {
-        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
+        $apiUrl = config('services.api.base_uri').'send-to-wss';
 
         Http::post($apiUrl, [
             'channel' => 'api.training',
@@ -40,7 +40,7 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
 
     public function expireMatch(string|int $matchId): array
     {
-        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
+        $apiUrl = config('services.api.base_uri').'send-to-wss';
 
         Http::post($apiUrl, [
             'channel' => 'api.match',

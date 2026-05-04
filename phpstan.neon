@@ -1,0 +1,19 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+
+    level: 5
+
+    ignoreErrors:
+        - '#Access to an undefined property Ratchet\\ConnectionInterface::\$resourceId#'
+        - '#Method Redis::eval\(\) invoked with \d+ parameters#'
+        - '#of method Redis::eval\(\) expects#'
+        - '#of static method Redis::eval\(\) expects#'
+        - '#Static method Redis::set\(\) invoked with \d+ parameters#'
+        - '#of static method Redis::set\(\) expects#'
+        - identifier: property.onlyWritten
+
+    excludePaths:

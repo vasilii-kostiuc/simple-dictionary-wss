@@ -28,8 +28,8 @@ class WsMetrics implements WsMetricsInterface
 
     public function __construct(private readonly CollectorRegistry $registry)
     {
-        $ns = (string) env('PROMETHEUS_NAMESPACE', 'wss');
-        $this->nodeId = (string) env('WSS_NODE_ID', gethostname());
+        $ns = (string) config('metrics.namespace');
+        $this->nodeId = (string) config('app.node_id');
 
         $this->connectionsOpenedTotal = $registry->getOrRegisterCounter(
             $ns, 'connections_opened_total', 'Total WebSocket connections opened', ['node'],

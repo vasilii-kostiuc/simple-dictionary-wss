@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../React-Simple-Dictionary"
+		},
+		{
+			"path": "../simple-dictionary-load-tests"
 		}
 	],
 	"settings": {

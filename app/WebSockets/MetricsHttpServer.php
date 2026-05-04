@@ -36,7 +36,7 @@ class MetricsHttpServer
 
         $http->listen(new SocketServer($address, [], $this->loop));
 
-        $nodeId = env('WSS_NODE_ID', gethostname());
+        $nodeId = config('app.node_id');
         echo "[{$nodeId}] Metrics server listening on {$address}".PHP_EOL;
     }
 }

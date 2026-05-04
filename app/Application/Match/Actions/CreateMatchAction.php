@@ -20,7 +20,7 @@ class CreateMatchAction
         $match = $this->apiClient->createMatch(
             array_map(fn (MatchParticipant $p) => $p->toArray(), $participants),
             $matchParams,
-        ) ?? [];
+        );
 
         return $match;
     }

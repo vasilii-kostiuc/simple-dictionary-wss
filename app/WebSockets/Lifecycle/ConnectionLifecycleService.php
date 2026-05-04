@@ -23,7 +23,7 @@ class ConnectionLifecycleService
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly WsMetricsInterface $metrics,
     ) {
-        $this->nodeId = env('WSS_NODE_ID', gethostname());
+        $this->nodeId = config('app.node_id');
     }
 
     public function onOpen(ConnectionInterface $conn): void

@@ -1,0 +1,12 @@
+<?php
+
+namespace Ratchet;
+
+interface ConnectionInterface
+{
+    public int $resourceId;
+
+    public function send(string $data): ConnectionInterface;
+
+    public function close(): void;
+}

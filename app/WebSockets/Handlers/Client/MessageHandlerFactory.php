@@ -7,15 +7,14 @@ use App\WebSockets\Enums\ClientRequestType;
 class MessageHandlerFactory
 {
     /**
-     * @param array<string, MessageHandlerInterface> $handlers
-     * @param \Closure(string $channel): MessageHandlerInterface $subscribeResolver
+     * @param  array<string, MessageHandlerInterface>  $handlers
+     * @param  \Closure(string $channel): MessageHandlerInterface  $subscribeResolver
      */
     public function __construct(
         private readonly array $handlers,
         private readonly \Closure $subscribeResolver,
         private readonly MessageHandlerInterface $unknownHandler,
-    ) {
-    }
+    ) {}
 
     public function create(string $type, object $payload): MessageHandlerInterface
     {
@@ -26,7 +25,8 @@ class MessageHandlerFactory
         }
 
         if ($requestType === ClientRequestType::Subscribe) {
-            $channel = $payload->data?->channel ?? '';
+            $channel = $payload->data->channel ?? '';
+
             return ($this->subscribeResolver)($channel);
         }
 

@@ -17,7 +17,7 @@ class ClientMessageDispatcher
         private readonly MessageHandlerFactory $messageHandlerFactory,
         private readonly WsMetricsInterface $metrics,
     ) {
-        $this->nodeId = env('WSS_NODE_ID', gethostname());
+        $this->nodeId = config('app.node_id');
     }
 
     public function dispatch(ConnectionInterface $conn, MessageInterface $msg): void

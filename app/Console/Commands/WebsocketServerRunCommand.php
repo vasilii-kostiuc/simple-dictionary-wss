@@ -34,7 +34,7 @@ class WebsocketServerRunCommand extends Command
      */
     public function handle(): int
     {
-        $nodeId = env('WSS_NODE_ID', gethostname());
+        $nodeId = config('app.node_id');
         $this->info("[{$nodeId}] WebSocket server starting on 0.0.0.0:8080");
 
         if (config('metrics.enabled', true)) {

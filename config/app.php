@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'node_id' => env('WSS_NODE_ID', gethostname()),
+
 ];
