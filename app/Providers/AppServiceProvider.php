@@ -130,13 +130,37 @@ class AppServiceProvider extends ServiceProvider
                 return new NullWsMetrics;
             }
 
-            return new WsMetrics($app->make(CollectorRegistry::class));
+            return new WsMetrics(
+                $app->make(CollectorRegistry::class),
+                (string) config('metrics.namespace', 'wss'),
+                (string) config('app.node_id'),
+            );
         });
 
         $this->app->singleton(MessageComponentInterface::class, function (Application $app) {
             return new MetricsWsServerDecorator(
                 $app->make(TrainingWsServer::class),
                 $app->make(WsMetricsInterface::class),
+            );
+        });
+
+        $this->app->singleton(ClientMessageDispatcher::class, function (Application $app) {
+            return new ClientMessageDispatcher(
+                $app->make(MessageHandlerFactory::class),
+                $app->make(WsMetricsInterface::class),
+                (string) config('app.node_id'),
+            );
+        });
+
+        $this->app->singleton(ConnectionLifecycleService::class, function (Application $app) {
+            return new ConnectionLifecycleService(
+                $app->make(ClientRegistryInterface::class),
+                $app->make(SubscriptionsStorageInterface::class),
+                $app->make(DisconnectFromLinkMatchRoomAction::class),
+                $app->make(LeaveMatchMakingAction::class),
+                $app->make(MatchMakingQueueInterface::class),
+                $app->make(WsMetricsInterface::class),
+                (string) config('app.node_id'),
             );
         });
 

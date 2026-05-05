@@ -13,8 +13,6 @@ use Ratchet\ConnectionInterface;
 
 class ConnectionLifecycleService
 {
-    private string $nodeId;
-
     public function __construct(
         private readonly ClientRegistryInterface $clientRegistry,
         private readonly SubscriptionsStorageInterface $subscriptionsStorage,
@@ -22,9 +20,8 @@ class ConnectionLifecycleService
         private readonly LeaveMatchMakingAction $leaveMatchMakingAction,
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly WsMetricsInterface $metrics,
-    ) {
-        $this->nodeId = config('app.node_id');
-    }
+        private readonly string $nodeId = '',
+    ) {}
 
     public function onOpen(ConnectionInterface $conn): void
     {

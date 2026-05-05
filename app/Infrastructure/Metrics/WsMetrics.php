@@ -24,12 +24,9 @@ class WsMetrics implements WsMetricsInterface
 
     private Gauge $subscriptionsActive;
 
-    private string $nodeId;
-
-    public function __construct(private readonly CollectorRegistry $registry)
+    public function __construct(CollectorRegistry $registry, string $namespace = 'wss', private string $nodeId = '')
     {
-        $ns = (string) config('metrics.namespace');
-        $this->nodeId = (string) config('app.node_id');
+        $ns = $namespace;
 
         $this->connectionsOpenedTotal = $registry->getOrRegisterCounter(
             $ns, 'connections_opened_total', 'Total WebSocket connections opened', ['node'],

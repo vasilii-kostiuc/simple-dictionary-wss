@@ -11,14 +11,11 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 
 class ClientMessageDispatcher
 {
-    private string $nodeId;
-
     public function __construct(
         private readonly MessageHandlerFactory $messageHandlerFactory,
         private readonly WsMetricsInterface $metrics,
-    ) {
-        $this->nodeId = config('app.node_id');
-    }
+        private readonly string $nodeId = '',
+    ) {}
 
     public function dispatch(ConnectionInterface $conn, MessageInterface $msg): void
     {
