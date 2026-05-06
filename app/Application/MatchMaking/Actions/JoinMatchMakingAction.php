@@ -8,13 +8,14 @@ use App\Domain\Match\MatchParams;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\MatchMaking\Enums\MatchType;
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 
 class JoinMatchMakingAction
 {
     public function __construct(
         private readonly MatchMakingQueueInterface $matchMakingQueue,
-    ) {
-    }
+        private readonly WsMetricsInterface $metrics,
+    ) {}
 
     /**
      * @return array{matchType: MatchType, matchParams: MatchParams}
@@ -37,6 +38,8 @@ class JoinMatchMakingAction
         );
 
         $this->matchMakingQueue->add($identity, $matchParams);
+
+        $this->metrics->matchmakingQueueUserJoined();
 
         event(new MatchMakingJoinedEvent($identity->getIdentifier(), $matchParams));
 

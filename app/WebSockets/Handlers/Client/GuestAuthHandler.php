@@ -3,6 +3,7 @@
 namespace App\WebSockets\Handlers\Client;
 
 use App\Application\Auth\Actions\AuthenticateGuestAction;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
@@ -14,8 +15,8 @@ class GuestAuthHandler implements MessageHandlerInterface
     public function __construct(
         private readonly ClientRegistryInterface $clientRegistry,
         private readonly AuthenticateGuestAction $authenticateGuestAction,
-    ) {
-    }
+        private readonly WsMetricsInterface $metrics,
+    ) {}
 
     public function handle(ConnectionInterface $conn, MessageInterface $msg): void
     {
@@ -32,6 +33,10 @@ class GuestAuthHandler implements MessageHandlerInterface
         $identity = $this->authenticateGuestAction->execute($guestId);
 
         $this->clientRegistry->register($conn, $identity);
+
+        if (count($this->clientRegistry->getConnectionsByIdentifier($identity->getIdentifier())) === 1) {
+            $this->metrics->activeUserConnected('guest');
+        }
 
         $conn->send(new WebSocketMessage('guest_auth_success', $identity->toArray()));
     }

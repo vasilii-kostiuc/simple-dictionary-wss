@@ -8,14 +8,15 @@ use App\Application\MatchMaking\Exceptions\MatchMakingException;
 use App\Domain\Match\MatchParticipant;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\Shared\Identity\ClientIdentity;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 
 class ChallengeMatchMakingAction
 {
     public function __construct(
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly CreateMatchAction $createMatchAction,
-    ) {
-    }
+        private readonly WsMetricsInterface $metrics,
+    ) {}
 
     /**
      * @throws MatchMakingException
@@ -40,7 +41,15 @@ class ChallengeMatchMakingAction
             $queueEntry->matchParams,
         );
 
+        $challengerWasInQueue = $this->matchMakingQueue->isUserInQueue($identity->getIdentifier());
+
         $this->matchMakingQueue->remove($identity->getIdentifier());
+
+        // opponent was removed via extract(), challenger removed above
+        $this->metrics->matchmakingQueueUserLeft();
+        if ($challengerWasInQueue) {
+            $this->metrics->matchmakingQueueUserLeft();
+        }
 
         event(new MatchMakingQueueUpdatedEvent);
 

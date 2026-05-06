@@ -57,6 +57,13 @@ class ConnectionLifecycleService
             $this->metrics->activeSubscriptionRemoved($channel);
         }
 
+        if ($identity !== null) {
+            $remainingConnections = count($this->clientRegistry->getConnectionsByIdentifier($identity->getIdentifier()));
+            if ($remainingConnections === 1) {
+                $this->metrics->activeUserDisconnected($identity->isGuest() ? 'guest' : 'authenticated');
+            }
+        }
+
         $this->clientRegistry->forget($conn);
         $this->subscriptionsStorage->unsubscribeAll($conn);
     }

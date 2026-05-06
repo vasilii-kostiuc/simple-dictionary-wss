@@ -4,6 +4,7 @@ namespace App\WebSockets\Handlers\Client;
 
 use App\Application\Auth\Actions\AuthenticateUserAction;
 use App\Application\Auth\Exceptions\AuthException;
+use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
@@ -15,8 +16,8 @@ class AuthMessageHandler implements MessageHandlerInterface
     public function __construct(
         private readonly AuthenticateUserAction $authenticateUserAction,
         private readonly ClientRegistryInterface $clientRegistry,
-    ) {
-    }
+        private readonly WsMetricsInterface $metrics,
+    ) {}
 
     public function handle(ConnectionInterface $conn, MessageInterface $msg): void
     {
@@ -39,6 +40,11 @@ class AuthMessageHandler implements MessageHandlerInterface
         }
 
         $this->clientRegistry->register($conn, $identity);
+
+        if (count($this->clientRegistry->getConnectionsByIdentifier($identity->getIdentifier())) === 1) {
+            $this->metrics->activeUserConnected('authenticated');
+        }
+
         $conn->send(new WebSocketMessage('auth_success', $identity->toArray()));
     }
 }

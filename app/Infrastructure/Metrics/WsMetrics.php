@@ -24,6 +24,10 @@ class WsMetrics implements WsMetricsInterface
 
     private Gauge $subscriptionsActive;
 
+    private Gauge $activeUsers;
+
+    private Gauge $matchmakingQueueUsers;
+
     public function __construct(CollectorRegistry $registry, string $namespace = 'wss', private string $nodeId = '')
     {
         $ns = $namespace;
@@ -58,6 +62,14 @@ class WsMetrics implements WsMetricsInterface
 
         $this->subscriptionsActive = $registry->getOrRegisterGauge(
             $ns, 'subscriptions_active', 'Currently active channel subscriptions', ['node', 'channel_group'],
+        );
+
+        $this->activeUsers = $registry->getOrRegisterGauge(
+            $ns, 'active_users', 'Currently active unique users by type', ['node', 'type'],
+        );
+
+        $this->matchmakingQueueUsers = $registry->getOrRegisterGauge(
+            $ns, 'matchmaking_queue_users', 'Users currently in matchmaking queue', ['node'],
         );
     }
 
@@ -109,6 +121,26 @@ class WsMetrics implements WsMetricsInterface
         $channelGroup = $this->normalizeChannelGroup($channel);
 
         $this->subscriptionsActive->dec([$this->nodeId, $channelGroup]);
+    }
+
+    public function activeUserConnected(string $type): void
+    {
+        $this->activeUsers->inc([$this->nodeId, $type]);
+    }
+
+    public function activeUserDisconnected(string $type): void
+    {
+        $this->activeUsers->dec([$this->nodeId, $type]);
+    }
+
+    public function matchmakingQueueUserJoined(): void
+    {
+        $this->matchmakingQueueUsers->inc([$this->nodeId]);
+    }
+
+    public function matchmakingQueueUserLeft(): void
+    {
+        $this->matchmakingQueueUsers->dec([$this->nodeId]);
     }
 
     private function normalizeChannelGroup(string $channel): string
