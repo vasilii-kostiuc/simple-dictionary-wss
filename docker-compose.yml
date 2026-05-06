@@ -48,11 +48,10 @@ services:
       - simple_dictionary_network
 
   redis_exporter:
-    image: oliver006/redis_exporter:latest
+    image: oliver006/redis_exporter:v1.66.0
     container_name: wss_redis_exporter
     environment:
-      REDIS_ADDR: redis://redis:6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_ADDR: redis:6379
     depends_on:
       - redis
     ports:
@@ -98,5 +97,23 @@ services:
     networks:
       - simple_dictionary_network
 
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: wss_grafana
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./_docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./_docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - simple_dictionary_network
+
 volumes:
   redisinsight_data:
+  grafana_data:
