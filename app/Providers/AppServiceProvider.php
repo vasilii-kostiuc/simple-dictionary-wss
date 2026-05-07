@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Application\Contracts\EventDispatcherInterface;
 use App\Application\Contracts\SimpleDictionaryApiClientInterface;
+use App\Application\LinkMatchRoom\Actions\DisconnectFromLinkMatchRoomAction;
+use App\Application\MatchMaking\Actions\LeaveMatchMakingAction;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\Shared\Identity\ClientIdentityLookupInterface;
@@ -18,6 +20,9 @@ use App\Infrastructure\Metrics\NullWsMetrics;
 use App\Infrastructure\Metrics\WsMetrics;
 use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\Infrastructure\Shared\LaravelEventDispatcher;
+use App\WebSockets\Dispatch\ClientMessageDispatcher;
+use App\WebSockets\Handlers\Client\MessageHandlerFactory;
+use App\WebSockets\Lifecycle\ConnectionLifecycleService;
 use App\WebSockets\MetricsWsServerDecorator;
 use App\WebSockets\Sender\WebSocketMessageSender;
 use App\WebSockets\Sender\WebSocketMessageSenderInterface;
@@ -144,13 +149,14 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(ClientMessageDispatcher::class, function (Application $app) {
-            return new ClientMessageDispatcher(
+        $this->app->singleton(
+            ClientMessageDispatcher::class,
+            fn (Application $app) => new ClientMessageDispatcher(
                 $app->make(MessageHandlerFactory::class),
                 $app->make(WsMetricsInterface::class),
                 (string) config('app.node_id'),
-            );
-        });
+            ),
+        );
 
         $this->app->singleton(ConnectionLifecycleService::class, function (Application $app) {
             return new ConnectionLifecycleService(
