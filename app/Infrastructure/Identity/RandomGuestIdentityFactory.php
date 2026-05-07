@@ -27,7 +27,7 @@ class RandomGuestIdentityFactory implements GuestIdentityFactoryInterface
 
     private function generateName(): string
     {
-        return "Анонимный ".
+        return 'Анонимный '.
             self::ADJECTIVES[array_rand(self::ADJECTIVES)].' '.
             self::ANIMALS[array_rand(self::ANIMALS)].' '.
             rand(100, 999);
@@ -35,6 +35,6 @@ class RandomGuestIdentityFactory implements GuestIdentityFactoryInterface
 
     private function generateAvatar(string $guestId): string
     {
-        return 'https://api.dicebear.com/7.x/avataaars/svg?seed='.urlencode($guestId);
+        return 'https://api.dicebear.com/9.x/avataaars/svg?seed='.urlencode($guestId);
     }
 }
