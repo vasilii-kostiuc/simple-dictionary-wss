@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Application\Contracts\TimerSchedulerInterface;
 use App\Application\LinkMatchRoom\Actions\DisconnectFromLinkMatchRoomAction;
 use App\Application\MatchMaking\Actions\LeaveMatchMakingAction;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
@@ -19,6 +20,7 @@ use App\WebSockets\Storage\Clients\CompositeClientRegistry;
 use App\WebSockets\Storage\Clients\GuestClientRegistry;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorage;
 use App\WebSockets\Storage\Subscriptions\SubscriptionsStorageInterface;
+use App\WebSockets\Timers\ReactLoopTimerScheduler;
 use App\WebSockets\TrainingWsServer;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\App;
@@ -65,6 +67,12 @@ class WebSocketRuntimeServiceProvider extends ServiceProvider
 
         $this->app->singleton(LoopInterface::class, function () {
             return Loop::get();
+        });
+
+        $this->app->singleton(TimerSchedulerInterface::class, function (Application $app) {
+            return new ReactLoopTimerScheduler(
+                $app->make(LoopInterface::class),
+            );
         });
 
         $this->app->singleton(MessageBrokerInterface::class, function () {
