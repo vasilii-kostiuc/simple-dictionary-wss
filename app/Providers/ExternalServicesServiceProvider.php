@@ -8,6 +8,7 @@ use App\Infrastructure\ApiClients\GuzzleSimpleDictionaryApiClient;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Psr\Log\LoggerInterface;
 
 class ExternalServicesServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,7 @@ class ExternalServicesServiceProvider extends ServiceProvider
             return new GuzzleSimpleDictionaryApiClient(
                 $app->make(Client::class),
                 config('services.api.wss_token'),
+                $app->make(LoggerInterface::class),
             );
         });
     }

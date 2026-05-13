@@ -4,30 +4,21 @@ namespace App\Infrastructure\Shared;
 
 use App\Domain\Shared\Contracts\TimerStorageInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Client;
 use MongoDB\Collection;
+use Psr\Log\LoggerInterface;
 
 class MongoTimerStorage implements TimerStorageInterface
 {
-    private Collection $collection;
-
-    public function __construct()
-    {
-        $mongoHost = (string) config('database.mongodb.host', '127.0.0.1');
-        $mongoPort = (int) config('database.mongodb.port', 27017);
-        $database = (string) config('database.mongodb.database', 'wss_db');
-        $client = new Client("mongodb://{$mongoHost}:{$mongoPort}");
-
-        $this->collection = $client->selectDatabase($database)
-            ->selectCollection('timers');
-
+    public function __construct(
+        private readonly Collection $collection,
+        private readonly LoggerInterface $logger,
+    ) {
         try {
             $this->collection->createIndex(['expires_at' => 1]);
             $this->collection->createIndex(['timer_key' => 1], ['unique' => true]);
         } catch (\Exception $e) {
-            Log::warning('Failed to create MongoDB indexes: '.$e->getMessage());
+            $this->logger->warning('Failed to create MongoDB indexes: '.$e->getMessage());
         }
     }
 

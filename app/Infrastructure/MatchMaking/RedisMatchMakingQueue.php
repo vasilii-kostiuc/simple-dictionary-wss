@@ -6,7 +6,7 @@ use App\Domain\Match\MatchParams;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Domain\MatchMaking\QueueEntry;
 use App\Domain\Shared\Identity\ClientIdentity;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Redis\Connections\Connection;
 
 class RedisMatchMakingQueue implements MatchMakingQueueInterface
 {
@@ -15,6 +15,8 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     private const USER_DATA_PREFIX = 'matchmaking:user:';
 
     private const QUEUE_TTL = 3600; // 1 час
+
+    public function __construct(private readonly Connection $redis) {}
 
     public function add(ClientIdentity $identity, MatchParams $matchParams): void
     {
@@ -36,32 +38,32 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
             'timestamp' => time(),
         ];
 
-        Redis::setex($userDataKey, self::QUEUE_TTL, json_encode($stored));
-        Redis::zadd($queueKey, time(), $identifier);
-        Redis::expire($queueKey, self::QUEUE_TTL);
+        $this->redis->setex($userDataKey, self::QUEUE_TTL, json_encode($stored));
+        $this->redis->zadd($queueKey, time(), $identifier);
+        $this->redis->expire($queueKey, self::QUEUE_TTL);
     }
 
     public function remove(string $identifier): void
     {
         $userDataKey = $this->getUserDataKey($identifier);
-        $identity = json_decode(Redis::get($userDataKey), true);
+        $identity = json_decode($this->redis->get($userDataKey), true);
 
         if ($identity !== null) {
             $queueKey = $this->getQueueKey(MatchParams::fromArray($identity['matchParams']));
-            Redis::zrem($queueKey, $identifier);
+            $this->redis->zrem($queueKey, $identifier);
         }
 
-        Redis::del($userDataKey);
+        $this->redis->del($userDataKey);
     }
 
     public function all(MatchParams $matchParams): array
     {
         $queueKey = $this->getQueueKey($matchParams);
-        $identifiers = Redis::zrange($queueKey, 0, -1);
+        $identifiers = $this->redis->zrange($queueKey, 0, -1);
 
         $result = [];
         foreach ($identifiers as $identifier) {
-            $raw = json_decode(Redis::get($this->getUserDataKey($identifier)), true);
+            $raw = json_decode($this->redis->get($this->getUserDataKey($identifier)), true);
             if ($raw !== null) {
                 $result[] = $this->rawToQueueEntry($raw);
             }
@@ -73,13 +75,13 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     public function allQueues(): array
     {
         $pattern = self::QUEUE_PREFIX.'*';
-        $keys = Redis::keys($pattern);
+        $keys = $this->redis->keys($pattern);
 
         $result = [];
         foreach ($keys as $queueKey) {
-            $identifiers = Redis::zrange($queueKey, 0, -1);
+            $identifiers = $this->redis->zrange($queueKey, 0, -1);
             foreach ($identifiers as $identifier) {
-                $raw = json_decode(Redis::get($this->getUserDataKey($identifier)), true);
+                $raw = json_decode($this->redis->get($this->getUserDataKey($identifier)), true);
                 if ($raw !== null) {
                     $result[] = $this->rawToQueueEntry($raw);
                 }
@@ -93,7 +95,7 @@ class RedisMatchMakingQueue implements MatchMakingQueueInterface
     {
         $queueKey = $this->getQueueKey($matchParams);
 
-        $result = Redis::connection()->eval(<<<'LUA'
+        $result = $this->redis->eval(<<<'LUA'
 local queueKey = KEYS[1]
 local currentId = ARGV[1]
 local userKeyPrefix = ARGV[2]
@@ -129,30 +131,30 @@ LUA, 1, $queueKey, $identifier, self::USER_DATA_PREFIX);
     public function clear(MatchParams $matchParams): void
     {
         $queueKey = $this->getQueueKey($matchParams);
-        $identifiers = Redis::zrange($queueKey, 0, -1);
+        $identifiers = $this->redis->zrange($queueKey, 0, -1);
 
         foreach ($identifiers as $identifier) {
-            Redis::del($this->getUserDataKey($identifier));
+            $this->redis->del($this->getUserDataKey($identifier));
         }
 
-        Redis::del($queueKey);
+        $this->redis->del($queueKey);
     }
 
     public function count(MatchParams $matchParams): int
     {
-        return (int) Redis::zcard($this->getQueueKey($matchParams));
+        return (int) $this->redis->zcard($this->getQueueKey($matchParams));
     }
 
     public function isUserInQueue(string $identifier): bool
     {
-        return Redis::exists($this->getUserDataKey($identifier)) > 0;
+        return $this->redis->exists($this->getUserDataKey($identifier)) > 0;
     }
 
     public function extract(string $identifier): ?QueueEntry
     {
         $userDataKey = $this->getUserDataKey($identifier);
 
-        $raw = Redis::connection()->eval(<<<'LUA'
+        $raw = $this->redis->eval(<<<'LUA'
 local userDataKey = KEYS[1]
 local identifier = ARGV[1]
 local queuePrefix = ARGV[2]

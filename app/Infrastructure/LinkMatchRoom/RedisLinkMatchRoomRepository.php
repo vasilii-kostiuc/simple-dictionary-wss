@@ -9,13 +9,15 @@ use App\Domain\LinkMatchRoom\LinkMatchRoomStatus;
 use App\Domain\Match\MatchParams;
 use App\Domain\Shared\Identity\ClientIdentity;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Redis\Connections\Connection;
 
 class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
 {
     private const PREFIX = 'link_match_room:';
 
     private const TTL = 86400; // 24 hours
+
+    public function __construct(private readonly Connection $redis) {}
 
     public function getOrCreate(LinkMatch $linkMatch): LinkMatchRoom
     {
@@ -26,14 +28,14 @@ class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
         }
 
         $room = LinkMatchRoom::create($linkMatch);
-        Redis::setex($this->key($room->getId()), self::TTL, json_encode($room->toArray()));
+        $this->redis->setex($this->key($room->getId()), self::TTL, json_encode($room->toArray()));
 
         return $room;
     }
 
     public function update(LinkMatchRoom $room): void
     {
-        Redis::setex(
+        $this->redis->setex(
             $this->key($room->getId()),
             self::TTL,
             json_encode($room->toArray()),
@@ -42,7 +44,7 @@ class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
 
     public function findByLinkMatchId(string $linkMatchId): ?LinkMatchRoom
     {
-        $data = Redis::get($this->key($linkMatchId));
+        $data = $this->redis->get($this->key($linkMatchId));
 
         if ($data === null) {
             return null;
@@ -74,7 +76,7 @@ class RedisLinkMatchRoomRepository implements LinkMatchRoomRepositoryInterface
 
     public function deleteByLinkMatchId(string $linkMatchId): void
     {
-        Redis::del($this->key($linkMatchId));
+        $this->redis->del($this->key($linkMatchId));
     }
 
     private function key(string $linkMatchId): string

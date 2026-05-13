@@ -7,7 +7,7 @@ use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatch\LinkMatchStatus;
 use App\Domain\Match\MatchParams;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
 {
@@ -15,7 +15,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
 
     private string $token;
 
-    public function __construct(\GuzzleHttp\Client $client, string $token = '')
+    public function __construct(\GuzzleHttp\Client $client, string $token, private readonly LoggerInterface $logger)
     {
         $this->client = $client;
         $this->token = $token;
@@ -58,7 +58,7 @@ class GuzzleSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterf
                 return $body['data'] ?? $body ?? [];
             }
         } catch (GuzzleException $e) {
-            Log::warning('External API request failed', [
+            $this->logger->warning('External API request failed', [
                 'method' => $method,
                 'uri' => $uri,
                 'message' => $e->getMessage(),

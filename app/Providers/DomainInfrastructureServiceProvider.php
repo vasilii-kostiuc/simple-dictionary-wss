@@ -19,6 +19,8 @@ use App\Infrastructure\Shared\MongoTimerStorage;
 use Illuminate\Contracts\Cache\Factory as CacheFactory;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use MongoDB\Client as MongoClient;
+use Psr\Log\LoggerInterface;
 
 class DomainInfrastructureServiceProvider extends ServiceProvider
 {
@@ -26,8 +28,10 @@ class DomainInfrastructureServiceProvider extends ServiceProvider
     {
         $this->app->bind(EventDispatcherInterface::class, LaravelEventDispatcher::class);
 
-        $this->app->singleton(MatchMakingQueueInterface::class, function () {
-            return new RedisMatchMakingQueue;
+        $this->app->singleton(MatchMakingQueueInterface::class, function (Application $app) {
+            return new RedisMatchMakingQueue(
+                $app->make('redis')->connection(),
+            );
         });
 
         $this->app->singleton(GuestIdentityFactoryInterface::class, function () {
@@ -40,16 +44,27 @@ class DomainInfrastructureServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(LinkMatchRoomRepositoryInterface::class, function () {
-            return new RedisLinkMatchRoomRepository;
+        $this->app->singleton(LinkMatchRoomRepositoryInterface::class, function (Application $app) {
+            return new RedisLinkMatchRoomRepository(
+                $app->make('redis')->connection(),
+            );
         });
 
         $this->app->singleton(LockManagerInterface::class, function (Application $app) {
             return new CacheLockManager($app->make(CacheFactory::class));
         });
 
-        $this->app->singleton(TimerStorageInterface::class, function () {
-            return new MongoTimerStorage;
+        $this->app->singleton(TimerStorageInterface::class, function (Application $app) {
+            $mongoHost = (string) config('database.mongodb.host', '127.0.0.1');
+            $mongoPort = (int) config('database.mongodb.port', 27017);
+            $database = (string) config('database.mongodb.database', 'wss_db');
+            $client = new MongoClient("mongodb://{$mongoHost}:{$mongoPort}");
+            $collection = $client->selectDatabase($database)->selectCollection('timers');
+
+            return new MongoTimerStorage(
+                $collection,
+                $app->make(LoggerInterface::class),
+            );
         });
     }
 }

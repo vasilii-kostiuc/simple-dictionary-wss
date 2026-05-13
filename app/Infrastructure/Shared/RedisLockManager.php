@@ -3,10 +3,12 @@
 namespace App\Infrastructure\Shared;
 
 use App\Application\Contracts\LockManagerInterface;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Redis\Connections\Connection;
 
 class RedisLockManager implements LockManagerInterface
 {
+    public function __construct(private readonly Connection $redis) {}
+
     public function execute(string $key, callable $callback): mixed
     {
         $lockKey = 'lock:'.$key;
@@ -14,7 +16,7 @@ class RedisLockManager implements LockManagerInterface
         $acquired = false;
 
         for ($i = 0; $i < 20; $i++) {
-            if (Redis::set($lockKey, $lockValue, 'EX', 5, 'NX')) {
+            if ($this->redis->set($lockKey, $lockValue, 'EX', 5, 'NX')) {
                 $acquired = true;
                 break;
             }
@@ -28,7 +30,7 @@ class RedisLockManager implements LockManagerInterface
         try {
             return $callback();
         } finally {
-            Redis::command('eval', [
+            $this->redis->command('eval', [
                 "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
                 1,
                 $lockKey,

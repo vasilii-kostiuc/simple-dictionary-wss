@@ -23,7 +23,7 @@ class RedisMatchMakingQueueTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->queue = new RedisMatchMakingQueue;
+        $this->queue = new RedisMatchMakingQueue(Redis::connection());
 
         $this->defaultMatchParams = new MatchParams(MatchType::Steps, 2, 1, []);
 

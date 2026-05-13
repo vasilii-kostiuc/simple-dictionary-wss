@@ -5,6 +5,8 @@ namespace Tests\Unit;
 use App\Domain\Shared\Enums\TimerType;
 use App\Infrastructure\Shared\MongoTimerStorage;
 use Carbon\Carbon;
+use MongoDB\Client as MongoClient;
+use Psr\Log\NullLogger;
 use Tests\TestCase;
 
 class MongoTimerStorageTest extends TestCase
@@ -15,16 +17,13 @@ class MongoTimerStorageTest extends TestCase
     {
         parent::setUp();
 
-        // $mongoHost = env('MONGODB_HOST', 'wss_mongo');
-        // $mongoPort = env('MONGODB_PORT', 27017);
+        $mongoHost = env('MONGODB_HOST', 'wss_mongo');
+        $mongoPort = (int) env('MONGODB_PORT', 27017);
+        $database = (string) env('MONGODB_DATABASE', 'wss_db');
+        $client = new MongoClient("mongodb://{$mongoHost}:{$mongoPort}");
+        $collection = $client->selectDatabase($database)->selectCollection('timers');
 
-        // $socket = @fsockopen($mongoHost, (int) $mongoPort, $errno, $errstr, 1);
-        // if ($socket === false) {
-        //     $this->markTestSkipped("MongoDB недоступна ({$mongoHost}:{$mongoPort}): {$errstr}");
-        // }
-        // fclose($socket);
-
-        $this->storage = new MongoTimerStorage;
+        $this->storage = new MongoTimerStorage($collection, new NullLogger);
         $this->cleanupTimers();
     }
 
@@ -187,13 +186,13 @@ class MongoTimerStorageTest extends TestCase
         $startedAt = Carbon::now();
         $durationSeconds = 600;
 
-        $this->storage->addTimer(TimerType::Match ->value, $matchId, $startedAt, $durationSeconds);
+        $this->storage->addTimer(TimerType::Match->value, $matchId, $startedAt, $durationSeconds);
 
-        $this->assertTrue($this->storage->hasTimer(TimerType::Match ->value, $matchId));
+        $this->assertTrue($this->storage->hasTimer(TimerType::Match->value, $matchId));
 
-        $timer = $this->storage->getTimer(TimerType::Match ->value, $matchId);
+        $timer = $this->storage->getTimer(TimerType::Match->value, $matchId);
         $this->assertNotNull($timer);
-        $this->assertEquals(TimerType::Match ->value, $timer['type']);
+        $this->assertEquals(TimerType::Match->value, $timer['type']);
         $this->assertEquals($matchId, $timer['entity_id']);
     }
 }
