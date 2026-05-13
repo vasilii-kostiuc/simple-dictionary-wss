@@ -2,6 +2,7 @@
 
 namespace App\Application\MatchMaking\Actions;
 
+use App\Application\Contracts\EventDispatcherInterface;
 use App\Application\Match\Actions\CreateMatchAction;
 use App\Application\MatchMaking\Events\MatchMakingQueueUpdatedEvent;
 use App\Application\MatchMaking\Exceptions\MatchMakingException;
@@ -16,6 +17,7 @@ class ChallengeMatchMakingAction
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly CreateMatchAction $createMatchAction,
         private readonly WsMetricsInterface $metrics,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     /**
@@ -51,7 +53,7 @@ class ChallengeMatchMakingAction
             $this->metrics->matchmakingQueueUserLeft();
         }
 
-        event(new MatchMakingQueueUpdatedEvent);
+        $this->eventDispatcher->dispatch(new MatchMakingQueueUpdatedEvent);
 
         return $createResult;
     }

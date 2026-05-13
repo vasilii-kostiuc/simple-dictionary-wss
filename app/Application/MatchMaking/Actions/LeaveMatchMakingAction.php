@@ -2,6 +2,7 @@
 
 namespace App\Application\MatchMaking\Actions;
 
+use App\Application\Contracts\EventDispatcherInterface;
 use App\Application\MatchMaking\Events\MatchMakingLeaveEvent;
 use App\Domain\MatchMaking\Contracts\MatchMakingQueueInterface;
 use App\Infrastructure\Metrics\WsMetricsInterface;
@@ -11,6 +12,7 @@ class LeaveMatchMakingAction
     public function __construct(
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly WsMetricsInterface $metrics,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     public function execute(string $identifier): void
@@ -19,6 +21,6 @@ class LeaveMatchMakingAction
 
         $this->metrics->matchmakingQueueUserLeft();
 
-        event(new MatchMakingLeaveEvent($identifier));
+        $this->eventDispatcher->dispatch(new MatchMakingLeaveEvent($identifier));
     }
 }

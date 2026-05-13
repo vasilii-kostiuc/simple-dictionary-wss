@@ -2,6 +2,7 @@
 
 namespace App\Application\MatchMaking\Actions;
 
+use App\Application\Contracts\EventDispatcherInterface;
 use App\Application\MatchMaking\Events\MatchMakingJoinedEvent;
 use App\Application\MatchMaking\Exceptions\MatchMakingException;
 use App\Domain\Match\MatchParams;
@@ -15,6 +16,7 @@ class JoinMatchMakingAction
     public function __construct(
         private readonly MatchMakingQueueInterface $matchMakingQueue,
         private readonly WsMetricsInterface $metrics,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     /**
@@ -41,7 +43,7 @@ class JoinMatchMakingAction
 
         $this->metrics->matchmakingQueueUserJoined();
 
-        event(new MatchMakingJoinedEvent($identity->getIdentifier(), $matchParams));
+        $this->eventDispatcher->dispatch(new MatchMakingJoinedEvent($identity->getIdentifier(), $matchParams));
 
         return [
             'matchType' => $matchType,
