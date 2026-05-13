@@ -51,7 +51,13 @@ class DomainInfrastructureServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(LockManagerInterface::class, function (Application $app) {
-            return new CacheLockManager($app->make(CacheFactory::class));
+            return new CacheLockManager(
+                $app->make(CacheFactory::class),
+                (string) config('locks.store', 'redis'),
+                (string) config('locks.prefix', 'lock'),
+                (int) config('locks.ttl_seconds', 5),
+                (int) config('locks.wait_seconds', 1),
+            );
         });
 
         $this->app->singleton(TimerStorageInterface::class, function (Application $app) {
