@@ -11,6 +11,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
+      - ../packages:/var/www/html/packages
       - ./_docker/wss_app/entrypoint.sh:/usr/local/bin/entrypoint.sh
     networks:
       - simple_dictionary_network

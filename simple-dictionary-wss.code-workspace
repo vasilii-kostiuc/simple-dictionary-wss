@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../simple-dictionary-load-tests"
+		},
+		{
+			"path": "../packages/laravel-messaging-library"
 		}
 	],
 	"settings": {

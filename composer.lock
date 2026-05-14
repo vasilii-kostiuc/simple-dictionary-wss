@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a65ee9d2c34a43eb690f30bf632d838e",
+    "content-hash": "7e18648677e58f9613f28ec756b6877a",
     "packages": [
         {
             "name": "brick/math",
@@ -7109,17 +7109,11 @@
         },
         {
             "name": "vasilii-kostiuc/laravel-messaging-library",
-            "version": "1.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/vasilii-kostiuc/laravel-messaging-library.git",
-                "reference": "ee433a0b0d6b491b20e42b7a3c626fe67fe97cd9"
-            },
+            "version": "dev-master",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/vasilii-kostiuc/laravel-messaging-library/zipball/ee433a0b0d6b491b20e42b7a3c626fe67fe97cd9",
-                "reference": "ee433a0b0d6b491b20e42b7a3c626fe67fe97cd9",
-                "shasum": ""
+                "type": "path",
+                "url": "./packages/laravel-messaging-library",
+                "reference": "9fd4ae82fc9019eae670597454352084382dd5c8"
             },
             "require": {
                 "clue/redis-react": "^v2.8.0",
@@ -7144,11 +7138,10 @@
                 "MIT"
             ],
             "description": "A messaging library for handling message brokers initialy developed for dictionary project",
-            "support": {
-                "source": "https://github.com/vasilii-kostiuc/laravel-messaging-library/tree/1.3.1",
-                "issues": "https://github.com/vasilii-kostiuc/laravel-messaging-library/issues"
-            },
-            "time": "2026-04-15T10:23:45+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "vlucas/phpdotenv",
@@ -10424,7 +10417,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
         "cboden/ratchet": 20
     },
