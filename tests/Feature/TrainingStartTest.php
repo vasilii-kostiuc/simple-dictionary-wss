@@ -2,6 +2,7 @@
 
 use App\WebSockets\Enums\ServerEventType;
 use Tests\Feature\WebSocketTestCase;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerFactory;
 
 class TrainingStartTest extends WebSocketTestCase
 {
@@ -11,32 +12,18 @@ class TrainingStartTest extends WebSocketTestCase
         $this->authenticateClient($client);
         $this->subscribeClient($client, 'training.121');
 
-        Log::info('Publishing message via external API endpoint');
-
-        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
-
-        try {
-            $response = Http::post($apiUrl, [
-                'channel' => 'api.training',
-                'type' => 'training_started',
-                'data' => [
-                    'training_id' => '121',
-                    'started_at' => now()->toIso8601String(),
-                    'completion_type' => \App\Domain\Training\Enums\TrainingCompletionType::Time->value,
-                    'completion_type_params' => (object) ['duration' => '0.05'],
-                ],
-            ]);
-
-            $this->assertTrue($response->successful(), 'API request failed with status: '.$response->status());
-            Log::info('API request successful');
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Cannot connect to API endpoint: '.$apiUrl.'. Error: '.$e->getMessage());
-        }
-
-        sleep(3);
+        app(BrokerFactory::class)->create()->publish('api.training', json_encode([
+            'type' => 'training_started',
+            'data' => [
+                'training_id' => '121',
+                'started_at' => now()->toIso8601String(),
+                'completion_type' => \App\Domain\Training\Enums\TrainingCompletionType::Time->value,
+                'completion_type_params' => (object) ['duration' => '0.05'],
+            ],
+        ]));
 
         try {
-            sleep(3);
+            sleep(1);
 
             $message = $client->receive();
 

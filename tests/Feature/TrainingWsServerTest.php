@@ -1,10 +1,9 @@
 <?php
 
 use App\WebSockets\Enums\ServerEventType;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerFactory;
 
 class TrainingWsServerTest extends TestCase
 {
@@ -104,25 +103,13 @@ class TrainingWsServerTest extends TestCase
         $client->text(json_encode(['type' => 'subscribe', 'data' => ['channel' => 'training.121']]));
         $client->receive();
 
-        Log::info('Publishing message via external API endpoint');
-
-        $apiUrl = env('API_BASE_URI', '').'send-to-wss';
-
-        try {
-            $response = Http::post($apiUrl, [
-                'channel' => 'api.training',
-                'type' => 'training_completed',
-                'data' => [
-                    'training_id' => '121',
-                    'completed_at' => now()->toIso8601String(),
-                ],
-            ]);
-
-            $this->assertTrue($response->successful(), 'API request failed with status: '.$response->status());
-            Log::info('API request successful');
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            $this->markTestSkipped('Cannot connect to API endpoint: '.$apiUrl.'. Error: '.$e->getMessage());
-        }
+        app(BrokerFactory::class)->create()->publish('api.training', json_encode([
+            'type' => 'training_completed',
+            'data' => [
+                'training_id' => '121',
+                'completed_at' => now()->toIso8601String(),
+            ],
+        ]));
 
         sleep(1);
 
