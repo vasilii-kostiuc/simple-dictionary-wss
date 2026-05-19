@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y \
 RUN pecl install mongodb-2.1.0 \
     && docker-php-ext-enable mongodb
 
+# Устанавливаем драйвер покрытия тестов
+RUN pecl install pcov \
+    && docker-php-ext-enable pcov
+
 # Устанавливаем Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
