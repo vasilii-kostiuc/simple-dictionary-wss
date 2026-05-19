@@ -6,7 +6,7 @@ use App\Application\Contracts\SimpleDictionaryApiClientInterface;
 use App\Domain\LinkMatch\LinkMatch;
 use App\Domain\LinkMatch\LinkMatchStatus;
 use App\Domain\Match\MatchParams;
-use Illuminate\Support\Facades\Http;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerFactory;
 
 class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterface
 {
@@ -24,32 +24,26 @@ class FakeSimpleDictionaryApiClient implements SimpleDictionaryApiClientInterfac
 
     public function expire(string|int $trainingId): array
     {
-        $apiUrl = config('services.api.base_uri').'send-to-wss';
-
-        Http::post($apiUrl, [
-            'channel' => 'api.training',
+        app(BrokerFactory::class)->create()->publish('api.training', json_encode([
             'type' => 'training_completed',
             'data' => [
                 'training_id' => $trainingId,
                 'completed_at' => now()->toIso8601String(),
             ],
-        ]);
+        ]));
 
         return [];
     }
 
     public function expireMatch(string|int $matchId): array
     {
-        $apiUrl = config('services.api.base_uri').'send-to-wss';
-
-        Http::post($apiUrl, [
-            'channel' => 'api.match',
+        app(BrokerFactory::class)->create()->publish('api.match', json_encode([
             'type' => 'match_completed',
             'data' => [
                 'id' => $matchId,
                 'completed_at' => now()->toIso8601String(),
             ],
-        ]);
+        ]));
 
         return [];
     }

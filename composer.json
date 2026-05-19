@@ -10,11 +10,8 @@
     "license": "MIT",
     "repositories": [
         {
-            "type": "path",
-            "url": "./packages/pubsub-broker",
-            "options": {
-                "symlink": true
-            }
+            "type": "vcs",
+            "url": "https://github.com/vasilii-kostiuc/pubsub-broker"
         }
     ],
     "require": {
@@ -29,7 +26,7 @@
         "react/event-loop": "^1.3",
         "react/http": "^1.11",
         "react/socket": "^1.16",
-        "vasilii-kostiuc/pubsub-broker": "*"
+        "vasilii-kostiuc/pubsub-broker": "^2.0.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
