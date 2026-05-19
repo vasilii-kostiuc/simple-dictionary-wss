@@ -9,6 +9,7 @@ class TrainingStartTest extends WebSocketTestCase
     public function test_api_message_training_start()
     {
         $client = $this->createWebSocketClient();
+        $client->setTimeout(5);
         $this->authenticateClient($client);
         $this->subscribeClient($client, 'training.121');
 
@@ -23,8 +24,6 @@ class TrainingStartTest extends WebSocketTestCase
         ]));
 
         try {
-            sleep(1);
-
             $message = $client->receive();
 
             $payload = json_decode($message->getPayload());
@@ -34,7 +33,5 @@ class TrainingStartTest extends WebSocketTestCase
             Log::error('Failed to receive message: '.$e->getMessage());
             $this->fail('No message received');
         }
-
-        sleep(1);
     }
 }

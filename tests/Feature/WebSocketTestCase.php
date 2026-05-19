@@ -48,7 +48,26 @@ abstract class WebSocketTestCase extends TestCase
         $this->pid = $output[0] ?? null;
         $this->started = true;
 
-        sleep(3);
+        $this->waitForPort('0.0.0.0', 8080);
+    }
+
+    private function waitForPort(string $host, int $port, int $timeoutSeconds = 10): void
+    {
+        $start = time();
+
+        while (time() - $start < $timeoutSeconds) {
+            $socket = @fsockopen($host, $port, $errno, $errstr, 0.1);
+
+            if ($socket !== false) {
+                fclose($socket);
+
+                return;
+            }
+
+            usleep(100_000);
+        }
+
+        $this->fail("WebSocket server did not start on {$host}:{$port} within {$timeoutSeconds}s");
     }
 
     protected function authenticateClient(Client $client, string $token = 'token'): void

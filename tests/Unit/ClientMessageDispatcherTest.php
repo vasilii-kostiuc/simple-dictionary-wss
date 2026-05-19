@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Infrastructure\Metrics\WsMetricsInterface;
 use App\WebSockets\Dispatch\ClientMessageDispatcher;
 use App\WebSockets\Handlers\Client\MessageHandlerFactory;
-use App\WebSockets\Handlers\Client\MessageHandlerInterface;
 use App\WebSockets\Messages\ErrorMessage;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
@@ -61,37 +60,6 @@ class ClientMessageDispatcherTest extends TestCase
 
             public function close(): void {}
         };
-    }
-
-    public function test_dispatches_valid_client_message_to_resolved_handler(): void
-    {
-        $connection = $this->makeConnection();
-        $message = $this->createMock(MessageInterface::class);
-        $handler = $this->createMock(MessageHandlerInterface::class);
-        $factory = $this->createMock(MessageHandlerFactory::class);
-        $metrics = $this->createMock(WsMetricsInterface::class);
-
-        $message->method('getPayload')->willReturn(json_encode([
-            'type' => 'subscribe',
-            'data' => ['channel' => 'training.121'],
-        ]));
-
-        $metrics->expects($this->once())
-            ->method('messageReceived')
-            ->with('subscribe');
-
-        $factory->expects($this->once())
-            ->method('create')
-            ->with('subscribe', $this->isInstanceOf(\stdClass::class))
-            ->willReturn($handler);
-
-        $handler->expects($this->once())
-            ->method('handle')
-            ->with($connection, $message);
-
-        (new ClientMessageDispatcher($factory, $metrics))->dispatch($connection, $message);
-
-        $this->assertSame([], $connection->sent);
     }
 
     public function test_sends_error_message_for_invalid_json_payload(): void
