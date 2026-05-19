@@ -3,13 +3,13 @@
 namespace App\WebSockets\Listeners\MatchMaking;
 
 use App\Application\MatchMaking\Events\MatchMakingQueueUpdatedEvent;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerInterface;
 
 class PublishMatchMakingQueueUpdatedListener
 {
-    private MessageBrokerInterface $messageBroker;
+    private BrokerInterface $messageBroker;
 
-    public function __construct(MessageBrokerInterface $messageBroker)
+    public function __construct(BrokerInterface $messageBroker)
     {
         $this->messageBroker = $messageBroker;
     }
@@ -21,7 +21,6 @@ class PublishMatchMakingQueueUpdatedListener
             'data' => [
             ],
         ]));
-
 
     }
 }

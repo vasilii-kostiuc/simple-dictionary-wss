@@ -8,8 +8,8 @@ use App\WebSockets\TrainingWsRuntime;
 use App\WebSockets\TrainingWsServer;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerFactory;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerInterface;
 
 class TrainingWsRuntimeTest extends TestCase
 {
@@ -18,8 +18,8 @@ class TrainingWsRuntimeTest extends TestCase
         $trainingWsServer = $this->createMock(TrainingWsServer::class);
         $bootstrapper = $this->createMock(BrokerSubscriptionsBootstrapper::class);
         $scheduler = $this->createMock(PeriodicTimerScheduler::class);
-        $messageBrokerFactory = $this->createMock(MessageBrokerFactory::class);
-        $messageBroker = $this->createMock(MessageBrokerInterface::class);
+        $messageBrokerFactory = $this->createMock(BrokerFactory::class);
+        $messageBroker = $this->createMock(BrokerInterface::class);
         $loop = $this->createMock(LoopInterface::class);
 
         $messageBrokerFactory->expects($this->once())
@@ -49,8 +49,8 @@ class TrainingWsRuntimeTest extends TestCase
         $trainingWsServer = $this->createMock(TrainingWsServer::class);
         $bootstrapper = $this->createMock(BrokerSubscriptionsBootstrapper::class);
         $scheduler = $this->createMock(PeriodicTimerScheduler::class);
-        $messageBrokerFactory = $this->createMock(MessageBrokerFactory::class);
-        $messageBroker = $this->createMock(MessageBrokerInterface::class);
+        $messageBrokerFactory = $this->createMock(BrokerFactory::class);
+        $messageBroker = $this->createMock(BrokerInterface::class);
         $loop = $this->createMock(LoopInterface::class);
 
         $messageBrokerFactory->expects($this->once())

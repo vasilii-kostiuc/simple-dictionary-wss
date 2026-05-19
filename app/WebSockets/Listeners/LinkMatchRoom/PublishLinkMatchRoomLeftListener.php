@@ -4,12 +4,12 @@ namespace App\WebSockets\Listeners\LinkMatchRoom;
 
 use App\Domain\LinkMatchRoom\Events\ParticipantLeftEvent;
 use App\Domain\LinkMatchRoom\LinkMatchRoomRepositoryInterface;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerInterface;
 
 class PublishLinkMatchRoomLeftListener
 {
     public function __construct(
-        private readonly MessageBrokerInterface $messageBroker,
+        private readonly BrokerInterface $messageBroker,
         private readonly LinkMatchRoomRepositoryInterface $roomRepository,
     ) {}
 

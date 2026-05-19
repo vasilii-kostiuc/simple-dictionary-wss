@@ -13,7 +13,7 @@
 			"path": "../simple-dictionary-load-tests"
 		},
 		{
-			"path": "../packages/laravel-messaging-library"
+			"path": "../packages/pubsub-broker"
 		}
 	],
 	"settings": {

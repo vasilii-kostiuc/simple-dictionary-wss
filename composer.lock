@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e18648677e58f9613f28ec756b6877a",
+    "content-hash": "53f62032554b05215ad24a63ad36b1a6",
     "packages": [
         {
             "name": "brick/math",
@@ -7431,12 +7431,12 @@
             "time": "2025-12-02T11:56:42+00:00"
         },
         {
-            "name": "vasilii-kostiuc/laravel-messaging-library",
-            "version": "dev-master",
+            "name": "vasilii-kostiuc/pubsub-broker",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
-                "url": "./packages/laravel-messaging-library",
-                "reference": "1215ab32f31a8894090660df72d3fb82d528afe2"
+                "url": "./packages/pubsub-broker",
+                "reference": "f712bc1dbd7620453f4857c47d3c7783d80841ad"
             },
             "require": {
                 "clue/redis-react": "^v2.8.0",
@@ -7450,16 +7450,9 @@
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "VasiliiKostiuc\\LaravelMessagingLibrary\\MessagingServiceProvider"
-                    ]
-                }
-            },
             "autoload": {
                 "psr-4": {
-                    "VasiliiKostiuc\\LaravelMessagingLibrary\\": "src/"
+                    "VasiliiKostiuc\\PubSubBroker\\": "src/"
                 }
             },
             "autoload-dev": {
@@ -7470,7 +7463,7 @@
             "license": [
                 "MIT"
             ],
-            "description": "A messaging library for handling message brokers initialy developed for dictionary project",
+            "description": "PubSub broker abstraction over Redis and RabbitMQ with ReactPHP event loop integration",
             "transport-options": {
                 "symlink": true,
                 "relative": true

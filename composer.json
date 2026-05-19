@@ -11,7 +11,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "./packages/laravel-messaging-library",
+            "url": "./packages/pubsub-broker",
             "options": {
                 "symlink": true
             }
@@ -29,7 +29,7 @@
         "react/event-loop": "^1.3",
         "react/http": "^1.11",
         "react/socket": "^1.16",
-        "vasilii-kostiuc/laravel-messaging-library": "*"
+        "vasilii-kostiuc/pubsub-broker": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -92,7 +92,7 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
-            "vasilii-kostiuc/laravel-messaging-library": true
+            "vasilii-kostiuc/pubsub-broker": true
         }
     },
     "minimum-stability": "dev",

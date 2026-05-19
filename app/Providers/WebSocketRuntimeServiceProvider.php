@@ -28,8 +28,8 @@ use Illuminate\Support\ServiceProvider;
 use Ratchet\WebSocket\MessageComponentInterface;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerFactory;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerInterface;
 
 class WebSocketRuntimeServiceProvider extends ServiceProvider
 {
@@ -57,7 +57,7 @@ class WebSocketRuntimeServiceProvider extends ServiceProvider
         $this->app->singleton(WebSocketMessageSenderInterface::class, function (Application $app) {
             return new WebSocketMessageSender(
                 $app->make(ClientRegistryInterface::class),
-                $app->make(MessageBrokerInterface::class),
+                $app->make(BrokerInterface::class),
             );
         });
 
@@ -75,8 +75,14 @@ class WebSocketRuntimeServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(MessageBrokerInterface::class, function () {
-            return App::make(MessageBrokerFactory::class)->create();
+        $this->app->singleton(BrokerFactory::class, function () {
+            $driver = config('messaging.default');
+
+            return new BrokerFactory($driver, config("messaging.{$driver}", []));
+        });
+
+        $this->app->singleton(BrokerInterface::class, function () {
+            return App::make(BrokerFactory::class)->create();
         });
 
         $this->app->singleton(MessageComponentInterface::class, function (Application $app) {

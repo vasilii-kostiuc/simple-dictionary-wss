@@ -5,13 +5,13 @@ namespace App\WebSockets\Sender;
 use App\WebSockets\Messages\WebSocketMessage;
 use App\WebSockets\Storage\Clients\ClientRegistryInterface;
 use Ratchet\ConnectionInterface;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerInterface;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerInterface;
 
 class WebSocketMessageSender implements WebSocketMessageSenderInterface
 {
     public function __construct(
         private readonly ClientRegistryInterface $clientRegistry,
-        private readonly MessageBrokerInterface $messageBroker,
+        private readonly BrokerInterface $messageBroker,
     ) {}
 
     public function sendToIdentifier(string $identifier, WebSocketMessage $message): void

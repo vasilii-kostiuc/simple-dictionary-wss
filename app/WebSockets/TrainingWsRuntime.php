@@ -7,7 +7,7 @@ use App\WebSockets\Timers\PeriodicTimerScheduler;
 use Ratchet\WebSocket\MessageComponentInterface;
 use React\EventLoop\LoopInterface;
 use React\Socket\SocketServer;
-use VasiliiKostiuc\LaravelMessagingLibrary\Messaging\MessageBrokerFactory;
+use VasiliiKostiuc\PubSubBroker\Messaging\BrokerFactory;
 
 class TrainingWsRuntime
 {
@@ -17,7 +17,7 @@ class TrainingWsRuntime
         private readonly MessageComponentInterface $trainingWsServer,
         private readonly BrokerSubscriptionsBootstrapper $brokerSubscriptionsBootstrapper,
         private readonly PeriodicTimerScheduler $periodicTimerScheduler,
-        private readonly MessageBrokerFactory $messageBrokerFactory,
+        private readonly BrokerFactory $messageBrokerFactory,
         private readonly LoopInterface $loop,
     ) {}
 
