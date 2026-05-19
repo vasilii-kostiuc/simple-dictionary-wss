@@ -120,7 +120,7 @@ class TrainingWsServerTest extends TestCase
 
             $this->assertTrue($response->successful(), 'API request failed with status: '.$response->status());
             Log::info('API request successful');
-        } catch (\Exception $e) {
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
             $this->markTestSkipped('Cannot connect to API endpoint: '.$apiUrl.'. Error: '.$e->getMessage());
         }
 
