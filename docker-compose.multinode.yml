@@ -45,6 +45,10 @@ services:
       MESSAGING_BROKER: redis
       MESSAGING_REDIS_HOST: redis
       MESSAGING_REDIS_PORT: 6379
+      MESSAGING_RABBITMQ_HOST: rabbitmq
+      MESSAGING_RABBITMQ_PORT: 5672
+      MESSAGING_RABBITMQ_USER: guest
+      MESSAGING_RABBITMQ_PASSWORD: guest
       PROMETHEUS_ENABLED: "true"
       PROMETHEUS_HOST: 0.0.0.0
       PROMETHEUS_PORT: 9091
@@ -52,6 +56,7 @@ services:
     depends_on:
       - redis
       - mongo
+      - rabbitmq
     expose:
       - "8080"
       - "9091"
@@ -80,6 +85,10 @@ services:
       MESSAGING_BROKER: redis
       MESSAGING_REDIS_HOST: redis
       MESSAGING_REDIS_PORT: 6379
+      MESSAGING_RABBITMQ_HOST: rabbitmq
+      MESSAGING_RABBITMQ_PORT: 5672
+      MESSAGING_RABBITMQ_USER: guest
+      MESSAGING_RABBITMQ_PASSWORD: guest
       PROMETHEUS_ENABLED: "true"
       PROMETHEUS_HOST: 0.0.0.0
       PROMETHEUS_PORT: 9091
@@ -87,6 +96,7 @@ services:
     depends_on:
       - redis
       - mongo
+      - rabbitmq
     expose:
       - "8080"
       - "9091"
@@ -115,6 +125,10 @@ services:
       MESSAGING_BROKER: redis
       MESSAGING_REDIS_HOST: redis
       MESSAGING_REDIS_PORT: 6379
+      MESSAGING_RABBITMQ_HOST: rabbitmq
+      MESSAGING_RABBITMQ_PORT: 5672
+      MESSAGING_RABBITMQ_USER: guest
+      MESSAGING_RABBITMQ_PASSWORD: guest
       PROMETHEUS_ENABLED: "true"
       PROMETHEUS_HOST: 0.0.0.0
       PROMETHEUS_PORT: 9091
@@ -122,6 +136,7 @@ services:
     depends_on:
       - redis
       - mongo
+      - rabbitmq
     expose:
       - "8080"
       - "9091"
@@ -178,6 +193,15 @@ services:
     networks:
       - simple_dictionary_network
 
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: wss_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - simple_dictionary_network
+
   mongo:
     image: mongo:8.0.15
     container_name: wss_mongo
@@ -221,5 +245,6 @@ services:
       - simple_dictionary_network
 
 volumes:
+  rabbitmq_data:
   redisinsight_data:
   grafana_data:

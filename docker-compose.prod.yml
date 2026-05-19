@@ -25,6 +25,10 @@ services:
       - API_BASE_URI=${API_BASE_URI}
       - WSS_SERVICE_SECRET=${WSS_SERVICE_SECRET}
       - MESSAGING_BROKER=redis
+      - MESSAGING_RABBITMQ_HOST=rabbitmq
+      - MESSAGING_RABBITMQ_PORT=5672
+      - MESSAGING_RABBITMQ_USER=${RABBITMQ_USER:-guest}
+      - MESSAGING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
       - PROMETHEUS_ENABLED=true
       - PROMETHEUS_HOST=0.0.0.0
       - PROMETHEUS_PORT=9091
@@ -34,6 +38,21 @@ services:
     depends_on:
       - mongo
       - redis
+      - rabbitmq
+    networks:
+      - simple_dictionary_network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: wss_rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    expose:
+      - "5672"
     networks:
       - simple_dictionary_network
 
@@ -118,9 +137,9 @@ volumes:
   storage_data:
   cache_data:
   mongo_data:
+  rabbitmq_data:
   redisinsight_data:
   grafana_data:
-
 
 networks:
   simple_dictionary_network:
